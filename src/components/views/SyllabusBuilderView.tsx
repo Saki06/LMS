@@ -23,7 +23,8 @@ import {
   UploadCloud,
   X,
   Link2,
-  Paperclip
+  Paperclip,
+  Edit3
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,10 +38,14 @@ export function SyllabusBuilderView() {
     selectedCourseId,
     setSelectedCourseId,
     createUnit,
+    updateUnit,
     createTopic,
+    updateTopic,
     deleteUnit,
     deleteTopic,
     createLesson,
+    updateLesson,
+    deleteLesson,
     currentUser
   } = useApp();
 
@@ -85,6 +90,37 @@ export function SyllabusBuilderView() {
   const [uploadedMainFile, setUploadedMainFile] = useState<{ name: string; size: string; type: string } | null>(null);
   const [supplementaryFiles, setSupplementaryFiles] = useState<{ name: string; size: string; type: string }[]>([]);
 
+  // Edit Unit Modal state
+  const [isEditUnitModalOpen, setIsEditUnitModalOpen] = useState(false);
+  const [editingUnit, setEditingUnit] = useState<{ id: string; title: string } | null>(null);
+
+  // Edit Topic Modal state
+  const [isEditTopicModalOpen, setIsEditTopicModalOpen] = useState(false);
+  const [editingTopic, setEditingTopic] = useState<{ unitId: string; id: string; title: string; description: string } | null>(null);
+
+  // Edit Lesson Modal state (Rich Multi-Format)
+  const [isEditLessonModalOpen, setIsEditLessonModalOpen] = useState(false);
+  const [editLessonSourceUnitId, setEditLessonSourceUnitId] = useState("");
+  const [editLessonSourceTopicId, setEditLessonSourceTopicId] = useState("");
+  const [editLessonTargetUnitId, setEditLessonTargetUnitId] = useState("");
+  const [editLessonTargetTopicId, setEditLessonTargetTopicId] = useState("");
+  const [editLessonId, setEditLessonId] = useState("");
+  const [editLessonTitle, setEditLessonTitle] = useState("");
+  const [editLessonDescription, setEditLessonDescription] = useState("");
+  const [editLessonContentType, setEditLessonContentType] = useState<"pdf" | "slides" | "video" | "rich_text">("pdf");
+  const [editLessonBody, setEditLessonBody] = useState("");
+  const [editLessonVideoUrl, setEditLessonVideoUrl] = useState("");
+  const [editLessonVideoDuration, setEditLessonVideoDuration] = useState("45 mins");
+  const [editLessonSlidesCount, setEditLessonSlidesCount] = useState<number>(10);
+  const [editUploadedMainFile, setEditUploadedMainFile] = useState<{ name: string; size: string; type: string } | null>(null);
+  const [editSupplementaryFiles, setEditSupplementaryFiles] = useState<{ name: string; size: string; type: string }[]>([]);
+
+  // Synchronize target units and topics for Edit Lesson modal
+  const editModalUnits = activeCourse?.units || [];
+  const editModalActiveUnit = editModalUnits.find((u) => u.id === editLessonTargetUnitId) || editModalUnits[0];
+  const editModalTopics = editModalActiveUnit?.topics || [];
+  const editModalActiveTopic = editModalTopics.find((t) => t.id === editLessonTargetTopicId) || editModalTopics[0];
+
   // Synchronize target units and topics for Add Lesson modal
   const modalUnits = activeCourse?.units || [];
   const modalActiveUnit = modalUnits.find((u) => u.id === lessonTargetUnitId) || modalUnits[0];
@@ -107,6 +143,131 @@ export function SyllabusBuilderView() {
     setIsAddTopicModalOpen(false);
     setNewTopicTitle("");
     setNewTopicDesc("");
+  };
+
+  const handleUpdateUnitSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUnit || !editingUnit.title.trim() || !activeCourse) return;
+    updateUnit(activeCourse.id, editingUnit.id, { title: editingUnit.title.trim() });
+    setIsEditUnitModalOpen(false);
+    setEditingUnit(null);
+  };
+
+  const handleUpdateTopicSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTopic || !editingTopic.title.trim() || !activeCourse) return;
+    updateTopic(activeCourse.id, editingTopic.unitId, editingTopic.id, {
+      title: editingTopic.title.trim(),
+      description: editingTopic.description.trim()
+    });
+    setIsEditTopicModalOpen(false);
+    setEditingTopic(null);
+  };
+
+  const handleOpenEditLesson = (unitId: string, topicId: string, lesson: Lesson) => {
+    setEditLessonSourceUnitId(unitId);
+    setEditLessonSourceTopicId(topicId);
+    setEditLessonTargetUnitId(unitId);
+    setEditLessonTargetTopicId(topicId);
+    setEditLessonId(lesson.id);
+    setEditLessonTitle(lesson.title);
+    setEditLessonDescription(lesson.description || "");
+    setEditLessonContentType(lesson.contentType || "rich_text");
+    setEditLessonBody(lesson.contentBody || "");
+    setEditLessonVideoUrl(lesson.videoUrl || "");
+    setEditLessonVideoDuration("45 mins");
+    setEditLessonSlidesCount(lesson.slidesCount || 10);
+
+    if (lesson.attachments && lesson.attachments.length > 0) {
+      if (lesson.contentType === "pdf" || lesson.contentType === "slides") {
+        setEditUploadedMainFile(lesson.attachments[0] || null);
+        setEditSupplementaryFiles(lesson.attachments.slice(1));
+      } else {
+        setEditUploadedMainFile(null);
+        setEditSupplementaryFiles(lesson.attachments);
+      }
+    } else {
+      setEditUploadedMainFile(null);
+      setEditSupplementaryFiles([]);
+    }
+
+    setIsEditLessonModalOpen(true);
+  };
+
+  const handleEditMainFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+      const fileExt = file.name.split(".").pop()?.toUpperCase() || "PDF";
+      setEditUploadedMainFile({
+        name: file.name,
+        size: sizeStr,
+        type: fileExt
+      });
+      if (!editLessonTitle) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        setEditLessonTitle(cleanName);
+      }
+    }
+  };
+
+  const handleEditSupplementaryFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const newItems: { name: string; size: string; type: string }[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        newItems.push({
+          name: f.name,
+          size: (f.size / (1024 * 1024)).toFixed(1) + " MB",
+          type: f.name.split(".").pop()?.toUpperCase() || "FILE"
+        });
+      }
+      setEditSupplementaryFiles((prev) => [...prev, ...newItems]);
+    }
+  };
+
+  const handleUpdateLessonSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editLessonTitle.trim() || !activeCourse || !editLessonId) return;
+
+    const allAttachments = [...editSupplementaryFiles];
+    if (editUploadedMainFile) {
+      allAttachments.unshift(editUploadedMainFile);
+    }
+
+    let finalContentBody = editLessonBody.trim();
+    if (!finalContentBody) {
+      if (editLessonContentType === "pdf") {
+        finalContentBody = `Official lecture document and study guide for ${editLessonTitle}. Download or view the attached PDF for complete proofs and derivations.`;
+      } else if (editLessonContentType === "slides") {
+        finalContentBody = `Classroom presentation slide deck containing ${editLessonSlidesCount} instructional slides and topic summary points.`;
+      } else if (editLessonContentType === "video") {
+        finalContentBody = `Recorded classroom lecture session (${editLessonVideoDuration}) covering core theoretical applications and practical questions.`;
+      } else {
+        finalContentBody = "Lecture notes and worked examples prepared for the G.C.E. Advanced Level examination.";
+      }
+    }
+
+    updateLesson(
+      activeCourse.id,
+      editLessonSourceUnitId,
+      editLessonSourceTopicId,
+      editLessonId,
+      {
+        title: editLessonTitle.trim(),
+        description: editLessonDescription.trim() || undefined,
+        contentType: editLessonContentType,
+        contentBody: finalContentBody,
+        videoUrl: editLessonContentType === "video" ? editLessonVideoUrl : undefined,
+        slidesCount: editLessonContentType === "slides" ? editLessonSlidesCount : undefined,
+        attachments: allAttachments
+      },
+      editLessonTargetUnitId,
+      editLessonTargetTopicId
+    );
+
+    setIsEditLessonModalOpen(false);
   };
 
   const handleOpenAddLesson = (unitId?: string, topicId?: string) => {
@@ -381,7 +542,20 @@ export function SyllabusBuilderView() {
                     </Button>
 
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingUnit({ id: unit.id, title: unit.title });
+                        setIsEditUnitModalOpen(true);
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-[#0d5c4d] hover:bg-[#ecf8f5] rounded-lg transition-colors cursor-pointer"
+                      title="Edit Unit"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if (confirm(`Remove "${unit.title}" from syllabus?`)) {
                           deleteUnit(activeCourse.id, unit.id);
                         }
@@ -449,6 +623,22 @@ export function SyllabusBuilderView() {
 
                               <button
                                 onClick={() => {
+                                  setEditingTopic({
+                                    unitId: unit.id,
+                                    id: topic.id,
+                                    title: topic.title,
+                                    description: topic.description || ""
+                                  });
+                                  setIsEditTopicModalOpen(true);
+                                }}
+                                className="p-1 text-slate-400 hover:text-[#0d5c4d] hover:bg-[#ecf8f5] rounded transition-colors cursor-pointer"
+                                title="Edit Topic"
+                              >
+                                <Edit3 className="h-3.5 w-3.5" />
+                              </button>
+
+                              <button
+                                onClick={() => {
                                   if (confirm(`Remove topic "${topic.title}"?`)) {
                                     deleteTopic(activeCourse.id, unit.id, topic.id);
                                   }
@@ -490,12 +680,34 @@ export function SyllabusBuilderView() {
                                     </div>
                                   </div>
 
-                                  <Badge
-                                    variant="outline"
-                                    className="uppercase font-mono font-bold text-[9px] bg-slate-50 text-slate-600 shrink-0 ml-2"
-                                  >
-                                    {lesson.contentType || "notes"}
-                                  </Badge>
+                                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                    <Badge
+                                      variant="outline"
+                                      className="uppercase font-mono font-bold text-[9px] bg-slate-50 text-slate-600"
+                                    >
+                                      {lesson.contentType || "notes"}
+                                    </Badge>
+
+                                    <button
+                                      onClick={() => handleOpenEditLesson(unit.id, topic.id, lesson)}
+                                      className="p-1 text-slate-400 hover:text-[#0d5c4d] hover:bg-[#ecf8f5] rounded transition-colors cursor-pointer"
+                                      title="Edit Lesson"
+                                    >
+                                      <Edit3 className="h-3.5 w-3.5" />
+                                    </button>
+
+                                    <button
+                                      onClick={() => {
+                                        if (confirm(`Remove lesson "${lesson.title}"?`)) {
+                                          deleteLesson(activeCourse.id, unit.id, topic.id, lesson.id);
+                                        }
+                                      }}
+                                      className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                                      title="Delete Lesson"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -1054,6 +1266,544 @@ export function SyllabusBuilderView() {
               className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-bold shadow-xs cursor-pointer"
             >
               Add to Syllabus
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal 4: Edit Unit / Module */}
+      <Modal
+        isOpen={isEditUnitModalOpen}
+        onClose={() => {
+          setIsEditUnitModalOpen(false);
+          setEditingUnit(null);
+        }}
+        title="Edit Unit / Module"
+        description="Update the unit or module title for this syllabus."
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleUpdateUnitSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Unit / Module Title <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={editingUnit?.title || ""}
+              onChange={(e) =>
+                setEditingUnit((prev) => (prev ? { ...prev, title: e.target.value } : null))
+              }
+              placeholder="e.g. Unit 3: Trigonometric Equations & Identities"
+              className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#0d5c4d]"
+              autoFocus
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsEditUnitModalOpen(false);
+                setEditingUnit(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-bold cursor-pointer">
+              Save Changes
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal 5: Edit Syllabus Topic */}
+      <Modal
+        isOpen={isEditTopicModalOpen}
+        onClose={() => {
+          setIsEditTopicModalOpen(false);
+          setEditingTopic(null);
+        }}
+        title="Edit Syllabus Topic"
+        description="Update topic title and description."
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleUpdateTopicSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Topic Title <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={editingTopic?.title || ""}
+              onChange={(e) =>
+                setEditingTopic((prev) => (prev ? { ...prev, title: e.target.value } : null))
+              }
+              placeholder="e.g. Topic 3.1: Sine & Cosine Compound Angles"
+              className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#0d5c4d]"
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Topic Description / Focus (Optional)
+            </label>
+            <textarea
+              rows={2}
+              value={editingTopic?.description || ""}
+              onChange={(e) =>
+                setEditingTopic((prev) => (prev ? { ...prev, description: e.target.value } : null))
+              }
+              placeholder="Key concepts, proofs, and application domains..."
+              className="w-full p-2.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#0d5c4d]"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsEditTopicModalOpen(false);
+                setEditingTopic(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-bold cursor-pointer">
+              Save Changes
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal 6: Edit Lesson (Rich Multi-Format Support) */}
+      <Modal
+        isOpen={isEditLessonModalOpen}
+        onClose={() => setIsEditLessonModalOpen(false)}
+        title="Edit Lesson in Syllabus"
+        description="Update coursework PDF documents, classroom presentation slides, video lectures, or theory notes."
+        maxWidth="max-w-3xl"
+      >
+        <form onSubmit={handleUpdateLessonSubmit} className="space-y-4">
+          {/* Target Unit & Topic Hierarchy Pickers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#f8faf9] p-3.5 rounded-2xl border border-[#e6ece8]">
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#0d2b26] mb-1">
+                Target Unit / Module
+              </label>
+              <select
+                value={editModalActiveUnit?.id || ""}
+                onChange={(e) => {
+                  setEditLessonTargetUnitId(e.target.value);
+                  const u = editModalUnits.find((unit) => unit.id === e.target.value);
+                  if (u && u.topics[0]) {
+                    setEditLessonTargetTopicId(u.topics[0].id);
+                  }
+                }}
+                className="w-full h-9 px-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-semibold focus:outline-none focus:border-[#0d5c4d]"
+              >
+                {editModalUnits.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#0d2b26] mb-1">
+                Syllabus Topic
+              </label>
+              <select
+                value={editModalActiveTopic?.id || ""}
+                onChange={(e) => setEditLessonTargetTopicId(e.target.value)}
+                className="w-full h-9 px-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-semibold focus:outline-none focus:border-[#0d5c4d]"
+              >
+                {editModalTopics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Lesson Title & Brief Description */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#0d2b26] mb-1">
+                Lesson Title <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={editLessonTitle}
+                onChange={(e) => setEditLessonTitle(e.target.value)}
+                placeholder="e.g. Lesson 4: Integration by Substitution"
+                className="w-full h-10 px-3.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0d5c4d]/20 focus:border-[#0d5c4d]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#0d2b26] mb-1">
+                Short Description
+              </label>
+              <input
+                type="text"
+                value={editLessonDescription}
+                onChange={(e) => setEditLessonDescription(e.target.value)}
+                placeholder="e.g. Theory notes, worked proofs, and revision problem sheet"
+                className="w-full h-10 px-3.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0d5c4d]/20 focus:border-[#0d5c4d]"
+              />
+            </div>
+          </div>
+
+          {/* Delivery Format Picker */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#0d2b26] mb-1.5">
+              Select Lesson Delivery Format:
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() => setEditLessonContentType("pdf")}
+                className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                  editLessonContentType === "pdf"
+                    ? "bg-[#ecf8f5] border-[#0d5c4d] shadow-2xs ring-1 ring-[#0d5c4d]"
+                    : "bg-white border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  {editLessonContentType === "pdf" && (
+                    <span className="h-2 w-2 rounded-full bg-[#0d5c4d]" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-[#0d2b26]">PDF Document</p>
+                  <p className="text-[10px] text-slate-500">Worksheet / Notes</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEditLessonContentType("slides")}
+                className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                  editLessonContentType === "slides"
+                    ? "bg-[#ecf8f5] border-[#0d5c4d] shadow-2xs ring-1 ring-[#0d5c4d]"
+                    : "bg-white border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="h-8 w-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                    <Presentation className="h-4 w-4" />
+                  </div>
+                  {editLessonContentType === "slides" && (
+                    <span className="h-2 w-2 rounded-full bg-[#0d5c4d]" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-[#0d2b26]">Presentation Slides</p>
+                  <p className="text-[10px] text-slate-500">PPTX / Slide Deck</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEditLessonContentType("video")}
+                className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                  editLessonContentType === "video"
+                    ? "bg-[#ecf8f5] border-[#0d5c4d] shadow-2xs ring-1 ring-[#0d5c4d]"
+                    : "bg-white border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                    <Video className="h-4 w-4" />
+                  </div>
+                  {editLessonContentType === "video" && (
+                    <span className="h-2 w-2 rounded-full bg-[#0d5c4d]" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-[#0d2b26]">Video Lecture</p>
+                  <p className="text-[10px] text-slate-500">YouTube / Drive</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEditLessonContentType("rich_text")}
+                className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                  editLessonContentType === "rich_text"
+                    ? "bg-[#ecf8f5] border-[#0d5c4d] shadow-2xs ring-1 ring-[#0d5c4d]"
+                    : "bg-white border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+                    <BookOpen className="h-4 w-4" />
+                  </div>
+                  {editLessonContentType === "rich_text" && (
+                    <span className="h-2 w-2 rounded-full bg-[#0d5c4d]" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-[#0d2b26]">Theory Notes</p>
+                  <p className="text-[10px] text-slate-500">Rich text / equations</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Conditional Media Upload Panes */}
+          {editLessonContentType === "pdf" && (
+            <div className="p-4 rounded-2xl bg-[#f8faf9] border border-[#e6ece8] space-y-3">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#0d2b26]">
+                Upload / Update PDF Course Document:
+              </label>
+
+              {editUploadedMainFile ? (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#c4e9e0] text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                      <FileUp className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-800">{editUploadedMainFile.name}</p>
+                      <p className="text-[10px] text-slate-400 font-mono">{editUploadedMainFile.size}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditUploadedMainFile(null)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#c4e9e0] hover:border-[#0d5c4d] bg-white rounded-2xl cursor-pointer transition-colors group">
+                  <UploadCloud className="h-8 w-8 text-[#0d5c4d] group-hover:scale-110 transition-transform mb-2" />
+                  <p className="text-xs font-bold text-[#0d2b26]">
+                    Click to browse or drop PDF worksheet / textbook chapter
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-1">PDF up to 50MB</p>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleEditMainFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              )}
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                  Document Overview &amp; Learning Objectives:
+                </label>
+                <textarea
+                  rows={2}
+                  value={editLessonBody}
+                  onChange={(e) => setEditLessonBody(e.target.value)}
+                  placeholder="Outline key syllabus points covered in this PDF..."
+                  className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#0d5c4d]"
+                />
+              </div>
+            </div>
+          )}
+
+          {editLessonContentType === "slides" && (
+            <div className="p-4 rounded-2xl bg-[#f8faf9] border border-[#e6ece8] space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#0d2b26]">
+                  Upload / Update Slide Deck (.pptx, .pdf):
+                </label>
+                <div className="flex items-center gap-1.5 text-xs text-slate-600 font-semibold">
+                  <span>Number of Slides:</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={editLessonSlidesCount}
+                    onChange={(e) => setEditLessonSlidesCount(parseInt(e.target.value) || 1)}
+                    className="w-16 h-7 px-2 text-center rounded-lg border border-slate-300 text-xs font-bold focus:border-[#0d5c4d]"
+                  />
+                </div>
+              </div>
+
+              {editUploadedMainFile ? (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#c4e9e0] text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                      <Presentation className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-800">{editUploadedMainFile.name}</p>
+                      <p className="text-[10px] text-slate-400 font-mono">{editUploadedMainFile.size}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditUploadedMainFile(null)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#c4e9e0] hover:border-[#0d5c4d] bg-white rounded-2xl cursor-pointer transition-colors group">
+                  <UploadCloud className="h-8 w-8 text-[#0d5c4d] group-hover:scale-110 transition-transform mb-2" />
+                  <p className="text-xs font-bold text-[#0d2b26]">
+                    Click to browse or drop PowerPoint / PDF slides (.pptx, .ppt, .pdf)
+                  </p>
+                  <input
+                    type="file"
+                    accept=".pptx,.ppt,.pdf"
+                    onChange={handleEditMainFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              )}
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                  Slide Deck Summary &amp; Speaker Points:
+                </label>
+                <textarea
+                  rows={2}
+                  value={editLessonBody}
+                  onChange={(e) => setEditLessonBody(e.target.value)}
+                  placeholder="Key slide takeaways, diagrams breakdown, and topics covered..."
+                  className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#0d5c4d]"
+                />
+              </div>
+            </div>
+          )}
+
+          {editLessonContentType === "video" && (
+            <div className="p-4 rounded-2xl bg-[#f8faf9] border border-[#e6ece8] space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#0d2b26]">
+                  Video Lecture Source:
+                </label>
+                <div className="flex items-center gap-1.5 text-xs text-slate-600 font-semibold">
+                  <span>Class Duration:</span>
+                  <input
+                    type="text"
+                    value={editLessonVideoDuration}
+                    onChange={(e) => setEditLessonVideoDuration(e.target.value)}
+                    placeholder="e.g. 50 mins"
+                    className="w-24 h-7 px-2 text-center rounded-lg border border-slate-300 text-xs font-bold focus:border-[#0d5c4d]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="relative">
+                  <input
+                    type="url"
+                    value={editLessonVideoUrl}
+                    onChange={(e) => setEditLessonVideoUrl(e.target.value)}
+                    placeholder="Paste YouTube, Vimeo, or Google Drive link..."
+                    className="w-full h-10 pl-9 pr-3.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#0d5c4d]"
+                  />
+                  <Video className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                  Lecture Synopsis &amp; Discussion Points:
+                </label>
+                <textarea
+                  rows={2}
+                  value={editLessonBody}
+                  onChange={(e) => setEditLessonBody(e.target.value)}
+                  placeholder="Timestamp breakdown, topics covered in recording..."
+                  className="w-full p-2.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-[#0d5c4d]"
+                />
+              </div>
+            </div>
+          )}
+
+          {editLessonContentType === "rich_text" && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#0d2b26] mb-1">
+                Theory Notes &amp; Derivations:
+              </label>
+              <textarea
+                rows={5}
+                required
+                value={editLessonBody}
+                onChange={(e) => setEditLessonBody(e.target.value)}
+                placeholder="Enter comprehensive lecture text, key equations, and worked examples..."
+                className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0d5c4d]/20 focus:border-[#0d5c4d]"
+              />
+            </div>
+          )}
+
+          {/* Supplementary Attachments Bar */}
+          <div className="pt-2 border-t border-slate-100 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-[#0d2b26] flex items-center gap-1">
+                <Paperclip className="h-3.5 w-3.5 text-[#0d5c4d]" />
+                Attach Supplementary Resource Materials:
+              </label>
+              <label className="text-[11px] font-bold text-[#0d5c4d] hover:underline cursor-pointer">
+                + Add Files
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleEditSupplementaryFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {editSupplementaryFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {editSupplementaryFiles.map((file, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-xs font-semibold"
+                  >
+                    <FileText className="h-3 w-3" />
+                    <span>{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditSupplementaryFiles((prev) => prev.filter((_, i) => i !== idx))
+                      }
+                      className="text-slate-400 hover:text-rose-600 ml-1 cursor-pointer"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsEditLessonModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-bold shadow-xs cursor-pointer"
+            >
+              Save Lesson Changes
             </Button>
           </div>
         </form>

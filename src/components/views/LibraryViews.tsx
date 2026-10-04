@@ -102,7 +102,7 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
   // Teacher Upload & Management states
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<LibraryResource | null>(null);
-  const [managementFilter, setManagementFilter] = useState<"published" | "draft" | "unpublished">("published");
+  const [managementFilter, setManagementFilter] = useState<"all" | "published" | "draft" | "unpublished">("all");
   const [resourceToDelete, setResourceToDelete] = useState<LibraryResource | null>(null);
 
   // Reader Settings State
@@ -213,15 +213,32 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
       .slice(0, 3);
   }, [libraryResources]);
 
+  // Filter resources uploaded by this specific teacher (or all if admin)
+  const myTeacherResources = useMemo(() => {
+    if (currentRole === "admin") {
+      return libraryResources;
+    }
+    const teacherName = (currentUser.name || "Mr. Samantha Perera").toLowerCase().trim();
+    return libraryResources.filter((r) => {
+      const author = (r.author || "").toLowerCase().trim();
+      return (
+        author === teacherName ||
+        author.includes(teacherName) ||
+        teacherName.includes(author) ||
+        (teacherName.includes("perera") && author.includes("perera"))
+      );
+    });
+  }, [libraryResources, currentUser.name, currentRole]);
+
   // Teacher Management filtered resources
   const teacherManagedResources = useMemo(() => {
-    return libraryResources.filter((r) => {
+    return myTeacherResources.filter((r) => {
       if (managementFilter === "published") return r.status === "published";
       if (managementFilter === "draft") return r.status === "draft";
       if (managementFilter === "unpublished") return r.status === "unpublished";
       return true;
     });
-  }, [libraryResources, managementFilter]);
+  }, [myTeacherResources, managementFilter]);
 
   // Practice Countdown Timer Effect
   React.useEffect(() => {
@@ -296,6 +313,10 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               {activeTab === "past_papers"
                 ? "My Learning → Past Papers & Schemes"
+                : currentRole === "teacher"
+                ? "Teacher Workspace → Library"
+                : currentRole === "admin"
+                ? "Admin Control → Library Repository"
                 : "Student Workspace → Library"}
             </h1>
             <p className="text-sm text-emerald-100/80 leading-relaxed">
@@ -477,9 +498,9 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
                 <span className="text-xs font-semibold">Total Resources</span>
                 <Library className="h-4 w-4 text-[#0d5c4d]" />
               </div>
-              <p className="text-2xl font-extrabold text-[#0d2b26]">{libraryResources.length}</p>
+              <p className="text-2xl font-extrabold text-[#0d2b26]">{myTeacherResources.length}</p>
               <p className="text-[11px] text-slate-400 mt-1">
-                {libraryResources.filter((r) => r.status === "published").length} live in catalog
+                {myTeacherResources.filter((r) => r.status === "published").length} live in catalog
               </p>
             </div>
 
@@ -489,9 +510,9 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
                 <Eye className="h-4 w-4 text-blue-600" />
               </div>
               <p className="text-2xl font-extrabold text-[#0d2b26]">
-                {libraryResources.reduce((acc, curr) => acc + curr.viewsCount, 0).toLocaleString()}
+                {myTeacherResources.reduce((acc, curr) => acc + curr.viewsCount, 0).toLocaleString()}
               </p>
-              <p className="text-[11px] text-blue-600 font-semibold mt-1">Across all books & tutes</p>
+              <p className="text-[11px] text-blue-600 font-semibold mt-1">Across your uploaded materials</p>
             </div>
 
             <div className="bg-white rounded-xl p-4 border border-[#e6ece8] shadow-xs">
@@ -500,7 +521,7 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
                 <Download className="h-4 w-4 text-[#0d5c4d]" />
               </div>
               <p className="text-2xl font-extrabold text-[#0d2b26]">
-                {libraryResources.reduce((acc, curr) => acc + curr.downloadsCount, 0).toLocaleString()}
+                {myTeacherResources.reduce((acc, curr) => acc + curr.downloadsCount, 0).toLocaleString()}
               </p>
               <p className="text-[11px] text-emerald-600 font-semibold mt-1">Offline study access</p>
             </div>
@@ -511,7 +532,7 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
                 <Clock className="h-4 w-4 text-amber-500" />
               </div>
               <p className="text-2xl font-extrabold text-[#0d2b26]">
-                {libraryResources.filter((r) => r.status !== "published").length}
+                {myTeacherResources.filter((r) => r.status !== "published").length}
               </p>
               <p className="text-[11px] text-amber-600 font-semibold mt-1">Requires publication</p>
             </div>
@@ -522,10 +543,10 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#e6ece8]">
               <div>
                 <h2 className="text-base font-bold text-[#0d2b26]">
-                  Teacher & Author Resource Management
+                  Teacher &amp; Author Resource Management
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Manage syllabus materials, lecture tutes, textbooks, and visibility settings.
+                  Managing materials uploaded by <span className="font-semibold text-[#0d5c4d]">{currentUser.name || "Mr. Samantha Perera"}</span> ({myTeacherResources.length} resources)
                 </p>
               </div>
 
@@ -546,6 +567,16 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
             {/* Status Pills */}
             <div className="flex flex-wrap items-center gap-2">
               <button
+                onClick={() => setManagementFilter("all")}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  managementFilter === "all"
+                    ? "bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0]"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent"
+                }`}
+              >
+                All Uploads ({myTeacherResources.length})
+              </button>
+              <button
                 onClick={() => setManagementFilter("published")}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   managementFilter === "published"
@@ -553,7 +584,7 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent"
                 }`}
               >
-                Published ({libraryResources.filter((r) => r.status === "published").length})
+                Published ({myTeacherResources.filter((r) => r.status === "published").length})
               </button>
               <button
                 onClick={() => setManagementFilter("draft")}
@@ -563,7 +594,7 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent"
                 }`}
               >
-                Draft ({libraryResources.filter((r) => r.status === "draft").length})
+                Draft ({myTeacherResources.filter((r) => r.status === "draft").length})
               </button>
               <button
                 onClick={() => setManagementFilter("unpublished")}
@@ -573,7 +604,7 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent"
                 }`}
               >
-                Unpublished ({libraryResources.filter((r) => r.status === "unpublished").length})
+                Unpublished ({myTeacherResources.filter((r) => r.status === "unpublished").length})
               </button>
             </div>
 

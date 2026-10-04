@@ -78,7 +78,7 @@ export default function HomePage() {
     } else if (currentRole === "teacher") {
       switch (currentView) {
         case "dashboard":
-          return <TeacherViews initialTab="grading" />;
+          return <TeacherViews initialTab="home" />;
         case "profile":
           return <ProfileView />;
         case "connect":
