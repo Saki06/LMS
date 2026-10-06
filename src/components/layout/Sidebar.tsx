@@ -29,7 +29,11 @@ import {
   PanelLeftOpen,
   CheckCircle2,
   Bookmark,
-  Link2
+  Link2,
+  Video,
+  Sliders,
+  CreditCard,
+  Shield
 } from "lucide-react";
 
 interface SidebarProps {
@@ -55,7 +59,7 @@ interface NavItem {
 }
 
 export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
-  const { currentRole, currentView, setCurrentView, t, submissions } = useApp();
+  const { currentRole, currentView, setCurrentView, t, submissions, isFeatureEnabled } = useApp();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     my_learning: true,
@@ -82,123 +86,220 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
   };
 
   // Structured Nav with Groups
-  const studentNav: NavItem[] = [
+  const rawStudentNav: NavItem[] = [
     // Core Learning Group
     { id: "dashboard", label: t.nav.dashboard, icon: Home, group: "Core Learning" },
-    {
-      id: "connect",
-      label: "Connect",
-      icon: Link2,
-      badge: "Classes",
-      badgeVariant: "gold",
-      group: "Core Learning"
-    },
+    ...(isFeatureEnabled("tuition_subscriptions") || isFeatureEnabled("bank_slip_approvals")
+      ? [
+          {
+            id: "connect",
+            label: "Connect",
+            icon: Link2,
+            badge: "Classes",
+            badgeVariant: "gold" as const,
+            group: "Core Learning"
+          }
+        ]
+      : []),
     {
       id: "my_learning",
       label: t.nav.myLearning || "My Learning",
       icon: BookOpen,
       group: "Core Learning",
       children: [
-        { id: "courses", label: "Syllabus & Lessons", icon: BookOpen },
-        {
-          id: "assignments",
-          label: t.nav.assignments,
-          icon: FileText,
-          badge: "2 Active"
-        },
-        { id: "quizzes", label: t.nav.quizzes, icon: GraduationCap },
-        {
-          id: "past_papers",
-          label: t.nav.pastPapers || "Past Papers",
-          icon: Layers,
-          badge: "Archive"
-        }
+        ...(isFeatureEnabled("syllabus_builder")
+          ? [{ id: "courses", label: "Syllabus & Lessons", icon: BookOpen }]
+          : []),
+        ...(isFeatureEnabled("assignments_grading")
+          ? [
+              {
+                id: "assignments",
+                label: t.nav.assignments,
+                icon: FileText,
+                badge: "2 Active"
+              },
+              { id: "quizzes", label: t.nav.quizzes, icon: GraduationCap }
+            ]
+          : []),
+        ...(isFeatureEnabled("past_papers_library")
+          ? [
+              {
+                id: "past_papers",
+                label: t.nav.pastPapers || "Past Papers",
+                icon: Layers,
+                badge: "Archive"
+              }
+            ]
+          : [])
       ]
     },
-    {
-      id: "library",
-      label: t.nav.library || "Library",
-      icon: Library,
-      badge: "Hub",
-      badgeVariant: "default",
-      group: "Core Learning"
-    },
+    ...(isFeatureEnabled("past_papers_library")
+      ? [
+          {
+            id: "library",
+            label: t.nav.library || "Library",
+            icon: Library,
+            badge: "Hub",
+            badgeVariant: "default" as const,
+            group: "Core Learning"
+          }
+        ]
+      : []),
 
-    // Campus Life Group
-    {
-      id: "school_life",
-      label: t.nav.schoolLife || "School Life",
-      icon: Trophy,
-      group: "Campus Life",
-      children: [
-        { id: "sports", label: "Sports", icon: Trophy },
-        { id: "events", label: "Events", icon: Calendar },
-        { id: "announcements", label: "Announcements", icon: Bell }
-      ]
-    },
+    // Campus Life Group (Filtered by feature flags)
+    ...((isFeatureEnabled("campus_sports") ||
+    isFeatureEnabled("campus_events") ||
+    isFeatureEnabled("campus_announcements"))
+      ? [
+          {
+            id: "school_life",
+            label: t.nav.schoolLife || "School Life",
+            icon: Trophy,
+            group: "Campus Life",
+            children: [
+              ...(isFeatureEnabled("campus_sports") ? [{ id: "sports", label: "Sports", icon: Trophy }] : []),
+              ...(isFeatureEnabled("campus_events") ? [{ id: "events", label: "Events", icon: Calendar }] : []),
+              ...(isFeatureEnabled("campus_announcements")
+                ? [{ id: "announcements", label: "Announcements", icon: Bell }]
+                : [])
+            ]
+          }
+        ]
+      : []),
 
     // Account & Profile
     { id: "profile", label: "My Profile", icon: User, group: "Personal Account" }
   ];
 
-  const teacherNav: NavItem[] = [
+  const rawTeacherNav: NavItem[] = [
     { id: "dashboard", label: t.nav.dashboard, icon: Home, group: "Teaching Studio" },
-    {
-      id: "connect",
-      label: "Connect Hub",
-      icon: Link2,
-      badge: "Subscribers",
-      badgeVariant: "gold",
-      group: "Teaching Studio"
-    },
-    { id: "syllabus", label: t.nav.syllabus, icon: Layers, group: "Teaching Studio" },
-    { id: "assignments", label: t.nav.assignments, icon: FileText, group: "Assessments & Review" },
-    {
-      id: "submissions",
-      label: t.nav.submissions,
-      icon: ClipboardCheck,
-      badge: pendingSubmissionsCount > 0 ? `${pendingSubmissionsCount} Pending` : undefined,
-      badgeVariant: "warning",
-      group: "Assessments & Review"
-    },
-    {
-      id: "library",
-      label: "Library Resources",
-      icon: Library,
-      badge: "Author",
-      badgeVariant: "gold",
-      group: "Assessments & Review"
-    },
-    { id: "announcements", label: t.nav.announcements, icon: Bell, group: "Campus Operations" }
+    ...(isFeatureEnabled("live_broadcast_studio")
+      ? [
+          {
+            id: "live_schedule",
+            label: "Live Schedule",
+            icon: Video,
+            badge: "Live",
+            badgeVariant: "default" as const,
+            group: "Teaching Studio"
+          }
+        ]
+      : []),
+    ...(isFeatureEnabled("tuition_subscriptions") || isFeatureEnabled("bank_slip_approvals")
+      ? [
+          {
+            id: "connect",
+            label: "Connect Hub",
+            icon: Link2,
+            badge: "Subscribers",
+            badgeVariant: "gold" as const,
+            group: "Teaching Studio"
+          }
+        ]
+      : []),
+    ...(isFeatureEnabled("syllabus_builder")
+      ? [{ id: "syllabus", label: t.nav.syllabus, icon: Layers, group: "Teaching Studio" }]
+      : []),
+    ...(isFeatureEnabled("assignments_grading")
+      ? [
+          { id: "assignments", label: t.nav.assignments, icon: FileText, group: "Assessments & Review" },
+          {
+            id: "submissions",
+            label: t.nav.submissions,
+            icon: ClipboardCheck,
+            badge: pendingSubmissionsCount > 0 ? `${pendingSubmissionsCount} Pending` : undefined,
+            badgeVariant: "warning" as const,
+            group: "Assessments & Review"
+          }
+        ]
+      : []),
+    ...(isFeatureEnabled("past_papers_library")
+      ? [
+          {
+            id: "library",
+            label: "Library Resources",
+            icon: Library,
+            badge: "Author",
+            badgeVariant: "gold" as const,
+            group: "Assessments & Review"
+          }
+        ]
+      : [])
   ];
 
-  const adminNav: NavItem[] = [
+  const rawAdminNav: NavItem[] = [
     { id: "dashboard", label: t.nav.dashboard, icon: Home, group: "Control Center" },
-    {
-      id: "connect",
-      label: "Connect Hub",
-      icon: Link2,
-      badge: "Classes",
-      badgeVariant: "default",
-      group: "Institution Setup"
-    },
-    { id: "schools", label: t.nav.schoolSetup, icon: Building2, group: "Institution Setup" },
-    { id: "classes", label: t.nav.classes, icon: School, group: "Institution Setup" },
+    ...(isFeatureEnabled("tuition_subscriptions") || isFeatureEnabled("bank_slip_approvals")
+      ? [
+          {
+            id: "connect",
+            label: "Connect Hub",
+            icon: Link2,
+            badge: "Classes",
+            badgeVariant: "default" as const,
+            group: "Institution Setup"
+          }
+        ]
+      : []),
+    ...(isFeatureEnabled("school_classes_grades")
+      ? [
+          { id: "schools", label: t.nav.schoolSetup, icon: Building2, group: "Institution Setup" },
+          { id: "classes", label: t.nav.classes, icon: School, group: "Institution Setup" }
+        ]
+      : []),
     { id: "subjects", label: "Curriculum Subjects", icon: BookOpen, group: "Institution Setup" },
-    { id: "users", label: t.nav.users, icon: Users, group: "Institution Setup" },
-    { id: "library", label: "Library Repository", icon: Library, group: "Institution Setup" },
-    { id: "sports_admin", label: "Sports Operations", icon: Trophy, group: "Campus Operations" },
-    { id: "events_admin", label: "Event Operations", icon: Calendar, group: "Campus Operations" },
-    { id: "announcements", label: t.nav.announcements, icon: Bell, group: "Campus Operations" },
+    ...(isFeatureEnabled("multi_teacher_roster")
+      ? [{ id: "users", label: t.nav.users, icon: Users, group: "Institution Setup" }]
+      : []),
+    ...(isFeatureEnabled("past_papers_library")
+      ? [{ id: "library", label: "Library Repository", icon: Library, group: "Institution Setup" }]
+      : []),
+    ...(isFeatureEnabled("campus_sports")
+      ? [{ id: "sports_admin", label: "Sports Operations", icon: Trophy, group: "Campus Operations" }]
+      : []),
+    ...(isFeatureEnabled("campus_events")
+      ? [{ id: "events_admin", label: "Event Operations", icon: Calendar, group: "Campus Operations" }]
+      : []),
+    ...(isFeatureEnabled("campus_announcements")
+      ? [{ id: "announcements", label: t.nav.announcements, icon: Bell, group: "Campus Operations" }]
+      : []),
     { id: "profile", label: "Admin Profile", icon: User, group: "System Configuration" },
     { id: "settings", label: t.nav.settings, icon: Settings, group: "System Configuration" }
   ];
 
+  const superAdminNav: NavItem[] = [
+    { id: "dashboard", label: "Master Dashboard", icon: Home, group: "Platform Owner" },
+    {
+      id: "super_admin_tenants",
+      label: "Client Tenants",
+      icon: Building2,
+      badge: "Directory",
+      badgeVariant: "gold",
+      group: "Platform Owner"
+    },
+    {
+      id: "super_admin_matrix",
+      label: "Feature Flags",
+      icon: Sliders,
+      badge: "Matrix",
+      badgeVariant: "default",
+      group: "Platform Owner"
+    },
+    {
+      id: "super_admin_pricing",
+      label: "SaaS Packages",
+      icon: CreditCard,
+      badge: "Pricing",
+      group: "Platform Owner"
+    }
+  ];
+
   const currentNavItems = {
-    student: studentNav,
-    teacher: teacherNav,
-    admin: adminNav
-  }[currentRole];
+    student: rawStudentNav,
+    teacher: rawTeacherNav,
+    admin: rawAdminNav,
+    super_admin: superAdminNav
+  }[currentRole] || rawStudentNav;
 
   // Group items by their section
   const groupedItems = React.useMemo(() => {

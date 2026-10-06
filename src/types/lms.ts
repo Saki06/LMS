@@ -1,6 +1,6 @@
 // Complete TypeScript Domain Definitions for LMS MVP
 
-export type UserRole = 'student' | 'teacher' | 'admin';
+export type UserRole = 'student' | 'teacher' | 'admin' | 'super_admin';
 export type LocaleCode = 'en' | 'ta' | 'si';
 export type DeviceViewMode = 'responsive' | 'desktop' | 'tablet' | 'mobile';
 

@@ -31,7 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 
-type TeacherConnectTab = "subscribers" | "slips" | "schedule";
+type TeacherConnectTab = "subscribers" | "slips";
 
 export function TeacherConnectView() {
   const { currentUser, t } = useApp();
@@ -283,17 +283,6 @@ export function TeacherConnectView() {
         </button>
 
 
-        <button
-          onClick={() => setActiveTab("schedule")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === "schedule"
-              ? "bg-[#0d5c4d] text-white shadow-xs"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-          }`}
-        >
-          <Calendar className="h-4 w-4" />
-          <span>Weekly Live Schedule</span>
-        </button>
       </div>
 
       {/* =================================================================== */}
@@ -540,92 +529,7 @@ export function TeacherConnectView() {
         </div>
       )}
 
-      {/* =================================================================== */}
-      {/* TAB 3: WEEKLY LIVE CLASS SCHEDULE                                   */}
-      {/* =================================================================== */}
-      {activeTab === "schedule" && (
-        <Card className="border-[#c4e9e0] bg-white shadow-2xs p-6 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#e6ece8]">
-            <div>
-              <h3 className="text-base font-extrabold text-[#0d2b26]">
-                Weekly Masterclass Broadcast Schedule
-              </h3>
-              <p className="text-xs text-slate-500">
-                Scheduled live tuition streams for Grade 12 &amp; 13 Combined Mathematics.
-              </p>
-            </div>
-            <a
-              href="https://meet.google.com/sam-math-live"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-1.5 px-3 rounded-xl bg-[#0d5c4d] hover:bg-[#083e34] text-white font-bold text-xs flex items-center gap-1.5"
-            >
-              <Video className="h-3.5 w-3.5" /> Start Broadcast
-            </a>
-          </div>
 
-          <div className="space-y-3">
-            {[
-              {
-                day: "Tuesday",
-                time: "7:00 PM - 9:00 PM",
-                topic: "Pure Mathematics: Calculus & Limits Derivations",
-                subscribers: "142 Enrolled",
-                type: "Live Stream + Q&A"
-              },
-              {
-                day: "Thursday",
-                time: "7:00 PM - 9:00 PM",
-                topic: "Applied Mathematics: Newton's Laws, Friction & Work-Energy",
-                subscribers: "142 Enrolled",
-                type: "Problem Solving Lab"
-              },
-              {
-                day: "Saturday",
-                time: "9:00 AM - 11:30 AM",
-                topic: "A/L Past Paper 2025 Model Examination Breakdown",
-                subscribers: "142 Enrolled",
-                type: "Paper Marking Session"
-              }
-            ].map((slot, idx) => (
-              <div
-                key={idx}
-                className="p-4 rounded-2xl bg-[#f8faf9] border border-[#e6ece8] flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-[#b2e5d9] transition-colors"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold text-[10px]">
-                      {slot.day}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-slate-700">{slot.time}</span>
-                  </div>
-                  <h4 className="text-sm font-black text-[#0d2b26]">{slot.topic}</h4>
-                  <p className="text-xs text-slate-500">{slot.subscribers} &bull; {slot.type}</p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleCopyMeet()}
-                    className="border-[#c4e9e0] text-[#0d5c4d] hover:bg-[#ecf8f5] text-xs font-bold cursor-pointer"
-                  >
-                    <Copy className="h-3 w-3 mr-1" /> Copy Link
-                  </Button>
-                  <a
-                    href="https://meet.google.com/sam-math-live"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-1.5 px-3 rounded-lg bg-[#0d5c4d] hover:bg-[#083e34] text-white text-xs font-bold flex items-center gap-1 shadow-2xs"
-                  >
-                    <ExternalLink className="h-3 w-3" /> Join Room
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
 
       {/* Slip Modal Preview */}
       <Modal

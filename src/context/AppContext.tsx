@@ -26,6 +26,8 @@ import {
   Announcement,
   LibraryResource
 } from '@/types/lms';
+import { Tenant, TenantFeature, TenantType } from '@/types/tenant';
+import { INITIAL_TENANTS, TENANT_PRESETS } from '@/data/tenantMockData';
 import {
   mockUsers,
   initialSchools,
@@ -140,6 +142,18 @@ interface AppContextType {
   recordResourceView: (id: string) => void;
   recordResourceDownload: (id: string) => void;
 
+  // Multi-Tenant SaaS State
+  tenants: Tenant[];
+  activeTenantId: string;
+  activeTenant: Tenant;
+  setActiveTenantId: (id: string) => void;
+  updateTenantFeature: (tenantId: string, feature: string, enabled: boolean) => void;
+  applyTenantPreset: (tenantId: string, presetId: string) => void;
+  addTenant: (tenant: Tenant) => void;
+  updateTenant: (tenant: Tenant) => void;
+  deleteTenant: (tenantId: string) => void;
+  isFeatureEnabled: (feature: string) => boolean;
+
   // Toasts
   toasts: ToastMessage[];
   addToast: (toast: Omit<ToastMessage, 'id'>) => void;
@@ -177,6 +191,67 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>('les_m1_1_1');
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>('asg_01');
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>('qz_01');
+
+  // Multi-Tenant SaaS State
+  const [tenants, setTenants] = useState<Tenant[]>(INITIAL_TENANTS);
+  const [activeTenantId, setActiveTenantId] = useState<string>(INITIAL_TENANTS[0].id);
+
+  const activeTenant = tenants.find((t) => t.id === activeTenantId) || tenants[0];
+
+  const updateTenantFeature = (tenantId: string, feature: string, enabled: boolean) => {
+    setTenants((prev) =>
+      prev.map((t) => {
+        if (t.id === tenantId) {
+          return {
+            ...t,
+            enabledFeatures: {
+              ...t.enabledFeatures,
+              [feature]: enabled
+            }
+          };
+        }
+        return t;
+      })
+    );
+  };
+
+  const applyTenantPreset = (tenantId: string, presetId: string) => {
+    const preset = TENANT_PRESETS.find((p) => p.id === presetId);
+    if (!preset) return;
+    setTenants((prev) =>
+      prev.map((t) => {
+        if (t.id === tenantId) {
+          return {
+            ...t,
+            type: preset.type,
+            enabledFeatures: { ...preset.features }
+          };
+        }
+        return t;
+      })
+    );
+  };
+
+  const addTenant = (tenant: Tenant) => {
+    setTenants((prev) => [tenant, ...prev]);
+  };
+
+  const updateTenant = (updated: Tenant) => {
+    setTenants((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+  };
+
+  const deleteTenant = (tenantId: string) => {
+    setTenants((prev) => prev.filter((t) => t.id !== tenantId));
+    if (activeTenantId === tenantId && tenants.length > 1) {
+      const remaining = tenants.filter((t) => t.id !== tenantId);
+      setActiveTenantId(remaining[0].id);
+    }
+  };
+
+  const isFeatureEnabled = (feature: string): boolean => {
+    if (!activeTenant || !activeTenant.enabledFeatures) return true;
+    return activeTenant.enabledFeatures[feature] ?? true;
+  };
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -1127,6 +1202,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteLibraryResource,
         recordResourceView,
         recordResourceDownload,
+        tenants,
+        activeTenantId,
+        activeTenant,
+        setActiveTenantId,
+        updateTenantFeature,
+        applyTenantPreset,
+        addTenant,
+        updateTenant,
+        deleteTenant,
+        isFeatureEnabled,
         toasts,
         addToast,
         removeToast

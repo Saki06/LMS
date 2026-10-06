@@ -35,7 +35,8 @@ import {
   Paperclip,
   Film,
   FileCheck,
-  Edit3
+  Edit3,
+  Copy
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -102,6 +103,33 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
   const [isCreateAsgModalOpen, setIsCreateAsgModalOpen] = useState(false);
   const [isCreateLessonModalOpen, setIsCreateLessonModalOpen] = useState(false);
   const [isCreateAnnouncementModalOpen, setIsCreateAnnouncementModalOpen] = useState(false);
+
+  // Live Class Stream Modal State
+  const [liveClassSession, setLiveClassSession] = useState<{
+    course: string;
+    courseId?: string;
+    topic: string;
+    time: string;
+    period: string;
+    classRoom: string;
+    deliveryMode: "physical" | "live_online";
+    meetingUrl?: string;
+    meetingId?: string;
+    passcode?: string;
+    studentsCount: number;
+    status: "completed" | "in_progress" | "upcoming";
+  } | null>(null);
+
+  const [copiedInvite, setCopiedInvite] = useState(false);
+
+  const handleCopyInvite = (url?: string) => {
+    const link = url || "https://meet.google.com/lms-math-13";
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(link);
+      setCopiedInvite(true);
+      setTimeout(() => setCopiedInvite(false), 2500);
+    }
+  };
 
   // New assignment form state
   const [newTitle, setNewTitle] = useState("");
@@ -345,7 +373,23 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
     : "84.5";
 
   // Today's Teaching Schedule (Timeline)
-  const todaySchedule = [
+  interface ScheduleItem {
+    period: string;
+    time: string;
+    course: string;
+    courseId: string;
+    topic: string;
+    classRoom: string;
+    deliveryMode: "physical" | "live_online";
+    type: string;
+    status: "completed" | "in_progress" | "upcoming";
+    studentsCount: number;
+    meetingUrl?: string;
+    meetingId?: string;
+    passcode?: string;
+  }
+
+  const todaySchedule: ScheduleItem[] = [
     {
       period: "Period 1 & 2",
       time: "07:50 AM – 09:10 AM",
@@ -353,8 +397,9 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
       courseId: "crs_math_12",
       topic: "Unit 1: Quadratic Inequations & Interval Sign Analysis",
       classRoom: "Hall 04 · Senior Secondary Wing",
+      deliveryMode: "physical",
       type: "Theory Lecture",
-      status: "completed" as const,
+      status: "completed",
       studentsCount: 42
     },
     {
@@ -363,9 +408,13 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
       course: "Grade 13 Applied Mathematics",
       courseId: "crs_math_12",
       topic: "Unit 2: Differential Calculus & Curve Sketching",
-      classRoom: "Lecture Theater A · 2nd Floor",
-      type: "Problem Solving Clinic",
-      status: "in_progress" as const,
+      classRoom: "Nawana Live Stream · Room #MATH-A1",
+      deliveryMode: "live_online",
+      meetingUrl: "https://meet.google.com/lms-math-13",
+      meetingId: "NWN-MATH-LIVE-992",
+      passcode: "774921",
+      type: "Live Interactive Class",
+      status: "in_progress",
       studentsCount: 38
     },
     {
@@ -374,9 +423,10 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
       course: "Grade 12 Physics & Applied Lab",
       courseId: "crs_phy_12",
       topic: "Lab Practical: Simple Harmonic Motion & Period Verification",
-      classRoom: "Physics Lab 02",
+      classRoom: "Physics Lab 02 · Main Lab Block",
+      deliveryMode: "physical",
       type: "Practical Session",
-      status: "upcoming" as const,
+      status: "upcoming",
       studentsCount: 40
     },
     {
@@ -384,10 +434,14 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
       time: "01:45 PM – 02:30 PM",
       course: "Grade 12 Combined Mathematics",
       courseId: "crs_math_12",
-      topic: "Doubt Clearance Clinic & Past Paper Discussion",
-      classRoom: "Seminar Room 1",
-      type: "Tutorial Clinic",
-      status: "upcoming" as const,
+      topic: "Live Doubt Clearance & Past Paper Clinic",
+      classRoom: "Nawana Virtual Room #MATH-CLN",
+      deliveryMode: "live_online",
+      meetingUrl: "https://meet.google.com/lms-math-doubt",
+      meetingId: "NWN-MATH-CLN-410",
+      passcode: "392011",
+      type: "Live Tutorial Clinic",
+      status: "upcoming",
       studentsCount: 24
     }
   ];
@@ -567,7 +621,9 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
                       key={idx}
                       className={`p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                         item.status === "in_progress"
-                          ? "bg-[#ecf8f5]/60 border-[#a2dfd2] shadow-2xs"
+                          ? item.deliveryMode === "live_online"
+                            ? "bg-rose-50/40 border-rose-200 shadow-2xs"
+                            : "bg-[#ecf8f5]/60 border-[#a2dfd2] shadow-2xs"
                           : item.status === "completed"
                           ? "bg-[#f8faf9] border-[#e6ece8] opacity-80"
                           : "bg-white border-[#e6ece8] hover:border-[#b2e5d9]"
@@ -578,10 +634,17 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
                           {item.status === "completed" ? (
                             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                           ) : item.status === "in_progress" ? (
-                            <div className="relative flex items-center justify-center">
-                              <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-emerald-400 opacity-75"></span>
-                              <Clock className="h-5 w-5 text-[#0d5c4d] relative" />
-                            </div>
+                            item.deliveryMode === "live_online" ? (
+                              <div className="relative flex items-center justify-center">
+                                <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-rose-400 opacity-75"></span>
+                                <Video className="h-5 w-5 text-rose-600 relative" />
+                              </div>
+                            ) : (
+                              <div className="relative flex items-center justify-center">
+                                <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-emerald-400 opacity-75"></span>
+                                <Clock className="h-5 w-5 text-[#0d5c4d] relative" />
+                              </div>
+                            )
                           ) : (
                             <Clock className="h-5 w-5 text-slate-400" />
                           )}
@@ -589,11 +652,26 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="text-xs font-black text-[#0d2b26]">{item.course}</span>
+
+                            {/* Delivery Mode Badge */}
+                            {item.deliveryMode === "live_online" ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200">
+                                <span className="h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse" /> Live Online
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                                🏢 Physical Campus
+                              </span>
+                            )}
+
+                            {/* Status Badge */}
                             <Badge
                               variant="outline"
                               className={`text-[10px] font-bold py-0 h-4 ${
                                 item.status === "in_progress"
-                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse"
+                                  ? item.deliveryMode === "live_online"
+                                    ? "bg-rose-500 text-white border-rose-500 animate-pulse"
+                                    : "bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse"
                                   : item.status === "completed"
                                   ? "bg-slate-100 text-slate-600 border-slate-200"
                                   : "bg-amber-50 text-amber-700 border-amber-200"
@@ -605,13 +683,16 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
                                 ? "Concluded"
                                 : "Upcoming"}
                             </Badge>
+
                             <span className="text-[11px] text-slate-500 font-mono font-medium">
                               {item.period} · {item.time}
                             </span>
                           </div>
+
                           <p className="text-xs font-medium text-slate-700 mt-1 flex items-center gap-1.5">
                             <span className="font-semibold text-[#0d5c4d]">{item.type}:</span> {item.topic}
                           </p>
+
                           <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-500">
                             <span className="flex items-center gap-1">
                               <span className="font-semibold text-slate-600">Venue:</span> {item.classRoom}
@@ -624,30 +705,51 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
                         </div>
                       </div>
 
+                      {/* Action buttons */}
                       <div className="shrink-0 flex items-center gap-2 self-end sm:self-center">
                         {item.status === "in_progress" ? (
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedCourseId(item.courseId);
-                              setCurrentView("course-detail");
-                            }}
-                            className="bg-[#0d5c4d] hover:bg-[#083e34] text-white text-xs font-bold shadow-2xs"
-                          >
-                            Class Studio →
-                          </Button>
+                          item.deliveryMode === "live_online" ? (
+                            <Button
+                              size="sm"
+                              onClick={() => setLiveClassSession(item)}
+                              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer gap-1.5 animate-pulse"
+                            >
+                              <Video className="h-3.5 w-3.5" /> Join Live Class →
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedCourseId(item.courseId);
+                                setCurrentView("course-detail");
+                              }}
+                              className="bg-[#0d5c4d] hover:bg-[#083e34] text-white text-xs font-bold shadow-2xs"
+                            >
+                              Class Studio →
+                            </Button>
+                          )
                         ) : item.status === "upcoming" ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedCourseId(item.courseId);
-                              setCurrentView("course-detail");
-                            }}
-                            className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold"
-                          >
-                            View Plan
-                          </Button>
+                          item.deliveryMode === "live_online" ? (
+                            <Button
+                              size="sm"
+                              onClick={() => setLiveClassSession(item)}
+                              className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold gap-1.5 cursor-pointer"
+                            >
+                              <Video className="h-3.5 w-3.5 text-rose-400" /> Start Live Stream
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedCourseId(item.courseId);
+                                setCurrentView("course-detail");
+                              }}
+                              className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold"
+                            >
+                              View Plan
+                            </Button>
+                          )
                         ) : (
                           <span className="text-[11px] font-bold text-slate-400">Class Finished</span>
                         )}
@@ -2353,6 +2455,120 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* LIVE VIRTUAL CLASSROOM STUDIO MODAL */}
+      <Modal
+        isOpen={!!liveClassSession}
+        onClose={() => setLiveClassSession(null)}
+        title="Live Virtual Classroom Studio"
+      >
+        {liveClassSession && (
+          <div className="space-y-5">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-[#0d2b26] text-white space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-2.5 w-2.5 rounded-full bg-rose-500 animate-ping" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
+                    Live Broadcast Hub
+                  </span>
+                </div>
+                <Badge className="bg-rose-500/20 text-rose-300 border border-rose-400/30 text-[10px]">
+                  1080p HD Stream
+                </Badge>
+              </div>
+
+              <div>
+                <h3 className="text-base font-black text-white">{liveClassSession.course}</h3>
+                <p className="text-xs text-slate-300 mt-0.5">{liveClassSession.topic}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Time &amp; Period</span>
+                  <span className="font-semibold text-white">{liveClassSession.period} ({liveClassSession.time})</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Online Attendance</span>
+                  <span className="font-semibold text-emerald-400">{liveClassSession.studentsCount} Students Online</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Room Connection Details */}
+            <div className="p-4 rounded-xl bg-[#f8faf9] border border-slate-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-900">Virtual Room Meeting Link</p>
+                  <p className="text-xs text-slate-500 font-mono mt-0.5">{liveClassSession.meetingUrl || "https://meet.google.com/lms-math-13"}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleCopyInvite(liveClassSession.meetingUrl)}
+                  className="text-xs border-slate-300 text-slate-700 hover:bg-white font-bold cursor-pointer"
+                >
+                  {copiedInvite ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-600 mr-1" /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5 mr-1" /> Copy Link
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200 text-xs">
+                <div>
+                  <span className="text-slate-500 block text-[11px]">Room ID:</span>
+                  <span className="font-mono font-bold text-slate-900">{liveClassSession.meetingId || "NWN-MATH-LIVE-992"}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[11px]">Host Passcode:</span>
+                  <span className="font-mono font-bold text-slate-900">{liveClassSession.passcode || "774921"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Actions */}
+            <div className="space-y-2">
+              <Button
+                onClick={() => {
+                  window.open(liveClassSession.meetingUrl || "https://meet.google.com/lms-math-13", "_blank");
+                }}
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-black text-sm h-11 shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Video className="h-4 w-4" />
+                Launch Virtual Meeting Room (Google Meet / Zoom) ↗
+              </Button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (liveClassSession.courseId) {
+                      setSelectedCourseId(liveClassSession.courseId);
+                      setCurrentView("course-detail");
+                    }
+                    setLiveClassSession(null);
+                  }}
+                  className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold"
+                >
+                  Open Syllabus &amp; Notes
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setLiveClassSession(null)}
+                  className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold"
+                >
+                  Close Studio
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
