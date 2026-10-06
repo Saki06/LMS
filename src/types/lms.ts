@@ -1,6 +1,9 @@
 // Complete TypeScript Domain Definitions for LMS MVP
 
 export type UserRole = 'student' | 'teacher' | 'admin';
+export type AdminStaffRole = 'teacher' | 'coach';
+export type AdminRecordStatus = 'active' | 'on_leave' | 'resigned' | 'inactive';
+export type SchoolMedium = 'english' | 'tamil' | 'sinhala';
 export type LocaleCode = 'en' | 'ta' | 'si';
 export type DeviceViewMode = 'responsive' | 'desktop' | 'tablet' | 'mobile';
 
@@ -263,6 +266,78 @@ export interface Announcement {
   priority: 'normal' | 'high' | 'urgent';
 }
 
+export interface AdminStaffRecord {
+  id: string;
+  schoolId: string;
+  name: string;
+  email: string;
+  role: AdminStaffRole;
+  avatar?: string;
+  subjects?: string[];
+  classes?: string[];
+  sport?: string;
+  teams?: string[];
+  status: AdminRecordStatus;
+  workload: number;
+  phone?: string;
+  staffId: string;
+  photo?: string;
+  gender?: 'female' | 'male' | 'other';
+  dateOfBirth?: string;
+  joiningDate?: string;
+  qualification?: string;
+  classTeacherOf?: string;
+  medium?: SchoolMedium;
+  certification?: string;
+  availability?: string;
+}
+
+export interface StaffInput {
+  role: AdminStaffRole;
+  name: string;
+  photo?: string;
+  staffId: string;
+  email: string;
+  phone: string;
+  gender: 'female' | 'male' | 'other';
+  dateOfBirth: string;
+  joiningDate: string;
+  status: AdminRecordStatus;
+  qualification?: string;
+  subjects: string[];
+  classes: string[];
+  classTeacherOf?: string;
+  medium?: SchoolMedium;
+  sports: string[];
+  teams: string[];
+  certification?: string;
+  availability?: string;
+}
+
+export interface AdminSubjectRecord {
+  id: string;
+  schoolId: string;
+  name: string;
+  code: string;
+  grades: string[];
+  medium: SchoolMedium;
+  assignedTeacherIds: string[];
+  assignedTeacherNames: string[];
+  units: SyllabusUnit[];
+}
+
+export interface AdminDirectoryUser {
+  id: string;
+  schoolId: string;
+  name: string;
+  email: string;
+  role: UserRole | 'coach';
+  grade?: string;
+  className?: string;
+  status: AdminRecordStatus;
+  phone?: string;
+}
+
 export type LibraryResourceType = 'book' | 'tute' | 'past_paper';
 
 export interface LibraryResource {
@@ -447,5 +522,63 @@ export interface TeacherSubscriber {
   slipReference?: string;
   slipFileName?: string;
   attendanceRate: number;
+  schoolId?: string;
 }
 
+export type TeacherHubStatus = 'active' | 'paused' | 'suspended';
+export type HubFlagStatus = 'open' | 'dismissed' | 'hidden' | 'removed' | 'warned';
+export type HubFlagAction = 'dismiss' | 'hide' | 'remove' | 'warn';
+
+export interface TeacherHub {
+  id: string;
+  schoolId: string;
+  teacherId: string;
+  teacherName: string;
+  subjects: string[];
+  subscriberCount: number;
+  postsThisMonth: number;
+  status: TeacherHubStatus;
+  recentActivity: string;
+}
+
+export interface Subscription {
+  id: string;
+  schoolId: string;
+  teacherId: string;
+  studentId: string;
+  studentName: string;
+  grade: string;
+  subscribedDate: string;
+  status: 'active' | 'pending' | 'expired' | 'removed';
+}
+
+export interface HubFlag {
+  id: string;
+  schoolId: string;
+  teacherId: string;
+  teacherName: string;
+  contentType: 'post' | 'message';
+  content: string;
+  createdAt: string;
+  reason: string;
+  status: HubFlagStatus;
+  actionReason?: string;
+}
+
+export interface HubSettings {
+  schoolId: string;
+  enabled: boolean;
+  approvalRequired: boolean;
+  allowDirectMessages: boolean;
+  maxSubscribersPerTeacher?: number;
+}
+
+export interface HubAuditEntry {
+  id: string;
+  schoolId: string;
+  adminId: string;
+  action: string;
+  targetId: string;
+  reason?: string;
+  createdAt: string;
+}

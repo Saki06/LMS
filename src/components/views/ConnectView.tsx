@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
+import { useHubSettings } from "@/context/AdminContext";
 import {
   ConnectTeacher,
   ConnectStudent,
@@ -51,11 +52,7 @@ type ConnectTab = "teachers" | "students" | "groups" | "messages" | "purchases";
 
 export function ConnectView() {
   const { currentUser, currentRole, setCurrentView } = useApp();
-
-  // If teacher, render Teacher Faculty Connect Studio (Subscribers list, bank slip verifications, live meet)
-  if (currentRole === "teacher") {
-    return <TeacherConnectView />;
-  }
+  const hubSettings = useHubSettings();
 
   // Active sub-tab
   const [activeTab, setActiveTab] = useState<ConnectTab>("teachers");
@@ -118,7 +115,7 @@ export function ConnectView() {
       const teacher = selectedTeacherForSubscribe;
       // Mark teacher as subscribed
       setTeachers((prev) =>
-        prev.map((t) => (t.id === teacher.id ? { ...t, isSubscribed: true, subscribedDate: "2026-10-01" } : t))
+        prev.map((t) => (t.id === teacher.id ? { ...t, isSubscribed: true, subscribedDate: hubSettings.approvalRequired ? "Pending approval" : "2026-10-01" } : t))
       );
 
       // Add to Purchases list
@@ -201,6 +198,14 @@ export function ConnectView() {
       setMessages((prev) => [...prev, autoReply]);
     }, 1200);
   };
+
+  // Keep all hooks above these role-specific returns so hook order never changes.
+  if (currentRole === "teacher") {
+    return <TeacherConnectView />;
+  }
+  if (!hubSettings.enabled) {
+    return <div className="rounded-2xl border border-[#e6ece8] bg-white p-10 text-center"><p className="text-lg font-black text-[#0d2b26]">Connect Hub is currently disabled</p><p className="mt-2 text-sm text-slate-500">Please contact your school administrator.</p></div>;
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-16">

@@ -26,6 +26,7 @@ export const translations = {
       sports: "Sports Hub",
       events: "School Events",
       announcements: "Announcements",
+      connectHub: "Connect Hub",
       schoolSetup: "School Setup",
       users: "User Directory",
       classes: "Classes & Subjects",
@@ -99,6 +100,25 @@ export const translations = {
       organizer: "Organizer",
       capacity: "Seat Capacity",
       registeredStudents: "Registered Attendees"
+    },
+    admin: {
+      dashboard: "Dashboard",
+      manageStaff: "Manage Staff",
+      teachers: "Teachers",
+      coaches: "Coaches",
+      subjectCurriculum: "Subject & Curriculum",
+      userDirectory: "User Directory",
+      campusOperations: "Campus Operations",
+      sports: "Sports",
+      events: "Events",
+      announcements: "Announcements",
+      connectHub: "Connect Hub",
+      profileSettings: "Admin Profile & Settings",
+      searchStaff: "Search staff...",
+      allStatuses: "All statuses",
+      active: "Active",
+      onLeave: "On leave",
+      resigned: "Resigned"
     }
   },
   ta: {
@@ -126,6 +146,7 @@ export const translations = {
       sports: "விளையாட்டு தளம்",
       events: "பாடசாலை நிகழ்வுகள்",
       announcements: "அறிவிப்புகள்",
+      connectHub: "Connect Hub",
       schoolSetup: "பாடசாலை அமைப்பு",
       users: "பயனர் விபரம்",
       classes: "வகுப்புகள் & பாடங்கள்",
@@ -199,6 +220,25 @@ export const translations = {
       organizer: "ஏற்பாட்டாளர்",
       capacity: "அமரும் கொள்ளளவு",
       registeredStudents: "பதிவுசெய்த பங்கேற்பாளர்கள்"
+    },
+    admin: {
+      dashboard: "முகப்புப்பலகை",
+      manageStaff: "பணியாளர்களை நிர்வகி",
+      teachers: "ஆசிரியர்கள்",
+      coaches: "பயிற்சியாளர்கள்",
+      subjectCurriculum: "பாடங்கள் மற்றும் பாடத்திட்டம்",
+      userDirectory: "பயனர் விபரம்",
+      campusOperations: "வளாக செயல்பாடுகள்",
+      sports: "விளையாட்டு",
+      events: "நிகழ்வுகள்",
+      announcements: "அறிவிப்புகள்",
+      connectHub: "Connect Hub",
+      profileSettings: "நிர்வாகி சுயவிவரம் மற்றும் அமைப்புகள்",
+      searchStaff: "பணியாளர்களைத் தேடுக...",
+      allStatuses: "அனைத்து நிலைகள்",
+      active: "செயலில்",
+      onLeave: "விடுப்பில்",
+      resigned: "பதவி விலகியவர்"
     }
   },
   si: {
@@ -226,6 +266,7 @@ export const translations = {
       sports: "ක්‍රීඩා මධ්‍යස්ථානය",
       events: "පාසල් උත්සව",
       announcements: "නිවේදන",
+      connectHub: "Connect Hub",
       schoolSetup: "පාසල් සැකසුම",
       users: "පරිශීලක නාමාවලිය",
       classes: "පන්ති සහ විෂයයන්",
@@ -299,6 +340,25 @@ export const translations = {
       organizer: "සංවිධායක",
       capacity: "ආසන ධාරිතාව",
       registeredStudents: "ලියාපදිංචි සහභාගිවන්නන්"
+    },
+    admin: {
+      dashboard: "උපකරණ පුවරුව",
+      manageStaff: "කාර්ය මණ්ඩලය කළමනාකරණය",
+      teachers: "ගුරුවරු",
+      coaches: "පුහුණුකරුවන්",
+      subjectCurriculum: "විෂය සහ විෂයමාලාව",
+      userDirectory: "පරිශීලක නාමාවලිය",
+      campusOperations: "කැම්පස් මෙහෙයුම්",
+      sports: "ක්‍රීඩා",
+      events: "උත්සව",
+      announcements: "නිවේදන",
+      connectHub: "Connect Hub",
+      profileSettings: "පරිපාලක පැතිකඩ සහ සැකසුම්",
+      searchStaff: "කාර්ය මණ්ඩලය සොයන්න...",
+      allStatuses: "සියලු තත්ව",
+      active: "ක්‍රියාකාරී",
+      onLeave: "නිවාඩුවේ",
+      resigned: "ඉල්ලා අස්වූ"
     }
   }
 };

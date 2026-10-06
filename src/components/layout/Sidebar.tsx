@@ -177,25 +177,32 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
   ];
 
   const adminNav: NavItem[] = [
-    { id: "dashboard", label: t.nav.dashboard, icon: Home, group: "Control Center" },
+    { id: "dashboard", label: t.admin.dashboard, icon: Home, group: "Administration" },
     {
-      id: "connect",
-      label: "Connect Hub",
-      icon: Link2,
-      badge: "Classes",
-      badgeVariant: "default",
-      group: "Institution Setup"
+      id: "manage_staff",
+      label: t.admin.manageStaff,
+      icon: Users,
+      group: "Administration",
+      children: [
+        { id: "staff_teachers", label: t.admin.teachers, icon: GraduationCap },
+        { id: "staff_coaches", label: t.admin.coaches, icon: Trophy }
+      ]
     },
-    { id: "schools", label: t.nav.schoolSetup, icon: Building2, group: "Institution Setup" },
-    { id: "classes", label: t.nav.classes, icon: School, group: "Institution Setup" },
-    { id: "subjects", label: "Curriculum Subjects", icon: BookOpen, group: "Institution Setup" },
-    { id: "users", label: t.nav.users, icon: Users, group: "Institution Setup" },
-    { id: "library", label: "Library Repository", icon: Library, group: "Institution Setup" },
-    { id: "sports_admin", label: "Sports Operations", icon: Trophy, group: "Campus Operations" },
-    { id: "events_admin", label: "Event Operations", icon: Calendar, group: "Campus Operations" },
-    { id: "announcements", label: t.nav.announcements, icon: Bell, group: "Campus Operations" },
-    { id: "profile", label: "Admin Profile", icon: User, group: "System Configuration" },
-    { id: "settings", label: t.nav.settings, icon: Settings, group: "System Configuration" }
+    { id: "curriculum", label: t.admin.subjectCurriculum, icon: BookOpen, group: "Administration" },
+    { id: "users", label: t.admin.userDirectory, icon: Users, group: "Administration" },
+    {
+      id: "campus_operations",
+      label: t.admin.campusOperations,
+      icon: Building2,
+      group: "Administration",
+      children: [
+        { id: "sports_admin", label: t.admin.sports, icon: Trophy },
+        { id: "events_admin", label: t.admin.events, icon: Calendar },
+        { id: "announcements", label: t.admin.announcements, icon: Bell },
+        { id: "connect_admin", label: t.admin.connectHub, icon: Link2 }
+      ]
+    },
+    { id: "admin_settings", label: t.admin.profileSettings, icon: Settings, group: "Administration" }
   ];
 
   const currentNavItems = {

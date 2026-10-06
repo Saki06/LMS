@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
+import { useHubSettings } from "@/context/AdminContext";
 import { TeacherSubscriber } from "@/types/lms";
 import { initialTeacherSubscribers } from "@/data/connectMockData";
 import {
@@ -35,6 +36,10 @@ type TeacherConnectTab = "subscribers" | "slips" | "schedule";
 
 export function TeacherConnectView() {
   const { currentUser, t } = useApp();
+  const hubSettings = useHubSettings();
+  if (!hubSettings.enabled) {
+    return <Card className="p-10 text-center"><p className="text-lg font-black text-[#0d2b26]">Connect Hub is currently disabled</p><p className="mt-2 text-sm text-slate-500">Please contact your school administrator.</p></Card>;
+  }
 
   // Active tab inside Teacher Connect Hub
   const [activeTab, setActiveTab] = useState<TeacherConnectTab>("subscribers");

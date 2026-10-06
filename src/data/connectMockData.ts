@@ -297,6 +297,7 @@ export const initialTeacherSubscribers: TeacherSubscriber[] = [
     status: 'active',
     paymentMethod: 'Card (Visa)',
     attendanceRate: 98
+    ,schoolId: 'sch_01'
   },
   {
     id: 'sub_02',
@@ -316,6 +317,7 @@ export const initialTeacherSubscribers: TeacherSubscriber[] = [
     paymentMethod: 'Bank Deposit (BOC)',
     slipReference: 'BOC-TXN-882910',
     attendanceRate: 92
+    ,schoolId: 'sch_01'
   },
   {
     id: 'sub_03',
@@ -336,6 +338,7 @@ export const initialTeacherSubscribers: TeacherSubscriber[] = [
     slipReference: 'BOC-TXN-994102',
     slipFileName: 'BOC_Deposit_Slip_Nethmi.jpg',
     attendanceRate: 100
+    ,schoolId: 'sch_01'
   },
   {
     id: 'sub_04',
@@ -354,6 +357,7 @@ export const initialTeacherSubscribers: TeacherSubscriber[] = [
     status: 'active',
     paymentMethod: 'Card (Mastercard)',
     attendanceRate: 96
+    ,schoolId: 'sch_01'
   },
   {
     id: 'sub_05',
@@ -372,6 +376,7 @@ export const initialTeacherSubscribers: TeacherSubscriber[] = [
     status: 'active',
     paymentMethod: 'Commercial Bank Online',
     attendanceRate: 95
+    ,schoolId: 'sch_01'
   },
   {
     id: 'sub_06',
@@ -392,6 +397,7 @@ export const initialTeacherSubscribers: TeacherSubscriber[] = [
     slipReference: 'COMB-TXN-771204',
     slipFileName: 'Commercial_Bank_Slip_Tharindu.pdf',
     attendanceRate: 90
+    ,schoolId: 'sch_01'
   },
   {
     id: 'sub_07',
@@ -410,6 +416,7 @@ export const initialTeacherSubscribers: TeacherSubscriber[] = [
     status: 'expired',
     paymentMethod: 'FriMi / PayHere',
     attendanceRate: 84
+    ,schoolId: 'sch_01'
   },
   {
     id: 'sub_08',
@@ -428,5 +435,6 @@ export const initialTeacherSubscribers: TeacherSubscriber[] = [
     status: 'active',
     paymentMethod: 'Card (Visa)',
     attendanceRate: 94
+    ,schoolId: 'sch_01'
   }
 ];

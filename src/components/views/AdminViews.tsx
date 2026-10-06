@@ -1,51 +1,46 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useApp } from "@/context/AppContext";
+import { useAdmin, useCreateStaff, useHubFlags, useHubSettings, useSetStaffStatus, useStaff, useSubscriptions, useTeacherHubs, useUpdateStaff } from "@/context/AdminContext";
+import { AdminRecordStatus, AdminStaffRecord, StaffInput } from "@/types/lms";
 import {
   Building2,
   Users,
   School,
   Plus,
   BookOpen,
-  LayoutDashboard,
-  TrendingUp,
   Shield,
   Settings,
   Bell,
   Search,
   Edit,
-  Trash2,
   Eye,
-  ChevronRight,
   GraduationCap,
   UserCheck,
-  UserPlus,
   Globe,
   Calendar,
   Activity,
-  BarChart3,
-  Database
+  Database,
+  MoreHorizontal,
+  ArrowUpDown,
+  Download,
+  X
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts";
 
 interface AdminViewsProps {
-  initialTab?: "overview" | "schools" | "classes" | "subjects" | "users" | "settings";
+  initialTab?: "overview" | "schools" | "classes" | "subjects" | "users" | "settings" | "staff" | "connect";
+}
+
+function currentTabForView(initialTab: NonNullable<AdminViewsProps["initialTab"]>) {
+  return initialTab;
 }
 
 export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
@@ -55,7 +50,6 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
     classes,
     subjects,
     courses,
-    assignments,
     submissions,
     events,
     announcements,
@@ -64,22 +58,29 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
     createSchool,
     createClass,
     createSubject,
-    createEvent,
-    t
+    currentUser,
+    setCurrentView,
+    addToast
   } = useApp();
+  const staff = useStaff();
+  const teacherHubs = useTeacherHubs();
+  const subscriptions = useSubscriptions();
+  const hubFlags = useHubFlags();
+  const hubSettings = useHubSettings();
+  const { setHubStatus, actOnHubFlag, removeSubscription, updateHubSettings } = useAdmin();
+  const createStaff = useCreateStaff();
+  const updateStaff = useUpdateStaff();
+  const setStaffStatus = useSetStaffStatus();
+  const [now] = useState(() => Date.now());
 
-  const [activeAdminTab, setActiveAdminTab] = useState<
-    "overview" | "schools" | "classes" | "subjects" | "users" | "settings"
-  >(initialTab);
-
-  // Sync tab when sidebar click changes currentView
-  useEffect(() => {
-    if (currentView === "schools") setActiveAdminTab("schools");
-    else if (currentView === "classes") setActiveAdminTab("classes");
-    else if (currentView === "users") setActiveAdminTab("users");
-    else if (currentView === "settings") setActiveAdminTab("settings");
-    else if (currentView === "dashboard") setActiveAdminTab("overview");
-  }, [currentView]);
+  const activeAdminTab = currentView === "schools" ? "schools" :
+    currentView === "classes" ? "classes" :
+    currentView === "subjects" ? "subjects" :
+    currentView === "users" ? "users" :
+    currentView === "settings" || currentView === "admin_settings" ? "settings" :
+    currentView === "staff_teachers" || currentView === "staff_coaches" ? "staff" :
+    currentView === "connect_admin" ? "connect" :
+    currentTabForView(initialTab);
 
   // School modal state
   const [isSchoolModalOpen, setIsSchoolModalOpen] = useState(false);
@@ -104,6 +105,58 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
   // User search
   const [userSearch, setUserSearch] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState<"all" | "student" | "teacher" | "admin">("all");
+  const [staffSearch, setStaffSearch] = useState("");
+  const staffRoleFilter = currentView === "staff_coaches" ? "coach" : "teacher";
+  const [staffStatusFilter, setStaffStatusFilter] = useState<"all" | AdminRecordStatus>("all");
+  const [staffSubjectFilter, setStaffSubjectFilter] = useState("all");
+  const [staffSort, setStaffSort] = useState<"name" | "status">("name");
+  const [staffPage, setStaffPage] = useState(1);
+  const [selectedStaff, setSelectedStaff] = useState<AdminStaffRecord | null>(null);
+  const [staffDrawerTab, setStaffDrawerTab] = useState("profile");
+  const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<AdminStaffRecord | null>(null);
+  const [staffMenuId, setStaffMenuId] = useState<string | null>(null);
+  const [confirmStaff, setConfirmStaff] = useState<AdminStaffRecord | null>(null);
+  const [hubTab, setHubTab] = useState<"overview" | "hubs" | "moderation" | "settings">("overview");
+  const [selectedHubId, setSelectedHubId] = useState<string | null>(null);
+  const [hubReason, setHubReason] = useState("");
+  const [hubAction, setHubAction] = useState<"pause" | "suspend" | "flag" | "hide" | "remove" | "warn" | "dismiss" | null>(null);
+  const [hubSettingsDraft, setHubSettingsDraft] = useState(hubSettings);
+  const hubSettingsSchema = z.object({
+    enabled: z.boolean(),
+    approvalRequired: z.boolean(),
+    allowDirectMessages: z.boolean(),
+    maxSubscribersPerTeacher: z.number().int().positive().optional()
+  });
+  const activeHub = teacherHubs.find((hub) => hub.id === selectedHubId);
+  const hubSubscriptions = subscriptions.filter((subscription) => subscription.teacherId === activeHub?.teacherId && subscription.status !== "removed");
+
+  const staffSchema = z.object({
+    role: z.enum(["teacher", "coach"]),
+    name: z.string().min(2, "Name is required"),
+    photo: z.string().optional(),
+    staffId: z.string().min(2, "Staff ID is required"),
+    email: z.string().email("Enter a valid email"),
+    phone: z.string().regex(/^\+?[0-9 ()-]{7,}$/, "Enter a valid phone number"),
+    gender: z.enum(["female", "male", "other"]),
+    dateOfBirth: z.string().min(1, "Date of birth is required"),
+    joiningDate: z.string().min(1, "Joining date is required"),
+    status: z.enum(["active", "on_leave", "resigned", "inactive"]),
+    qualification: z.string().optional(),
+    subjects: z.string().optional(),
+    classes: z.string().optional(),
+    classTeacherOf: z.string().optional(),
+    medium: z.enum(["english", "tamil", "sinhala"]).optional(),
+    sports: z.string().optional(),
+    teams: z.string().optional(),
+    certification: z.string().optional(),
+    availability: z.string().optional()
+  });
+  type StaffFormValues = z.infer<typeof staffSchema>;
+  const staffForm = useForm<StaffFormValues>({
+    resolver: zodResolver(staffSchema),
+    defaultValues: { role: "teacher", gender: "other", status: "active", subjects: "", classes: "", sports: "", teams: "", medium: "english" }
+  });
 
   // Settings toggles
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -133,23 +186,25 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
     return matchesRole && matchesSearch;
   });
 
+  const filteredStaff = staff.filter((member) => {
+    const matchesRole = member.role === staffRoleFilter;
+    const query = staffSearch.toLowerCase();
+    const matchesStatus = staffStatusFilter === "all" || member.status === staffStatusFilter;
+    const matchesSubject = staffSubjectFilter === "all" ||
+      (staffRoleFilter === "teacher" ? member.subjects?.includes(staffSubjectFilter) : member.sport === staffSubjectFilter);
+    return matchesRole && matchesStatus && matchesSubject && (!query ||
+      member.name.toLowerCase().includes(query) ||
+      member.email.toLowerCase().includes(query) ||
+      member.staffId.toLowerCase().includes(query));
+  }).sort((a, b) => staffSort === "status" ? a.status.localeCompare(b.status) : a.name.localeCompare(b.name));
+  const staffPageSize = 10;
+  const staffPageCount = Math.max(1, Math.ceil(filteredStaff.length / staffPageSize));
+  const pagedStaff = filteredStaff.slice((staffPage - 1) * staffPageSize, staffPage * staffPageSize);
+  const staffSubjects = Array.from(new Set(staff.filter((member) => member.role === "teacher").flatMap((member) => member.subjects || [])));
+  const staffSports = Array.from(new Set(staff.filter((member) => member.role === "coach").map((member) => member.sport).filter((sport): sport is string => Boolean(sport))));
+
   const totalStudents = classes.reduce((sum, c) => sum + c.studentCount, 0);
   const totalTeachers = schools.reduce((sum, s) => sum + s.teacherCount, 0);
-
-  // Grade-level enrollment breakdown for chart
-  const enrollmentByGrade = grades.map((g) => ({
-    grade: g.name.replace("Grade ", "G"),
-    students: classes
-      .filter((c) => c.gradeId === g.id)
-      .reduce((sum, c) => sum + c.studentCount, 0)
-  }));
-
-  // Role distribution for pie chart
-  const roleDistribution = [
-    { name: "Students", value: totalStudents, fill: "#0d5c4d" },
-    { name: "Teachers", value: totalTeachers, fill: "#f3b738" },
-    { name: "Admins", value: 2, fill: "#0d2b26" }
-  ];
 
   const handleCreateSchoolSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,10 +252,50 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
     setSubjectCode("");
   };
 
+  const openStaffForm = (member?: AdminStaffRecord) => {
+    setEditingStaff(member || null);
+    staffForm.reset(member ? {
+      role: member.role, name: member.name, photo: member.photo, staffId: member.staffId, email: member.email,
+      phone: member.phone || "", gender: member.gender || "other", dateOfBirth: member.dateOfBirth || "",
+      joiningDate: member.joiningDate || "", status: member.status, qualification: member.qualification || "",
+      subjects: member.subjects?.join(", ") || "", classes: member.classes?.join(", ") || "",
+      classTeacherOf: member.classTeacherOf || "", medium: member.medium || "english",
+      sports: member.sport || "", teams: member.teams?.join(", ") || "",
+      certification: member.certification || "", availability: member.availability || ""
+    } : { role: staffRoleFilter, name: "", photo: "", staffId: "", email: "", phone: "", gender: "other", dateOfBirth: "", joiningDate: "", status: "active", qualification: "", subjects: "", classes: "", classTeacherOf: "", medium: "english", sports: "", teams: "", certification: "", availability: "" });
+    setIsStaffModalOpen(true);
+  };
+
+  const submitStaffForm = (values: StaffFormValues) => {
+    const input: StaffInput = {
+      ...values,
+      subjects: values.subjects?.split(",").map((item) => item.trim()).filter(Boolean) || [],
+      classes: values.classes?.split(",").map((item) => item.trim()).filter(Boolean) || [],
+      sports: values.sports?.split(",").map((item) => item.trim()).filter(Boolean) || [],
+      teams: values.teams?.split(",").map((item) => item.trim()).filter(Boolean) || []
+    };
+    const result = editingStaff ? updateStaff(editingStaff.id, input) : createStaff(input);
+    if (!result.ok) {
+      addToast({ type: "error", title: "Unable to save staff", message: result.error });
+      return;
+    }
+    addToast({ type: "success", title: editingStaff ? "Staff updated" : "Staff added" });
+    setIsStaffModalOpen(false);
+  };
+
+  const exportStaffCsv = () => {
+    const csv = [["Name", "Staff ID", "Email", "Role", "Status"], ...filteredStaff.map((member) => [member.name, member.staffId, member.email, member.role, member.status])].map((row) => row.map((value) => `"${value.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    link.download = `${currentUser.schoolName.replace(/\s+/g, "-").toLowerCase()}-staff.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Admin Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#e6ece8]">
+      {/* Legacy admin header remains for the non-staff administration screens. */}
+      {!["staff", "subjects", "users", "settings", "connect"].includes(activeAdminTab) && <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#e6ece8]">
         <div>
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-[#f3b738]"></span>
@@ -236,32 +331,7 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
             <Plus className="h-3.5 w-3.5" /> Add Subject
           </Button>
         </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-[#e6ece8] pb-1 overflow-x-auto">
-        {[
-          { id: "overview" as const, icon: LayoutDashboard, label: "Dashboard Overview" },
-          { id: "schools" as const, icon: Building2, label: "Schools Setup" },
-          { id: "classes" as const, icon: School, label: "Classes & Grades" },
-          { id: "subjects" as const, icon: BookOpen, label: "Curriculum Subjects" },
-          { id: "users" as const, icon: Users, label: "User Directory" },
-          { id: "settings" as const, icon: Settings, label: "Platform Settings" }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveAdminTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-              activeAdminTab === tab.id
-                ? "bg-[#0d5c4d] text-white shadow-xs"
-                : "text-slate-600 hover:text-[#0d5c4d] hover:bg-white"
-            }`}
-          >
-            <tab.icon className="h-4 w-4" />
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </div>
+      </div>}
 
       {/* TAB: Dashboard Overview */}
       {activeAdminTab === "overview" && (
@@ -321,43 +391,9 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
             </Card>
           </div>
 
-          {/* Analytics Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Enrollment by Grade Chart */}
-            <Card className="lg:col-span-7 border-[#e6ece8] bg-white shadow-2xs">
-              <CardHeader className="p-6 pb-2">
-                <CardTitle className="text-sm font-black text-[#0d2b26]">
-                  Student Enrollment by Grade Stream
-                </CardTitle>
-                <p className="text-xs text-slate-500">
-                  Active enrolment headcount per academic grade level.
-                </p>
-              </CardHeader>
-              <CardContent className="p-6 pt-2">
-                <div className="h-56 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={enrollmentByGrade}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f4f1" />
-                      <XAxis dataKey="grade" stroke="#94a3b8" fontSize={11} />
-                      <YAxis stroke="#94a3b8" fontSize={11} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "#0d2b26",
-                          borderColor: "#0d2b26",
-                          color: "#fff",
-                          borderRadius: "12px",
-                          fontSize: "12px"
-                        }}
-                      />
-                      <Bar dataKey="students" radius={[6, 6, 0, 0]} fill="#0d5c4d" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Platform Health Summary */}
-            <Card className="lg:col-span-5 border-[#e6ece8] bg-white shadow-2xs">
+          {/* Platform Health Summary */}
+          <div className="grid grid-cols-1 gap-6">
+            <Card className="border-[#e6ece8] bg-white shadow-2xs">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-sm font-black text-[#0d2b26]">
                   Platform Operational Status
@@ -634,6 +670,106 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
               </table>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* TAB: Manage Staff */}
+      {activeAdminTab === "staff" && (
+        <div className="space-y-4">
+          <div className="flex flex-col gap-4 border-b border-[#e6ece8] pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#b47a16]">{currentUser.schoolName}</p>
+              <h2 className="mt-1 text-2xl font-black text-[#0d2b26]">Manage Staff</h2>
+              <p className="mt-1 text-sm text-slate-500">Manage teachers and coaches of your school.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={exportStaffCsv}><Download className="mr-2 h-4 w-4" />Export CSV</Button>
+              <Button onClick={() => openStaffForm()}><Plus className="mr-2 h-4 w-4" />Add {staffRoleFilter === "coach" ? "Coach" : "Teacher"}</Button>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            {[["staff_teachers", "Teachers", staff.filter((member) => member.role === "teacher").length], ["staff_coaches", "Coaches", staff.filter((member) => member.role === "coach").length]].map(([id, label, count]) => (
+              <button key={id} type="button" onClick={() => { setCurrentView(id as string); setStaffPage(1); }} className={`rounded-full px-4 py-2 text-xs font-bold transition ${currentView === id ? "bg-[#0d5c4d] text-white" : "bg-white text-slate-600 hover:bg-[#ecf8f5]"}`}>{label} ({count})</button>
+            ))}
+          </div>
+
+          <Card className="overflow-visible border-[#e6ece8] bg-white shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-[#e6ece8] p-4 lg:flex-row">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input value={staffSearch} onChange={(event) => { setStaffSearch(event.target.value); setStaffPage(1); }} placeholder="Search name, email or staff ID..." className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/20" />
+              </div>
+              <select value={staffStatusFilter} onChange={(event) => { setStaffStatusFilter(event.target.value as "all" | AdminRecordStatus); setStaffPage(1); }} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#0d5c4d]">
+                <option value="all">All statuses</option><option value="active">Active</option><option value="on_leave">On leave</option><option value="resigned">Resigned</option>
+              </select>
+              <select value={staffSubjectFilter} onChange={(event) => { setStaffSubjectFilter(event.target.value); setStaffPage(1); }} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#0d5c4d]">
+                <option value="all">{staffRoleFilter === "coach" ? "All sports" : "All subjects"}</option>
+                {(staffRoleFilter === "coach" ? staffSports : staffSubjects).map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+              <button type="button" onClick={() => setStaffSort(staffSort === "name" ? "status" : "name")} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-bold text-slate-600 hover:bg-slate-50"><ArrowUpDown className="h-4 w-4" />Sort</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[820px] text-left text-sm">
+                <thead className="sticky top-0 z-10 border-b border-[#e6ece8] bg-[#f8faf9] text-xs uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th className="px-5 py-4 font-bold">Name</th><th className="px-5 py-4 font-bold">{staffRoleFilter === "coach" ? "Sport" : "Subjects"}</th><th className="px-5 py-4 font-bold">{staffRoleFilter === "coach" ? "Teams" : "Classes"}</th><th className="px-5 py-4 font-bold">Status</th><th className="px-5 py-4 text-right font-bold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#eef2ef]">
+                  {pagedStaff.map((member: AdminStaffRecord) => (
+                    <tr key={member.id} onClick={() => { setSelectedStaff(member); setStaffDrawerTab("profile"); }} className="cursor-pointer transition-colors hover:bg-[#f8faf9]">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ecf8f5] font-black text-[#0d5c4d]">{member.name.charAt(0)}</div>
+                          <div><p className="font-bold text-slate-900">{member.name}</p><p className="text-xs text-slate-500">{member.email}</p><p className="text-[11px] text-slate-400">{member.staffId}</p></div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4"><div className="flex flex-wrap gap-1">{(staffRoleFilter === "coach" ? [member.sport] : member.subjects)?.filter(Boolean).map((value) => <span key={value} className="rounded-full bg-[#ecf8f5] px-2 py-1 text-xs font-semibold text-[#0d5c4d]">{value}</span>)}</div></td>
+                      <td className="px-5 py-4"><div className="flex flex-wrap gap-1">{(staffRoleFilter === "coach" ? member.teams : member.classes)?.map((value) => <span key={value} className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">{value}</span>)}</div></td>
+                      <td className="px-5 py-4"><Badge variant={member.status === "active" ? "success" : member.status === "on_leave" ? "warning" : "destructive"}><span className="mr-1">●</span>{member.status.replace("_", " ")}</Badge></td>
+                      <td className="relative px-5 py-4 text-right" onClick={(event) => event.stopPropagation()}><button type="button" onClick={() => setStaffMenuId(staffMenuId === member.id ? null : member.id)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><MoreHorizontal className="h-4 w-4" /></button>{staffMenuId === member.id && <div className="absolute right-5 top-12 z-20 w-36 rounded-xl border border-[#e6ece8] bg-white p-1 text-left shadow-lg"><button className="block w-full rounded-lg px-3 py-2 text-xs hover:bg-slate-50" onClick={() => { setSelectedStaff(member); setStaffMenuId(null); }}>View</button><button className="block w-full rounded-lg px-3 py-2 text-xs hover:bg-slate-50" onClick={() => { openStaffForm(member); setStaffMenuId(null); }}>Edit</button><button className="block w-full rounded-lg px-3 py-2 text-xs hover:bg-slate-50" onClick={() => addToast({ type: "info", title: "Assignment", message: `Assign ${member.name} to subjects, classes or teams.` })}>Assign</button><button className="block w-full rounded-lg px-3 py-2 text-xs text-rose-600 hover:bg-rose-50" onClick={() => { setConfirmStaff(member); setStaffMenuId(null); }}>Deactivate</button></div>}</td>
+                    </tr>
+                  ))}
+                  {!pagedStaff.length && <tr><td colSpan={5} className="px-5 py-10 text-center text-slate-500">No {staffRoleFilter}s found.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex items-center justify-between border-t border-[#e6ece8] px-5 py-3 text-xs text-slate-500"><span>{filteredStaff.length} staff members</span><div className="flex items-center gap-2"><button disabled={staffPage === 1} onClick={() => setStaffPage((page) => page - 1)} className="rounded-lg border px-3 py-1.5 disabled:opacity-40">Previous</button><span>Page {staffPage} of {staffPageCount}</span><button disabled={staffPage === staffPageCount} onClick={() => setStaffPage((page) => page + 1)} className="rounded-lg border px-3 py-1.5 disabled:opacity-40">Next</button></div></div>
+          </Card>
+        </div>
+      )}
+
+      {/* TAB: Admin Connect Hub */}
+      {activeAdminTab === "connect" && (
+        <div className="space-y-5">
+          <div className="flex flex-col gap-3 border-b border-[#e6ece8] pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div><p className="text-xs font-bold uppercase tracking-wider text-[#b47a16]">{currentUser.schoolName}</p><h2 className="mt-1 text-2xl font-black text-[#0d2b26]">Admin Connect Hub</h2><p className="mt-1 text-sm text-slate-500">Oversee teacher hubs, subscriptions and community safety.</p></div>
+            <div className="flex flex-wrap gap-2">{(["overview", "hubs", "moderation", "settings"] as const).map((tab) => <button key={tab} type="button" onClick={() => setHubTab(tab)} className={`rounded-full px-4 py-2 text-xs font-bold capitalize ${hubTab === tab ? "bg-[#0d5c4d] text-white" : "bg-white text-slate-600 hover:bg-[#ecf8f5]"}`}>{tab === "hubs" ? "Teacher hubs" : tab}</button>)}</div>
+          </div>
+
+          {hubTab === "overview" && <div className="space-y-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                ["Teachers with active hubs", teacherHubs.filter((hub) => hub.status === "active").length],
+                ["Total subscriptions", subscriptions.filter((item) => item.status === "active").length],
+                ["New this week", subscriptions.filter((item) => now - new Date(item.subscribedDate).getTime() < 7 * 86400000).length],
+                ["Flagged items", hubFlags.filter((flag) => flag.status === "open").length]
+              ].map(([label, value]) => <Card key={label as string} className="p-5"><p className="text-xs font-bold text-slate-500">{label}</p><p className="mt-3 text-3xl font-black text-[#0d2b26]">{value}</p></Card>)}
+            </div>
+            <div className="grid gap-5 lg:grid-cols-2">
+              <Card className="p-5"><h3 className="text-sm font-black text-[#0d2b26]">Subscriptions over time</h3><div className="mt-5 flex h-40 items-end gap-3 border-b border-l border-[#e6ece8] px-4">{[35, 52, 44, 68, 58, 82, 76].map((height, index) => <div key={index} className="flex-1 rounded-t-lg bg-[#0d8b71] transition-all hover:bg-[#f3b738]" style={{ height: `${height}%` }} />)}</div><div className="mt-2 flex justify-between text-[10px] text-slate-400"><span>Sep 30</span><span>Oct 6</span></div></Card>
+              <Card className="p-5"><h3 className="text-sm font-black text-[#0d2b26]">Top teachers by subscribers</h3><div className="mt-4 space-y-3">{teacherHubs.sort((a, b) => b.subscriberCount - a.subscriberCount).slice(0, 4).map((hub) => <div key={hub.id} className="flex items-center justify-between rounded-xl bg-[#f8faf9] p-3"><span className="text-sm font-bold text-slate-700">{hub.teacherName}</span><Badge variant="success">{hub.subscriberCount}</Badge></div>)}</div></Card>
+            </div>
+          </div>}
+
+          {hubTab === "hubs" && <Card className="overflow-visible">
+            <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-[#e6ece8] bg-[#f8faf9] text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-4">Teacher</th><th className="px-5 py-4">Subjects</th><th className="px-5 py-4">Subscribers</th><th className="px-5 py-4">Posts this month</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Actions</th></tr></thead><tbody className="divide-y divide-[#eef2ef]">{teacherHubs.map((hub) => <tr key={hub.id} onClick={() => setSelectedHubId(hub.id)} className="cursor-pointer hover:bg-[#f8faf9]"><td className="px-5 py-4 font-bold">{hub.teacherName}</td><td className="px-5 py-4">{hub.subjects.join(", ")}</td><td className="px-5 py-4">{hub.subscriberCount}</td><td className="px-5 py-4">{hub.postsThisMonth}</td><td className="px-5 py-4"><Badge variant={hub.status === "active" ? "success" : hub.status === "paused" ? "warning" : "destructive"}>{hub.status}</Badge></td><td className="px-5 py-4" onClick={(event) => event.stopPropagation()}><div className="flex gap-2"><button type="button" className="text-xs font-bold text-[#0d5c4d]" onClick={() => { setSelectedHubId(hub.id); setHubAction(hub.status === "active" ? "pause" : "suspend"); }}> {hub.status === "active" ? "Pause" : "Suspend"} </button><button type="button" className="text-xs font-bold text-rose-600" onClick={() => { setSelectedHubId(hub.id); setHubAction("suspend"); }}>Suspend</button></div></td></tr>)}</tbody></table></div>
+          </Card>}
+
+          {hubTab === "moderation" && <Card className="p-5"><div className="space-y-3">{hubFlags.length === 0 && <p className="py-8 text-center text-sm text-slate-500">No flagged items.</p>}{hubFlags.map((flag) => <div key={flag.id} className="flex flex-col gap-3 rounded-xl border border-[#e6ece8] p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-bold text-[#0d2b26]">{flag.teacherName} · {flag.contentType}</p><p className="mt-1 text-sm text-slate-600">{flag.content}</p><p className="mt-1 text-xs text-slate-400">{flag.reason} · {flag.createdAt}</p></div>{flag.status === "open" ? <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => { setSelectedHubId(flag.id); setHubAction("dismiss"); }}>Dismiss</Button><Button size="sm" variant="outline" onClick={() => { setSelectedHubId(flag.id); setHubAction("hide"); }}>Hide</Button><Button size="sm" variant="destructive" onClick={() => { setSelectedHubId(flag.id); setHubAction("remove"); }}>Remove</Button><Button size="sm" variant="gold" onClick={() => { setSelectedHubId(flag.id); setHubAction("warn"); }}>Warn teacher</Button></div> : <Badge variant="secondary">{flag.status}</Badge>}</div>)}</div></Card>}
+
+          {hubTab === "settings" && <Card className="max-w-2xl p-6"><h3 className="text-base font-black text-[#0d2b26]">Hub rules for {currentUser.schoolName}</h3><div className="mt-5 space-y-4">{[["enabled", "Enable Connect Hub"], ["approvalRequired", "Require approval for new subscriptions"], ["allowDirectMessages", "Allow direct messages"]].map(([key, label]) => <label key={key} className="flex items-center justify-between rounded-xl border border-[#e6ece8] p-4 text-sm font-bold text-slate-700"><span>{label}</span><input type="checkbox" checked={hubSettingsDraft[key as keyof typeof hubSettingsDraft] as boolean} onChange={(event) => setHubSettingsDraft({ ...hubSettingsDraft, [key]: event.target.checked })} className="h-4 w-4 accent-[#0d5c4d]" /></label>)}<label className="block text-sm font-bold text-slate-700">Maximum subscribers per teacher<input type="number" min="1" value={hubSettingsDraft.maxSubscribersPerTeacher || ""} onChange={(event) => setHubSettingsDraft({ ...hubSettingsDraft, maxSubscribersPerTeacher: event.target.value ? Number(event.target.value) : undefined })} className="mt-2 h-10 w-full rounded-xl border border-slate-200 px-3" placeholder="Unlimited" /></label><Button onClick={() => { const result = hubSettingsSchema.safeParse(hubSettingsDraft); if (!result.success) { addToast({ type: "error", title: "Invalid hub settings" }); return; } updateHubSettings(hubSettingsDraft); addToast({ type: "success", title: "Connect Hub settings saved" }); }}>Save settings</Button></div></Card>}
         </div>
       )}
 
@@ -1233,6 +1369,29 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
           </div>
         </form>
       </Modal>
+
+      <Modal isOpen={isStaffModalOpen} onClose={() => setIsStaffModalOpen(false)} title={`${editingStaff ? "Edit" : "Add"} ${staffRoleFilter === "coach" ? "Coach" : "Teacher"}`} description="Keep staff records accurate for your school." maxWidth="max-w-3xl">
+        <form onSubmit={staffForm.handleSubmit(submitStaffForm)} className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {([
+              ["name", "Name", "text"], ["staffId", "Staff ID", "text"], ["email", "Email", "email"], ["phone", "Phone", "tel"], ["dateOfBirth", "Date of birth", "date"], ["joiningDate", "Joining date", "date"]
+            ] as const).map(([name, label, type]) => <div key={name}><label className="mb-1 block text-xs font-bold text-slate-700">{label}</label><input type={type} {...staffForm.register(name)} className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-[#0d5c4d]" />{staffForm.formState.errors[name] && <p className="mt-1 text-xs text-rose-600">{staffForm.formState.errors[name]?.message}</p>}</div>)}
+            <div><label className="mb-1 block text-xs font-bold text-slate-700">Gender</label><select {...staffForm.register("gender")} className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm"><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option></select></div>
+            <div><label className="mb-1 block text-xs font-bold text-slate-700">Status</label><select {...staffForm.register("status")} className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm"><option value="active">Active</option><option value="on_leave">On leave</option><option value="resigned">Resigned</option></select></div>
+          </div>
+          <div className="rounded-xl bg-[#f8faf9] p-4"><p className="mb-3 text-xs font-black uppercase tracking-wide text-[#0d5c4d]">{staffRoleFilter === "coach" ? "Sports & teams" : "Subjects & classes"}</p><div className="grid gap-4 sm:grid-cols-2"><div><label className="mb-1 block text-xs font-bold text-slate-700">{staffRoleFilter === "coach" ? "Sports" : "Subjects"} <span className="font-normal text-slate-400">(comma separated)</span></label><input {...staffForm.register(staffRoleFilter === "coach" ? "sports" : "subjects")} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm" /></div><div><label className="mb-1 block text-xs font-bold text-slate-700">Teams / Classes <span className="font-normal text-slate-400">(comma separated)</span></label><input {...staffForm.register(staffRoleFilter === "coach" ? "teams" : "classes")} className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm" /></div></div></div>
+          <div className="grid gap-4 sm:grid-cols-2"><div><label className="mb-1 block text-xs font-bold text-slate-700">{staffRoleFilter === "coach" ? "Certification" : "Qualification"}</label><input {...staffForm.register(staffRoleFilter === "coach" ? "certification" : "qualification")} className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm" /></div><div><label className="mb-1 block text-xs font-bold text-slate-700">{staffRoleFilter === "coach" ? "Availability" : "Medium"}</label>{staffRoleFilter === "coach" ? <input {...staffForm.register("availability")} className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm" /> : <select {...staffForm.register("medium")} className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm"><option value="english">English</option><option value="tamil">Tamil</option><option value="sinhala">Sinhala</option></select>}</div></div>
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4"><Button type="button" variant="outline" onClick={() => setIsStaffModalOpen(false)}>Cancel</Button><Button type="submit">{editingStaff ? "Save changes" : "Add staff"}</Button></div>
+        </form>
+      </Modal>
+
+      {selectedStaff && <div className="fixed inset-0 z-50"><button type="button" aria-label="Close staff drawer" onClick={() => setSelectedStaff(null)} className="absolute inset-0 bg-slate-950/30 backdrop-blur-sm" /><aside className="absolute right-0 top-0 h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between border-b border-[#e6ece8] pb-5"><div><p className="text-xs font-bold uppercase tracking-wide text-[#b47a16]">{selectedStaff.role === "coach" ? "Coach" : "Teacher"}</p><h2 className="mt-1 text-xl font-black text-[#0d2b26]">{selectedStaff.name}</h2><p className="text-sm text-slate-500">{selectedStaff.email}</p></div><button type="button" onClick={() => setSelectedStaff(null)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100"><X className="h-5 w-5" /></button></div><div className="mt-5 flex gap-2">{(selectedStaff.role === "coach" ? ["profile", "sports", "schedule", "connect"] : ["profile", "subjects", "workload", "connect"]).map((tab) => <button key={tab} type="button" onClick={() => setStaffDrawerTab(tab)} className={`rounded-full px-3 py-2 text-xs font-bold capitalize ${staffDrawerTab === tab ? "bg-[#0d5c4d] text-white" : "bg-slate-100 text-slate-600"}`}>{tab === "subjects" ? "Subjects & Classes" : tab === "sports" ? "Sports & Teams" : tab}</button>)}</div><div className="mt-6 space-y-4">{staffDrawerTab === "profile" && <div className="grid gap-3 sm:grid-cols-2"><div><p className="text-xs text-slate-500">Staff ID</p><p className="font-bold">{selectedStaff.staffId}</p></div><div><p className="text-xs text-slate-500">Phone</p><p className="font-bold">{selectedStaff.phone || "Not provided"}</p></div><div><p className="text-xs text-slate-500">Joining date</p><p className="font-bold">{selectedStaff.joiningDate || "Not provided"}</p></div><div><p className="text-xs text-slate-500">Status</p><Badge variant={selectedStaff.status === "active" ? "success" : "warning"}>{selectedStaff.status.replace("_", " ")}</Badge></div></div>}{staffDrawerTab === "subjects" && <div><p className="mb-2 text-sm font-black">Subjects & Classes</p><p className="text-sm text-slate-600">{selectedStaff.subjects?.join(", ") || "No subjects assigned"}</p><p className="mt-4 text-sm text-slate-600">{selectedStaff.classes?.join(", ") || "No classes assigned"}</p></div>}{staffDrawerTab === "sports" && <div><p className="mb-2 text-sm font-black">Sports & Teams</p><p className="text-sm text-slate-600">{selectedStaff.sport || "No sport assigned"}</p><p className="mt-4 text-sm text-slate-600">{selectedStaff.teams?.join(", ") || "No teams assigned"}</p></div>}{staffDrawerTab === "workload" && <div><p className="text-sm font-black">Current workload</p><p className="mt-2 text-4xl font-black text-[#0d5c4d]">{selectedStaff.workload}%</p></div>}{staffDrawerTab === "schedule" && <div><p className="text-sm font-black">Availability</p><p className="mt-2 text-sm text-slate-600">{selectedStaff.availability || "Schedule not provided"}</p></div>}{staffDrawerTab === "connect" && <div><p className="text-sm font-black">Connect activity</p><p className="mt-2 text-sm text-slate-600">Hub oversight is available in Admin Connect Hub. Teacher activity and subscriber records remain school-scoped.</p></div>}</div></aside></div>}
+
+      {hubAction && <Modal isOpen={Boolean(hubAction)} onClose={() => { setHubAction(null); setHubReason(""); }} title="Confirm Connect Hub action" description="A reason is required and the action is recorded in the audit log."><textarea value={hubReason} onChange={(event) => setHubReason(event.target.value)} placeholder="Reason" className="min-h-24 w-full rounded-xl border border-slate-200 p-3 text-sm" /><div className="mt-4 flex justify-end gap-3"><Button variant="outline" onClick={() => setHubAction(null)}>Cancel</Button><Button onClick={() => { if (!hubReason.trim()) { addToast({ type: "error", title: "Reason required" }); return; } if (hubAction === "pause" || hubAction === "suspend") setHubStatus(selectedHubId || "", hubAction === "pause" ? "paused" : "suspended", hubReason); else if (hubAction === "hide" || hubAction === "remove" || hubAction === "warn" || hubAction === "dismiss") actOnHubFlag(selectedHubId || "", hubAction, hubReason); setHubAction(null); setHubReason(""); addToast({ type: "success", title: "Connect action recorded" }); }}>Confirm</Button></div></Modal>}
+
+      {selectedHubId && activeHub && !hubAction && <Modal isOpen={Boolean(selectedHubId)} onClose={() => setSelectedHubId(null)} title={`${activeHub.teacherName} subscribers`} description={`${hubSubscriptions.length} subscribers`}><div className="space-y-3">{hubSubscriptions.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No subscribers.</p>}{hubSubscriptions.map((subscription) => <div key={subscription.id} className="flex items-center justify-between rounded-xl border border-[#e6ece8] p-3"><div><p className="text-sm font-bold">{subscription.studentName}</p><p className="text-xs text-slate-500">{subscription.grade} · {subscription.subscribedDate}</p></div><Button size="sm" variant="outline" onClick={() => removeSubscription(subscription.id, "Removed by administrator")}>Remove</Button></div>)}</div></Modal>}
+
+      <Modal isOpen={Boolean(confirmStaff)} onClose={() => setConfirmStaff(null)} title="Deactivate staff member" description="This keeps the record for audit history and prevents deletion."><div className="flex justify-end gap-3"><Button variant="outline" onClick={() => setConfirmStaff(null)}>Cancel</Button><Button variant="destructive" onClick={() => { if (confirmStaff) { setStaffStatus(confirmStaff.id, "inactive"); addToast({ type: "success", title: "Staff deactivated" }); setConfirmStaff(null); } }}>Deactivate</Button></div></Modal>
     </div>
   );
 }

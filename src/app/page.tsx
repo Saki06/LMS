@@ -100,6 +100,8 @@ export default function HomePage() {
           return <SportsView />;
         case "announcements":
           return <AnnouncementsView />;
+        case "connect_admin":
+          return <AdminViews initialTab="connect" />;
         default:
           return <TeacherViews initialTab="grading" />;
       }
@@ -116,6 +118,11 @@ export default function HomePage() {
           return <AdminViews initialTab="schools" />;
         case "classes":
           return <AdminViews initialTab="classes" />;
+        case "staff_teachers":
+        case "staff_coaches":
+          return <AdminViews initialTab="staff" />;
+        case "curriculum":
+          return <AdminViews initialTab="subjects" />;
         case "subjects":
           return <AdminViews initialTab="subjects" />;
         case "users":
@@ -123,6 +130,7 @@ export default function HomePage() {
         case "library":
           return <LibraryViews initialTab="manage" />;
         case "settings":
+        case "admin_settings":
           return <AdminViews initialTab="settings" />;
         case "sports_admin":
           return <SportsView />;
