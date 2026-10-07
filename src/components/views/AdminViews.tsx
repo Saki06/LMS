@@ -50,7 +50,6 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
     classes,
     subjects,
     courses,
-    submissions,
     events,
     announcements,
     teams,
@@ -309,37 +308,15 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            onClick={() => setIsSchoolModalOpen(true)}
-            variant="outline"
-            className="border-[#c4e9e0] text-[#0d5c4d] hover:bg-[#ecf8f5] font-bold text-xs shadow-2xs"
-          >
-            <Building2 className="h-3.5 w-3.5 mr-1.5" /> Add School
-          </Button>
-          <Button
-            onClick={() => setIsClassModalOpen(true)}
-            variant="outline"
-            className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs shadow-2xs"
-          >
-            <School className="h-3.5 w-3.5 mr-1.5" /> New Class
-          </Button>
-          <Button
-            onClick={() => setIsSubjectModalOpen(true)}
-            className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-bold gap-1.5 text-xs shadow-xs"
-          >
-            <Plus className="h-3.5 w-3.5" /> Add Subject
-          </Button>
-        </div>
       </div>}
 
       {/* TAB: Dashboard Overview */}
       {activeAdminTab === "overview" && (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="order-3 grid grid-cols-1 gap-3 lg:col-start-2 lg:row-start-1">
             <Card className="border-[#e6ece8] bg-white shadow-2xs">
-              <CardContent className="p-5 flex items-center justify-between">
+              <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-slate-500 font-semibold">Registered Schools</p>
                   <p className="text-2xl font-black text-[#0d2b26] mt-1">{schools.length}</p>
@@ -352,7 +329,7 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
             </Card>
 
             <Card className="border-[#e6ece8] bg-white shadow-2xs">
-              <CardContent className="p-5 flex items-center justify-between">
+              <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-slate-500 font-semibold">Active Classes</p>
                   <p className="text-2xl font-black text-[#0d5c4d] mt-1">{classes.length}</p>
@@ -365,7 +342,7 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
             </Card>
 
             <Card className="border-[#e6ece8] bg-white shadow-2xs">
-              <CardContent className="p-5 flex items-center justify-between">
+              <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-slate-500 font-semibold">Total Students</p>
                   <p className="text-2xl font-black text-[#b47a16] mt-1">{totalStudents}</p>
@@ -378,7 +355,7 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
             </Card>
 
             <Card className="border-[#e6ece8] bg-white shadow-2xs">
-              <CardContent className="p-5 flex items-center justify-between">
+              <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-slate-500 font-semibold">Teaching Staff</p>
                   <p className="text-2xl font-black text-[#0d5c4d] mt-1">{totalTeachers}</p>
@@ -392,7 +369,7 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
           </div>
 
           {/* Platform Health Summary */}
-          <div className="grid grid-cols-1 gap-6">
+          <div className="order-1 grid grid-cols-1 gap-6 lg:col-start-1 lg:row-start-1">
             <Card className="border-[#e6ece8] bg-white shadow-2xs">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-sm font-black text-[#0d2b26]">
@@ -424,19 +401,6 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
 
                 <div className="p-3.5 rounded-xl bg-[#f8faf9] border border-[#e6ece8] flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <Bell className="h-4 w-4 text-[#b47a16]" />
-                    <div>
-                      <p className="text-xs font-bold text-slate-700">Pending Submissions</p>
-                      <p className="text-[10px] text-slate-500">Student work awaiting grading</p>
-                    </div>
-                  </div>
-                  <Badge variant="warning">
-                    {submissions.filter((s) => s.status === "submitted").length}
-                  </Badge>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-[#f8faf9] border border-[#e6ece8] flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
                     <Calendar className="h-4 w-4 text-slate-600" />
                     <div>
                       <p className="text-xs font-bold text-slate-700">Upcoming Events</p>
@@ -452,7 +416,7 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
           </div>
 
           {/* Quick Summary Tables Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="order-2 grid grid-cols-1 gap-6 md:grid-cols-2 lg:col-start-1 lg:row-start-2">
             {/* Recent Announcements */}
             <Card className="border-[#e6ece8] bg-white shadow-2xs">
               <CardHeader className="p-5 pb-3 border-b border-[#e6ece8]">

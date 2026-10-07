@@ -251,8 +251,8 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
       children: [
         { id: "sports_admin", label: t.admin.sports, icon: Trophy },
         { id: "events_admin", label: t.admin.events, icon: Calendar },
-        { id: "announcements", label: t.admin.announcements, icon: Bell },
-        { id: "connect_admin", label: t.admin.connectHub, icon: Link2 }
+        { id: "timetable_admin", label: "Timetable", icon: Calendar },
+        { id: "announcements", label: t.admin.announcements, icon: Bell }
       ]
     },
     { id: "admin_settings", label: t.admin.profileSettings, icon: Settings, group: "Administration" }

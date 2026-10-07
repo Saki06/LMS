@@ -2,15 +2,54 @@
 
 import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
-import { Bell, AlertTriangle, Calendar, User, CheckCircle2, Filter, ChevronDown, ChevronUp, FileText } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { Announcement } from "@/types/lms";
 
 export function AnnouncementsView() {
-  const { announcements, t } = useApp();
+  const { announcements, t, currentRole, createAnnouncement, updateAnnouncement, deleteAnnouncement } = useApp();
+  const isAdmin = currentRole === "admin";
   const [filterPriority, setFilterPriority] = useState<string>("all");
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [announcementToDelete, setAnnouncementToDelete] = useState<Announcement | null>(null);
+  const [draft, setDraft] = useState({
+    title: "",
+    message: "",
+    targetAudience: "All Students",
+    priority: "normal" as Announcement["priority"]
+  });
+
+  const openCreate = () => {
+    setEditingAnnouncement(null);
+    setDraft({ title: "", message: "", targetAudience: "All Students", priority: "normal" });
+    setIsEditorOpen(true);
+  };
+
+  const openEdit = (announcement: Announcement) => {
+    setEditingAnnouncement(announcement);
+    setDraft({
+      title: announcement.title,
+      message: announcement.message,
+      targetAudience: announcement.targetAudience,
+      priority: announcement.priority
+    });
+    setIsEditorOpen(true);
+  };
+
+  const saveAnnouncement = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (editingAnnouncement) {
+      updateAnnouncement(editingAnnouncement.id, draft);
+    } else {
+      createAnnouncement(draft);
+    }
+    setIsEditorOpen(false);
+  };
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => ({
@@ -35,6 +74,8 @@ export function AnnouncementsView() {
           </p>
         </div>
 
+        <div className="flex flex-wrap items-center gap-3">
+        {isAdmin && <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> Add Announcement</Button>}
         {/* Priority Filter */}
         <div className="flex items-center bg-white border border-[#e6ece8] rounded-xl p-1 shrink-0 shadow-2xs">
           <button
@@ -58,6 +99,7 @@ export function AnnouncementsView() {
             High Priority
           </button>
         </div>
+        </div>
       </div>
 
       {/* Announcements Feed */}
@@ -72,10 +114,10 @@ export function AnnouncementsView() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Badge
-                      variant={ann.priority === "high" ? "warning" : "success"}
+                      variant={ann.priority === "normal" ? "success" : "warning"}
                       className="text-[10px] uppercase font-bold"
                     >
-                      {ann.priority === "high" ? "Urgent / Important" : "Official Notice"}
+                      {ann.priority === "urgent" ? "Urgent" : ann.priority === "high" ? "Important" : "Official Notice"}
                     </Badge>
                     <span className="text-xs text-slate-500">• {ann.targetAudience}</span>
                   </div>
@@ -86,6 +128,16 @@ export function AnnouncementsView() {
                 <CardTitle className="text-lg font-black text-[#0d2b26] mt-2">
                   {ann.title}
                 </CardTitle>
+                {isAdmin && (
+                  <div className="mt-3 flex justify-end gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => openEdit(ann)}>
+                      <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+                    </Button>
+                    <Button type="button" variant="destructive" size="sm" onClick={() => setAnnouncementToDelete(ann)}>
+                      <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Remove
+                    </Button>
+                  </div>
+                )}
               </CardHeader>
 
               <CardContent className="p-6 space-y-4">
@@ -130,6 +182,56 @@ export function AnnouncementsView() {
           );
         })}
       </div>
+      <Modal
+        isOpen={isEditorOpen}
+        onClose={() => setIsEditorOpen(false)}
+        title={editingAnnouncement ? "Edit Announcement" : "Add Announcement"}
+        description="Create an official notice for your school community."
+      >
+        <form onSubmit={saveAnnouncement} className="space-y-4">
+          <label className="block text-sm font-semibold text-slate-700">
+            Title
+            <input required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+          </label>
+          <label className="block text-sm font-semibold text-slate-700">
+            Message
+            <textarea required value={draft.message} onChange={(event) => setDraft({ ...draft, message: event.target.value })} className="mt-1 min-h-32 w-full rounded-xl border border-slate-200 px-3 py-2" />
+          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm font-semibold text-slate-700">
+              Target audience
+              <input required value={draft.targetAudience} onChange={(event) => setDraft({ ...draft, targetAudience: event.target.value })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+            </label>
+            <label className="block text-sm font-semibold text-slate-700">
+              Priority
+              <select value={draft.priority} onChange={(event) => setDraft({ ...draft, priority: event.target.value as Announcement["priority"] })} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
+                <option value="normal">Normal</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </label>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={() => setIsEditorOpen(false)}>Cancel</Button>
+            <Button type="submit">{editingAnnouncement ? "Save Changes" : "Publish Announcement"}</Button>
+          </div>
+        </form>
+      </Modal>
+      <Modal
+        isOpen={Boolean(announcementToDelete)}
+        onClose={() => setAnnouncementToDelete(null)}
+        title="Remove Announcement"
+        description={`Are you sure you want to remove "${announcementToDelete?.title ?? ""}"? This cannot be undone.`}
+        maxWidth="max-w-md"
+      >
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={() => setAnnouncementToDelete(null)}>Cancel</Button>
+          <Button type="button" variant="destructive" onClick={() => {
+            if (announcementToDelete) deleteAnnouncement(announcementToDelete.id);
+            setAnnouncementToDelete(null);
+          }}>Remove Announcement</Button>
+        </div>
+      </Modal>
     </div>
   );
 }

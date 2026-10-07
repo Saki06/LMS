@@ -9,6 +9,7 @@ import {
   School,
   GradeLevel,
   SchoolClass,
+  TimetableEntry,
   Subject,
   Course,
   SyllabusUnit,
@@ -74,6 +75,7 @@ interface AppContextType {
   schools: School[];
   grades: GradeLevel[];
   classes: SchoolClass[];
+  timetable: TimetableEntry[];
   subjects: Subject[];
   courses: Course[];
   assignments: Assignment[];
@@ -105,6 +107,10 @@ interface AppContextType {
   gradeSubmission: (submissionId: string, marks: number, feedback: string, release: boolean) => void;
   submitQuizAttempt: (quizId: string, answers: Record<string, number | string>) => number;
   registerEvent: (eventId: string) => void;
+  createTimetableEntry: (entry: Omit<TimetableEntry, 'id'>) => void;
+  updateTimetableEntry: (id: string, updates: Omit<TimetableEntry, 'id'>) => void;
+  deleteTimetableEntry: (id: string) => void;
+  updateEvent: (id: string, updates: Partial<Omit<SchoolEvent, 'id'>>) => void;
   recordMatchResult: (fixtureId: string, homeScore: string, awayScore: string, outcome: string) => void;
   createTournament: (tournament: Partial<Tournament>) => void;
   updateTournament: (id: string, updates: Partial<Tournament>) => void;
@@ -131,6 +137,8 @@ interface AppContextType {
   ) => void;
   deleteLesson: (courseId: string, unitId: string, topicId: string, lessonId: string) => void;
   createAnnouncement: (announcement: Partial<Announcement>) => void;
+  updateAnnouncement: (id: string, updates: Partial<Omit<Announcement, 'id'>>) => void;
+  deleteAnnouncement: (id: string) => void;
   createSchool: (school: Partial<School>) => void;
   createClass: (schoolClass: Partial<SchoolClass>) => void;
   createSubject: (subject: Partial<Subject>) => void;
@@ -172,6 +180,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [schools, setSchools] = useState<School[]>(initialSchools);
   const [grades, setGrades] = useState<GradeLevel[]>(initialGrades);
   const [classes, setClasses] = useState<SchoolClass[]>(initialClasses);
+  const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>(initialSubjects);
   const [courses, setCourses] = useState<Course[]>(initialCourses);
   const [assignments, setAssignments] = useState<Assignment[]>(initialAssignments);
@@ -440,6 +449,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       title: 'Event Registration Updated',
       message: 'Your participation status has been updated in school records.'
     });
+  };
+
+  const createTimetableEntry = (entry: Omit<TimetableEntry, 'id'>) => {
+    setTimetable((previous) => [...previous, { ...entry, id: `tt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}` }]);
+    addToast({ type: 'success', title: 'Timetable period added', message: 'The scheduled period has been saved.' });
+  };
+
+  const updateTimetableEntry = (id: string, updates: Omit<TimetableEntry, 'id'>) => {
+    setTimetable((previous) => previous.map((entry) => entry.id === id ? { ...updates, id } : entry));
+    addToast({ type: 'success', title: 'Timetable period updated', message: 'The schedule changes have been saved.' });
+  };
+
+  const deleteTimetableEntry = (id: string) => {
+    setTimetable((previous) => previous.filter((entry) => entry.id !== id));
+    addToast({ type: 'success', title: 'Timetable period removed', message: 'The scheduled period has been deleted.' });
+  };
+
+  const updateEvent = (id: string, updates: Partial<Omit<SchoolEvent, 'id'>>) => {
+    setEvents((prev) =>
+      prev.map((event) => event.id === id ? { ...event, ...updates } : event)
+    );
+    addToast({ type: 'success', title: 'Event Updated', message: 'Event details saved successfully.' });
   };
 
   // Sports Match Result
@@ -1007,6 +1038,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const updateAnnouncement = (id: string, updates: Partial<Omit<Announcement, 'id'>>) => {
+    setAnnouncements((prev) =>
+      prev.map((announcement) => announcement.id === id ? { ...announcement, ...updates } : announcement)
+    );
+    addToast({ type: 'success', title: 'Announcement Updated', message: 'Announcement details saved successfully.' });
+  };
+
+  const deleteAnnouncement = (id: string) => {
+    setAnnouncements((prev) => prev.filter((announcement) => announcement.id !== id));
+    addToast({ type: 'success', title: 'Announcement Removed', message: 'Announcement has been removed.' });
+  };
+
   const toggleSaveResource = (id: string) => {
     setSavedResourceIds((prev) => {
       const isSaved = prev.includes(id);
@@ -1147,6 +1190,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         schools,
         grades,
         classes,
+        timetable,
         subjects,
         courses,
         assignments,
@@ -1174,6 +1218,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         gradeSubmission,
         submitQuizAttempt,
         registerEvent,
+        createTimetableEntry,
+        updateTimetableEntry,
+        deleteTimetableEntry,
+        updateEvent,
         recordMatchResult,
         createTournament,
         updateTournament,
@@ -1192,6 +1240,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateLesson,
         deleteLesson,
         createAnnouncement,
+        updateAnnouncement,
+        deleteAnnouncement,
         createSchool,
         createClass,
         createSubject,

@@ -19,6 +19,7 @@ import { LibraryViews } from "@/components/views/LibraryViews";
 import { ExamViews } from "@/components/views/ExamViews";
 import { SportsView } from "@/components/views/SportsView";
 import { EventsView } from "@/components/views/EventsView";
+import { TimetableView } from "@/components/views/TimetableView";
 import { StudentProgressView } from "@/components/views/StudentProgressView";
 import { ConnectView } from "@/components/views/ConnectView";
 import { ProfileView } from "@/components/views/ProfileView";
@@ -164,6 +165,8 @@ export default function HomePage() {
           return <SportsView />;
         case "events_admin":
           return <EventsView />;
+        case "timetable_admin":
+          return <TimetableView />;
         case "announcements":
           return <AnnouncementsView />;
         default:

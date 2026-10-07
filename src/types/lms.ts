@@ -46,6 +46,29 @@ export interface SchoolClass {
   studentCount: number;
 }
 
+export type TimetableDay =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+export interface TimetableEntry {
+  id: string;
+  day: TimetableDay;
+  classId: string;
+  className: string;
+  subjectId: string;
+  subjectName: string;
+  teacherId: string;
+  teacherName: string;
+  startTime: string;
+  endTime: string;
+  room: string;
+}
+
 export interface Subject {
   id: string;
   name: string; // e.g. "Combined Mathematics", "Physics"

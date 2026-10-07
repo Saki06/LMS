@@ -5,8 +5,6 @@ import { useApp } from "@/context/AppContext";
 import {
   Trophy,
   Calendar,
-  Users,
-  Clock,
   MapPin,
   CheckCircle2,
   Award,
@@ -14,7 +12,6 @@ import {
   Zap,
   Activity,
   Plus,
-  Shield,
   Edit3,
   Search,
   Filter,
@@ -31,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { Tournament, TournamentFormat, TournamentStatus, Fixture } from "@/types/lms";
 
-type SportsTab = "tournaments" | "fixtures" | "squads" | "standings";
+type SportsTab = "tournaments" | "fixtures" | "standings";
 
 export function SportsView() {
   const {
@@ -109,12 +106,6 @@ export function SportsView() {
   // Filtered Fixtures
   const filteredFixtures = fixtures.filter((fx) => {
     const matchSport = selectedSport === "All" || fx.sportName.toLowerCase().includes(selectedSport.toLowerCase());
-    return matchSport;
-  });
-
-  // Filtered Teams
-  const filteredTeams = teams.filter((tm) => {
-    const matchSport = selectedSport === "All" || tm.sportName.toLowerCase().includes(selectedSport.toLowerCase());
     return matchSport;
   });
 
@@ -291,18 +282,6 @@ export function SportsView() {
             </button>
 
             <button
-              onClick={() => setActiveTab("squads")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                activeTab === "squads"
-                  ? "bg-white text-[#0d5c4d] shadow-sm scale-102"
-                  : "bg-white/10 hover:bg-white/20 text-white"
-              }`}
-            >
-              <Shield className="h-3.5 w-3.5" />
-              <span>{t.sports.teams || "College Squads"}</span>
-            </button>
-
-            <button
               onClick={() => setActiveTab("standings")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
                 activeTab === "standings"
@@ -369,15 +348,6 @@ export function SportsView() {
                 </select>
               </div>
 
-              {isAdminOrTeacher && (
-                <Button
-                  onClick={() => setIsCreateTournamentModalOpen(true)}
-                  className="bg-[#0d5c4d] hover:bg-[#083e34] text-white text-xs font-black h-9 px-4 rounded-xl shadow-xs"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  Create Tournament
-                </Button>
-              )}
             </div>
           </div>
 
@@ -395,15 +365,6 @@ export function SportsView() {
                     : "No tournaments registered in this category yet."}
                 </p>
               </div>
-              {isAdminOrTeacher && (
-                <Button
-                  onClick={() => setIsCreateTournamentModalOpen(true)}
-                  className="bg-[#0d5c4d] hover:bg-[#083e34] text-white text-xs font-bold"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  Create First Tournament
-                </Button>
-              )}
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -667,74 +628,6 @@ export function SportsView() {
               ))
             )}
           </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* TAB 3: COLLEGE SQUADS & ROSTERS */}
-      {/* ========================================================================= */}
-      {activeTab === "squads" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-[#0d2b26] flex items-center gap-2">
-              <Shield className="h-4 w-4 text-[#0d5c4d]" />
-              <span>College Squads &amp; Player Rosters</span>
-            </h3>
-            <span className="text-xs text-slate-400 font-medium">
-              {filteredTeams.length} Active Squads
-            </span>
-          </div>
-
-          {filteredTeams.length === 0 ? (
-            <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-[#d6dfd9] text-slate-400 text-xs">
-              No active teams registered under {selectedSport}.
-            </div>
-          ) : (
-            filteredTeams.map((team) => (
-              <div
-                key={team.id}
-                className="bg-white rounded-2xl border border-[#e6ece8] p-5 shadow-xs space-y-4 hover:border-[#c4e9e0] transition-colors"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#f0f4f1] pb-3">
-                  <div>
-                    <h4 className="font-extrabold text-sm text-[#0d2b26]">{team.name}</h4>
-                    <p className="text-xs text-slate-500">
-                      Coach / Master-in-Charge:{" "}
-                      <span className="font-semibold text-slate-700">{team.coachName}</span>
-                    </p>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-lg bg-[#ecf8f5] text-[#0d5c4d] font-bold text-xs self-start sm:self-auto">
-                    {team.playersCount} Squad Players
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-slate-600 bg-[#f8faf9] p-3 rounded-xl border border-[#eef4f1]">
-                  <Clock className="h-4 w-4 text-[#0d5c4d] shrink-0" />
-                  <span>
-                    <strong className="text-slate-700">Practice Schedule:</strong> {team.trainingSchedule}
-                  </span>
-                </div>
-
-                {/* Players Roster Grid */}
-                <div className="space-y-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Squad Highlights
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {team.players.map((p) => (
-                      <div
-                        key={p.id}
-                        className="flex items-center justify-between p-2.5 rounded-xl border border-[#eef3f0] hover:bg-[#fbfcfb] text-xs"
-                      >
-                        <span className="font-bold text-[#0d2b26]">{p.name}</span>
-                        <span className="text-slate-400 text-[11px]">{p.position}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
         </div>
       )}
 
