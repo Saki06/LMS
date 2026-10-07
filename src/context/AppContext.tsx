@@ -26,6 +26,8 @@ import {
   Announcement,
   LibraryResource
 } from '@/types/lms';
+import { Tenant, TenantFeature, TenantType } from '@/types/tenant';
+import { INITIAL_TENANTS, TENANT_PRESETS } from '@/data/tenantMockData';
 import {
   mockUsers,
   initialSchools,
@@ -109,11 +111,25 @@ interface AppContextType {
   deleteTournament: (id: string) => void;
   createFixture: (fixture: Partial<Fixture>) => void;
   createAssignment: (assignment: Partial<Assignment>) => void;
+  updateAssignment: (id: string, updates: Partial<Assignment>) => void;
+  deleteAssignment: (id: string) => void;
   createUnit: (courseId: string, unitTitle: string) => string;
+  updateUnit: (courseId: string, unitId: string, updates: { title?: string; order?: number }) => void;
   createTopic: (courseId: string, unitId: string, topicTitle: string, description?: string) => string;
+  updateTopic: (courseId: string, unitId: string, topicId: string, updates: { title?: string; description?: string }) => void;
   deleteUnit: (courseId: string, unitId: string) => void;
   deleteTopic: (courseId: string, unitId: string, topicId: string) => void;
   createLesson: (courseId: string, unitId: string, topicId: string, lesson: Partial<Lesson>) => void;
+  updateLesson: (
+    courseId: string,
+    unitId: string,
+    topicId: string,
+    lessonId: string,
+    updates: Partial<Lesson>,
+    newUnitId?: string,
+    newTopicId?: string
+  ) => void;
+  deleteLesson: (courseId: string, unitId: string, topicId: string, lessonId: string) => void;
   createAnnouncement: (announcement: Partial<Announcement>) => void;
   createSchool: (school: Partial<School>) => void;
   createClass: (schoolClass: Partial<SchoolClass>) => void;
@@ -125,6 +141,18 @@ interface AppContextType {
   deleteLibraryResource: (id: string) => void;
   recordResourceView: (id: string) => void;
   recordResourceDownload: (id: string) => void;
+
+  // Multi-Tenant SaaS State
+  tenants: Tenant[];
+  activeTenantId: string;
+  activeTenant: Tenant;
+  setActiveTenantId: (id: string) => void;
+  updateTenantFeature: (tenantId: string, feature: string, enabled: boolean) => void;
+  applyTenantPreset: (tenantId: string, presetId: string) => void;
+  addTenant: (tenant: Tenant) => void;
+  updateTenant: (tenant: Tenant) => void;
+  deleteTenant: (tenantId: string) => void;
+  isFeatureEnabled: (feature: string) => boolean;
 
   // Toasts
   toasts: ToastMessage[];
@@ -163,6 +191,67 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>('les_m1_1_1');
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>('asg_01');
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>('qz_01');
+
+  // Multi-Tenant SaaS State
+  const [tenants, setTenants] = useState<Tenant[]>(INITIAL_TENANTS);
+  const [activeTenantId, setActiveTenantId] = useState<string>(INITIAL_TENANTS[0].id);
+
+  const activeTenant = tenants.find((t) => t.id === activeTenantId) || tenants[0];
+
+  const updateTenantFeature = (tenantId: string, feature: string, enabled: boolean) => {
+    setTenants((prev) =>
+      prev.map((t) => {
+        if (t.id === tenantId) {
+          return {
+            ...t,
+            enabledFeatures: {
+              ...t.enabledFeatures,
+              [feature]: enabled
+            }
+          };
+        }
+        return t;
+      })
+    );
+  };
+
+  const applyTenantPreset = (tenantId: string, presetId: string) => {
+    const preset = TENANT_PRESETS.find((p) => p.id === presetId);
+    if (!preset) return;
+    setTenants((prev) =>
+      prev.map((t) => {
+        if (t.id === tenantId) {
+          return {
+            ...t,
+            type: preset.type,
+            enabledFeatures: { ...preset.features }
+          };
+        }
+        return t;
+      })
+    );
+  };
+
+  const addTenant = (tenant: Tenant) => {
+    setTenants((prev) => [tenant, ...prev]);
+  };
+
+  const updateTenant = (updated: Tenant) => {
+    setTenants((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+  };
+
+  const deleteTenant = (tenantId: string) => {
+    setTenants((prev) => prev.filter((t) => t.id !== tenantId));
+    if (activeTenantId === tenantId && tenants.length > 1) {
+      const remaining = tenants.filter((t) => t.id !== tenantId);
+      setActiveTenantId(remaining[0].id);
+    }
+  };
+
+  const isFeatureEnabled = (feature: string): boolean => {
+    if (!activeTenant || !activeTenant.enabledFeatures) return true;
+    return activeTenant.enabledFeatures[feature] ?? true;
+  };
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -479,6 +568,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       maxMarks: asg.maxMarks || 100,
       dueDate: asg.dueDate || '2026-10-15 23:59',
       status: 'published',
+      attachmentName: asg.attachmentName,
       submissionsCount: 0,
       pendingReviewCount: 0
     };
@@ -487,6 +577,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       type: 'success',
       title: 'Assignment Created & Published',
       message: 'All enrolled students can now view and submit this assignment.'
+    });
+  };
+
+  const updateAssignment = (id: string, updates: Partial<Assignment>) => {
+    setAssignments((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...updates } : a))
+    );
+    addToast({
+      type: 'success',
+      title: 'Assignment Updated!',
+      message: 'Assignment details and attachments saved successfully.'
+    });
+  };
+
+  const deleteAssignment = (id: string) => {
+    setAssignments((prev) => prev.filter((a) => a.id !== id));
+    addToast({
+      type: 'info',
+      title: 'Assignment Removed',
+      message: 'Assignment deleted successfully.'
     });
   };
 
@@ -586,6 +696,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return newUnitId;
   };
 
+  const updateUnit = (courseId: string, unitId: string, updates: { title?: string; order?: number }) => {
+    setCourses((prev) =>
+      prev.map((c) => {
+        if (c.id !== courseId) return c;
+        return {
+          ...c,
+          units: c.units.map((u) => {
+            if (u.id !== unitId) return u;
+            return {
+              ...u,
+              ...(updates.title !== undefined ? { title: updates.title } : {}),
+              ...(updates.order !== undefined ? { order: updates.order } : {})
+            };
+          })
+        };
+      })
+    );
+    addToast({
+      type: 'success',
+      title: 'Unit Updated!',
+      message: 'Unit details saved successfully.'
+    });
+  };
+
   const createTopic = (courseId: string, unitId: string, topicTitle: string, description?: string): string => {
     const newTopicId = `top_${Date.now()}`;
     setCourses((prev) =>
@@ -617,6 +751,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       message: `"${topicTitle}" created successfully.`
     });
     return newTopicId;
+  };
+
+  const updateTopic = (courseId: string, unitId: string, topicId: string, updates: { title?: string; description?: string }) => {
+    setCourses((prev) =>
+      prev.map((c) => {
+        if (c.id !== courseId) return c;
+        return {
+          ...c,
+          units: c.units.map((u) => {
+            if (u.id !== unitId) return u;
+            return {
+              ...u,
+              topics: u.topics.map((t) => {
+                if (t.id !== topicId) return t;
+                return {
+                  ...t,
+                  ...(updates.title !== undefined ? { title: updates.title } : {}),
+                  ...(updates.description !== undefined ? { description: updates.description } : {})
+                };
+              })
+            };
+          })
+        };
+      })
+    );
+    addToast({
+      type: 'success',
+      title: 'Topic Updated!',
+      message: 'Topic details saved successfully.'
+    });
   };
 
   const deleteUnit = (courseId: string, unitId: string) => {
@@ -708,6 +872,119 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       type: 'success',
       title: 'Lesson Added to Syllabus!',
       message: 'Lesson is now available to students.'
+    });
+  };
+
+  const updateLesson = (
+    courseId: string,
+    unitId: string,
+    topicId: string,
+    lessonId: string,
+    updates: Partial<Lesson>,
+    newUnitId?: string,
+    newTopicId?: string
+  ) => {
+    setCourses((prev) =>
+      prev.map((c) => {
+        if (c.id !== courseId) return c;
+
+        const destUnitId = newUnitId || unitId;
+        const destTopicId = newTopicId || topicId;
+
+        // If moving to another unit or topic
+        if (destUnitId !== unitId || destTopicId !== topicId) {
+          let movingLesson: Lesson | null = null;
+          const unitsAfterRemoval = c.units.map((u) => {
+            if (u.id !== unitId) return u;
+            return {
+              ...u,
+              topics: u.topics.map((t) => {
+                if (t.id !== topicId) return t;
+                const found = t.lessons.find((l) => l.id === lessonId);
+                if (found) {
+                  movingLesson = { ...found, ...updates, topicId: destTopicId };
+                }
+                return {
+                  ...t,
+                  lessons: t.lessons.filter((l) => l.id !== lessonId)
+                };
+              })
+            };
+          });
+
+          if (!movingLesson) return c;
+
+          return {
+            ...c,
+            units: unitsAfterRemoval.map((u) => {
+              if (u.id !== destUnitId) return u;
+              return {
+                ...u,
+                topics: u.topics.map((t) => {
+                  if (t.id !== destTopicId) return t;
+                  return {
+                    ...t,
+                    lessons: [...t.lessons, movingLesson!]
+                  };
+                })
+              };
+            })
+          };
+        }
+
+        // Normal in-place update
+        return {
+          ...c,
+          units: c.units.map((u) => {
+            if (u.id !== unitId) return u;
+            return {
+              ...u,
+              topics: u.topics.map((t) => {
+                if (t.id !== topicId) return t;
+                return {
+                  ...t,
+                  lessons: t.lessons.map((l) => (l.id === lessonId ? { ...l, ...updates } : l))
+                };
+              })
+            };
+          })
+        };
+      })
+    );
+    addToast({
+      type: 'success',
+      title: 'Lesson Updated!',
+      message: 'Lesson details saved successfully.'
+    });
+  };
+
+  const deleteLesson = (courseId: string, unitId: string, topicId: string, lessonId: string) => {
+    setCourses((prev) =>
+      prev.map((c) => {
+        if (c.id !== courseId) return c;
+        return {
+          ...c,
+          totalLessons: Math.max(0, c.totalLessons - 1),
+          units: c.units.map((u) => {
+            if (u.id !== unitId) return u;
+            return {
+              ...u,
+              topics: u.topics.map((t) => {
+                if (t.id !== topicId) return t;
+                return {
+                  ...t,
+                  lessons: t.lessons.filter((l) => l.id !== lessonId)
+                };
+              })
+            };
+          })
+        };
+      })
+    );
+    addToast({
+      type: 'info',
+      title: 'Lesson Removed',
+      message: 'Lesson deleted from topic.'
     });
   };
 
@@ -903,11 +1180,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteTournament,
         createFixture,
         createAssignment,
+        updateAssignment,
+        deleteAssignment,
         createUnit,
+        updateUnit,
         createTopic,
+        updateTopic,
         deleteUnit,
         deleteTopic,
         createLesson,
+        updateLesson,
+        deleteLesson,
         createAnnouncement,
         createSchool,
         createClass,
@@ -919,6 +1202,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteLibraryResource,
         recordResourceView,
         recordResourceDownload,
+        tenants,
+        activeTenantId,
+        activeTenant,
+        setActiveTenantId,
+        updateTenantFeature,
+        applyTenantPreset,
+        addTenant,
+        updateTenant,
+        deleteTenant,
+        isFeatureEnabled,
         toasts,
         addToast,
         removeToast

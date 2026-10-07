@@ -29,11 +29,21 @@ import {
   Award,
   Activity,
   Medal,
-  Zap
+  Zap,
+  Briefcase
 } from "lucide-react";
 import { initialExams, initialExamTermResult } from "@/data/mockData";
 
-type ProfileTab = "personal" | "academic" | "timetable" | "transcripts" | "sports";
+type ProfileTab =
+  | "personal"
+  | "academic"
+  | "timetable"
+  | "transcripts"
+  | "sports"
+  | "teaching"
+  | "qualifications"
+  | "schedule"
+  | "responsibilities";
 
 export function ProfileView() {
   const { currentUser, currentRole, setCurrentView, addToast, courses, setSelectedCourseId } = useApp();
@@ -104,14 +114,14 @@ export function ProfileView() {
         admittedDate: "September 2012",
         attendanceRate: "99.1%",
         gpa: "Faculty Rating 4.9/5.0",
-        guardianName: "Faculty Staff Record",
-        guardianRelationship: "Next of Kin",
+        guardianName: "Mrs. Malini Perera",
+        guardianRelationship: "Spouse (Next of Kin)",
         guardianPhone: "+94 77 987 6543",
-        guardianEmail: "perera.family@gmail.com",
-        guardianOccupation: "Senior Educator",
+        guardianEmail: "malini.perera@gmail.com",
+        guardianOccupation: "Senior Banking Executive",
         motherName: "M. Perera",
         motherPhone: "+94 11 234 5678",
-        emergencyContact: "Staff Council Office (+94 11 258 0042)",
+        emergencyContact: "Staff Council Welfare (+94 11 258 0042)",
         transportMode: "Faculty Parking (Pass #FC-42)",
         healthNotes: "Normal health clearance. First-aid certified.",
         extracurricular: "Master-in-Charge Mathematics Olympiad, Senior Chess Club Patron"
@@ -166,9 +176,19 @@ export function ProfileView() {
 
   useEffect(() => {
     setProfileData(defaultProfile);
-  }, [defaultProfile]);
+    if (currentRole === "teacher") {
+      if (!["personal", "teaching", "schedule"].includes(activeTab)) {
+        setActiveTab("personal");
+      }
+    } else {
+      if (!["personal", "academic", "timetable", "transcripts", "sports"].includes(activeTab)) {
+        setActiveTab("personal");
+      }
+    }
+  }, [defaultProfile, currentRole]);
 
   const [avatarPreset, setAvatarPreset] = useState<string>("default");
+  const [selectedScheduleDay, setSelectedScheduleDay] = useState<"Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday">("Monday");
 
   const handleCopyId = () => {
     navigator.clipboard?.writeText(profileData.studentId);
@@ -176,9 +196,25 @@ export function ProfileView() {
     addToast({
       type: "info",
       title: "ID Copied",
-      message: `${profileData.studentId} copied to clipboard.`
+      message: `${currentRole === "teacher" ? "Faculty ID " : ""}${profileData.studentId} copied to clipboard.`
     });
     setTimeout(() => setCopiedId(false), 2000);
+  };
+
+  const handleDownloadTeacherDossier = () => {
+    addToast({
+      type: "success",
+      title: "Faculty Dossier Downloaded",
+      message: "Official Senior Faculty Dossier & SLTS Service Record (PDF) has been saved."
+    });
+  };
+
+  const handleDownloadTeacherTimetable = () => {
+    addToast({
+      type: "success",
+      title: "Teaching Schedule Downloaded",
+      message: "Weekly Academic Lecture & Laboratory Master Schedule (PDF) has been saved."
+    });
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -255,7 +291,7 @@ export function ProfileView() {
         <div className="absolute top-3 right-4 sm:top-5 sm:right-6 flex items-center gap-2">
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-xs font-bold">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            Active Enrolled · Term 2
+            {currentRole === "teacher" ? "Senior Faculty Member · Active Service" : "Active Enrolled · Term 2"}
           </span>
         </div>
 
@@ -283,7 +319,7 @@ export function ProfileView() {
                 {profileData.fullName}
               </h2>
               <span className="px-2.5 py-0.5 rounded-full bg-[#fef7e6] text-[#b47a16] border border-[#fde4af] text-[11px] font-bold capitalize">
-                {currentRole}
+                {currentRole === "teacher" ? "Senior Faculty / Educator" : currentRole}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold">
                 {profileData.stream}
@@ -310,9 +346,9 @@ export function ProfileView() {
               <button
                 onClick={handleCopyId}
                 className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors font-mono font-bold text-[11px] text-slate-700 cursor-pointer"
-                title="Click to copy Student ID"
+                title={currentRole === "teacher" ? "Click to copy Faculty ID" : "Click to copy Student ID"}
               >
-                <span>ID: {profileData.studentId}</span>
+                <span>{currentRole === "teacher" ? `Faculty ID: ${profileData.studentId}` : `ID: ${profileData.studentId}`}</span>
                 {copiedId ? (
                   <Check className="h-3 w-3 text-emerald-600" />
                 ) : (
@@ -323,60 +359,53 @@ export function ProfileView() {
           </div>
         </div>
 
-        {/* Quick Performance Indicators */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-slate-100">
-          <div className="p-3 rounded-2xl bg-[#f8faf9] border border-[#e2eae5]">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              {currentRole === "teacher" ? "Faculty Attendance" : "Attendance"}
-            </p>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-lg font-black text-[#0d5c4d]">{profileData.attendanceRate}</span>
-              <span className="text-[10px] text-slate-500 font-semibold">
-                {currentRole === "teacher" ? "Faculty Record" : "82 / 85 days"}
-              </span>
+        {/* Quick Performance Indicators (Student only) */}
+        {currentRole !== "teacher" && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-slate-100">
+            <div className="p-3 rounded-2xl bg-[#f8faf9] border border-[#e2eae5]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Attendance</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-lg font-black text-[#0d5c4d]">{profileData.attendanceRate}</span>
+                <span className="text-[10px] text-slate-500 font-semibold">82 / 85 days</span>
+              </div>
             </div>
-          </div>
 
-          <div className="p-3 rounded-2xl bg-[#f8faf9] border border-[#e2eae5]">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              {currentRole === "teacher" ? "Faculty Rating" : "Term GPA"}
-            </p>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-lg font-black text-amber-600">
-                {currentRole === "teacher" ? "4.9 / 5.0" : "3.84"}
-              </span>
-              <span className="text-[10px] text-slate-500 font-semibold">
-                {currentRole === "teacher" ? "Top 5% Educator" : "Rank #3 in Stream"}
-              </span>
+            <div className="p-3 rounded-2xl bg-[#f8faf9] border border-[#e2eae5]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Term GPA</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-lg font-black text-amber-600">3.84</span>
+                <span className="text-[10px] text-slate-500 font-semibold">Rank #3 in Stream</span>
+              </div>
             </div>
-          </div>
 
-          <div className="p-3 rounded-2xl bg-[#f8faf9] border border-[#e2eae5]">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              {currentRole === "teacher" ? "Classes & Reach" : "Active Subjects"}
-            </p>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-lg font-black text-[#0d2b26]">
-                {currentRole === "teacher" ? "6 Classes" : "4 Enrolled"}
-              </span>
-              <span className="text-[10px] text-emerald-600 font-bold">
-                {currentRole === "teacher" ? "142 Subscribers" : "19 Completed"}
-              </span>
+            <div className="p-3 rounded-2xl bg-[#f8faf9] border border-[#e2eae5]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Subjects</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-lg font-black text-[#0d2b26]">4 Enrolled</span>
+                <span className="text-[10px] text-emerald-600 font-bold">19 Completed</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
 
       {/* Profile Navigation Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200">
-        {[
-          { id: "personal", label: "Personal Details", icon: User },
-          { id: "academic", label: "Academic & Subjects", icon: GraduationCap },
-          { id: "timetable", label: "Examination Timetable", icon: Calendar },
-          { id: "transcripts", label: "Official Term Transcripts", icon: FileCheck },
-          { id: "sports", label: "Sports & Achievements", icon: Trophy }
-        ].map((tab) => {
+        {(currentRole === "teacher"
+          ? [
+              { id: "personal", label: "Faculty Profile & Info", icon: User },
+              { id: "teaching", label: "Assigned Classes & Workload", icon: BookOpen },
+              { id: "schedule", label: "Weekly Teaching Timetable", icon: Calendar }
+            ]
+          : [
+              { id: "personal", label: "Personal Details", icon: User },
+              { id: "academic", label: "Academic & Subjects", icon: GraduationCap },
+              { id: "timetable", label: "Examination Timetable", icon: Calendar },
+              { id: "transcripts", label: "Official Term Transcripts", icon: FileCheck },
+              { id: "sports", label: "Sports & Achievements", icon: Trophy }
+            ]
+        ).map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
@@ -406,10 +435,12 @@ export function ProfileView() {
               <div>
                 <h3 className="font-extrabold text-base text-[#0d2b26] flex items-center gap-2">
                   <User className="h-4 w-4 text-[#0d5c4d]" />
-                  <span>General Information</span>
+                  <span>{currentRole === "teacher" ? "Faculty Official Identification" : "General Information"}</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Official personal identification as registered with the Ministry of Education.
+                  {currentRole === "teacher"
+                    ? "Official personal identification and Ministry of Education service registration."
+                    : "Official personal identification as registered with the Ministry of Education."}
                 </p>
               </div>
               {isEditing && (
@@ -456,7 +487,9 @@ export function ProfileView() {
 
               {/* Student ID */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Student Admission / Reg Number</label>
+                <label className="text-xs font-bold text-slate-700">
+                  {currentRole === "teacher" ? "Teacher Service / Faculty ID" : "Student Admission / Reg Number"}
+                </label>
                 <p className="p-2.5 rounded-xl bg-[#f8faf9] border border-slate-200 text-xs font-mono font-bold text-[#0d5c4d]">
                   {profileData.studentId}
                 </p>
@@ -464,7 +497,9 @@ export function ProfileView() {
 
               {/* G.C.E. A/L Index Number */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Exam Index Number (A/L 2026)</label>
+                <label className="text-xs font-bold text-slate-700">
+                  {currentRole === "teacher" ? "Sri Lanka Teachers' Service (SLTS) Reg Number" : "Exam Index Number (A/L 2026)"}
+                </label>
                 {isEditing ? (
                   <input
                     type="text"
@@ -625,16 +660,168 @@ export function ProfileView() {
             </form>
           </div>
 
-          {/* PARENT & GUARDIAN INFORMATION CARD (Embedded directly inside Personal Details) */}
+          {/* TEACHER QUALIFICATIONS & ACCREDITATIONS (Embedded inside Faculty Profile & Info) */}
+          {currentRole === "teacher" && (
+            <div className="bg-white rounded-3xl border border-[#e2eae5] p-5 sm:p-7 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                  <h3 className="font-extrabold text-base text-[#0d2b26] flex items-center gap-2">
+                    <Award className="h-4 w-4 text-[#0d5c4d]" />
+                    <span>Academic Degrees, Professional Accreditations &amp; Licensing</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Verified university credentials, post-graduate education diplomas, and Ministry examiner licenses.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadTeacherDossier}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0d5c4d] hover:bg-[#0a473b] text-white font-bold text-xs shadow-md transition-colors self-start sm:self-auto cursor-pointer"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Download Faculty Dossier (PDF)</span>
+                </button>
+              </div>
+
+              {/* Higher Education Degrees */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-sm text-[#0d2b26] flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-[#0d5c4d]" />
+                  <span>University Degrees &amp; Higher Education</span>
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    {
+                      degree: "Bachelor of Science (B.Sc. Special) in Mathematics",
+                      institution: "University of Colombo, Sri Lanka",
+                      honors: "First Class Honours (GPA: 3.92 / 4.0)",
+                      year: "Class of 2008",
+                      details: "Pure Mathematics, Real Analysis, Complex Variables, Abstract Algebra & Numerical Methods."
+                    },
+                    {
+                      degree: "Post Graduate Diploma in Education (PGDE)",
+                      institution: "National Institute of Education (NIE), Maharagama",
+                      honors: "Passed with Distinction",
+                      year: "Class of 2014",
+                      details: "Secondary & Collegiate STEM Pedagogy, Educational Psychology, Curriculum Formulation & Evaluation."
+                    },
+                    {
+                      degree: "Master of Science (M.Sc.) in Applied Mathematics",
+                      institution: "University of Peradeniya",
+                      honors: "Thesis Distinction",
+                      year: "Class of 2018",
+                      details: "Thesis: Numerical Modeling of Partial Differential Equations & Boundary Value Simulations."
+                    }
+                  ].map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="p-5 rounded-2xl bg-[#f8faf9] border border-[#e2eae5] space-y-2 flex flex-col justify-between"
+                    >
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-bold text-[#0d5c4d] bg-[#ecf8f5] px-2 py-0.5 rounded-full border border-[#c4e9e0]">
+                          {item.year}
+                        </span>
+                        <h5 className="font-black text-sm text-[#0d2b26] leading-snug">{item.degree}</h5>
+                        <p className="text-xs font-semibold text-slate-700">{item.institution}</p>
+                        <p className="text-xs text-amber-700 font-bold">{item.honors}</p>
+                      </div>
+                      <p className="text-[11px] text-slate-500 pt-2 border-t border-slate-200/60 leading-relaxed">
+                        {item.details}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Government Licensing & Accreditations */}
+              <div className="space-y-3 pt-4 border-t border-slate-100">
+                <h4 className="font-bold text-sm text-[#0d2b26] flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-[#0d5c4d]" />
+                  <span>Professional Licensing &amp; National Accreditations</span>
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      title: "Sri Lanka Teachers' Service (SLTS) Class 1 Senior Educator",
+                      issuer: "Ministry of Education, Isurupaya, Battaramulla",
+                      regNo: "SLTS-REG/2012/4482",
+                      status: "Active & Permanent Pensionable Service · 14 Years Seniority",
+                      badge: "SLTS Class 1",
+                      badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200"
+                    },
+                    {
+                      title: "G.C.E. Advanced Level Chief Examiner & Paper Setter Accreditation",
+                      issuer: "Department of Examinations, Pelawatte, Battaramulla",
+                      regNo: "EXAM-AL/MTH-P03",
+                      status: "Supervising Examiner · Combined Mathematics Paper Evaluation Panel 03",
+                      badge: "Chief Examiner",
+                      badgeColor: "bg-blue-50 text-blue-800 border-blue-200"
+                    },
+                    {
+                      title: "National STEM Pedagogical Master Trainer & Digital Lead",
+                      issuer: "UNESCO & National Education Commission (NEC)",
+                      regNo: "STEM-LK/2021/88",
+                      status: "Accredited Master Facilitator for Advanced Collegiate Mathematics Instruction",
+                      badge: "Master Trainer",
+                      badgeColor: "bg-purple-50 text-purple-800 border-purple-200"
+                    },
+                    {
+                      title: "Provincial Teaching Excellence & Mentorship Award (2023)",
+                      issuer: "Western Provincial Department of Education",
+                      regNo: "WP-EDU/AWARD/2023",
+                      status: "Awarded for 98% Distinction Rate in A/L Combined Mathematics Examination",
+                      badge: "Provincial Award",
+                      badgeColor: "bg-amber-50 text-amber-800 border-amber-200"
+                    }
+                  ].map((lic, idx) => (
+                    <div
+                      key={idx}
+                      className="p-5 rounded-2xl bg-white border border-[#e6ece8] shadow-2xs hover:shadow-xs transition-shadow space-y-2.5"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${lic.badgeColor}`}>
+                            {lic.badge}
+                          </span>
+                          <h5 className="font-extrabold text-sm text-[#0d2b26] mt-1.5 leading-snug">{lic.title}</h5>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 shrink-0">
+                          {lic.regNo}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-500 font-medium">{lic.issuer}</p>
+
+                      <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-bold pt-2 border-t border-slate-100">
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                        <span>{lic.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NEXT OF KIN & EMERGENCY LIAISON CARD (Teacher) / PARENT & GUARDIAN CARD (Student) */}
           <div className="bg-white rounded-3xl border border-[#e2eae5] p-5 sm:p-7 shadow-xs space-y-6">
             <div className="pb-4 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h3 className="font-extrabold text-base text-[#0d2b26] flex items-center gap-2">
                   <Users className="h-4 w-4 text-[#0d5c4d]" />
-                  <span>Parent &amp; Guardian Information</span>
+                  <span>
+                    {currentRole === "teacher"
+                      ? "Next of Kin & Emergency Liaison"
+                      : "Parent & Guardian Information"}
+                  </span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Contact information for emergencies, parent-teacher conferences, and academic communications.
+                  {currentRole === "teacher"
+                    ? "Official contact information for institutional welfare, emergency liaison, and faculty benefits."
+                    : "Contact information for emergencies, parent-teacher conferences, and academic communications."}
                 </p>
               </div>
               {isEditing && (
@@ -645,9 +832,11 @@ export function ProfileView() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Primary Guardian Name */}
+              {/* Primary Contact Name */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Primary Guardian Name</label>
+                <label className="text-xs font-bold text-slate-700">
+                  {currentRole === "teacher" ? "Next of Kin Full Name" : "Primary Guardian Name"}
+                </label>
                 {isEditing ? (
                   <input
                     type="text"
@@ -664,7 +853,9 @@ export function ProfileView() {
 
               {/* Relationship */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Relationship to Student</label>
+                <label className="text-xs font-bold text-slate-700">
+                  {currentRole === "teacher" ? "Relationship to Faculty Member" : "Relationship to Student"}
+                </label>
                 {isEditing ? (
                   <input
                     type="text"
@@ -679,9 +870,11 @@ export function ProfileView() {
                 )}
               </div>
 
-              {/* Guardian Phone */}
+              {/* Contact Phone */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Primary Contact Phone</label>
+                <label className="text-xs font-bold text-slate-700">
+                  {currentRole === "teacher" ? "Primary Contact Phone" : "Primary Contact Phone"}
+                </label>
                 {isEditing ? (
                   <input
                     type="text"
@@ -696,15 +889,17 @@ export function ProfileView() {
                       href={`tel:${profileData.guardianPhone}`}
                       className="text-[10px] text-[#0d5c4d] font-bold hover:underline"
                     >
-                      Call Guardian
+                      {currentRole === "teacher" ? "Call Next of Kin" : "Call Guardian"}
                     </a>
                   </div>
                 )}
               </div>
 
-              {/* Guardian Email */}
+              {/* Contact Email */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Guardian Email</label>
+                <label className="text-xs font-bold text-slate-700">
+                  {currentRole === "teacher" ? "Contact Email Address" : "Guardian Email"}
+                </label>
                 {isEditing ? (
                   <input
                     type="email"
@@ -721,7 +916,9 @@ export function ProfileView() {
 
               {/* Occupation */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Guardian Occupation / Workplace</label>
+                <label className="text-xs font-bold text-slate-700">
+                  {currentRole === "teacher" ? "Occupation / Workplace" : "Guardian Occupation / Workplace"}
+                </label>
                 {isEditing ? (
                   <input
                     type="text"
@@ -738,7 +935,9 @@ export function ProfileView() {
 
               {/* Emergency Contact */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Emergency Contact (24/7)</label>
+                <label className="text-xs font-bold text-slate-700">
+                  {currentRole === "teacher" ? "Faculty Welfare & Emergency Liaison (24/7)" : "Emergency Contact (24/7)"}
+                </label>
                 {isEditing ? (
                   <input
                     type="text"
@@ -758,9 +957,350 @@ export function ProfileView() {
       )}
 
       {/* =================================================================== */}
-      {/* TAB 2: ACADEMIC & SUBJECTS                                         */}
+      {/* TEACHER TAB 2: ASSIGNED CLASSES & WORKLOAD                          */}
       {/* =================================================================== */}
-      {activeTab === "academic" && (
+      {currentRole === "teacher" && activeTab === "teaching" && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-[#e2eae5] p-5 sm:p-7 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="font-extrabold text-base text-[#0d2b26] flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-[#0d5c4d]" />
+                  <span>Teaching Allocation &amp; Academic Workload (2026 Session)</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Assigned batches, weekly lecture periods, syllabus completion tracking, and student counts.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCurrentView("teaching")}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d5c4d] hover:bg-[#0a473b] text-white font-bold text-xs shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
+              >
+                <span>Launch Teaching Studio</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Workload Metric KPIs */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div className="bg-[#f8faf9] rounded-2xl p-4 border border-[#e2eae5] shadow-2xs">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Weekly Teaching Load</span>
+                <p className="text-2xl font-black text-[#0d5c4d] mt-1 font-mono">28 Periods</p>
+                <p className="text-[10px] text-emerald-700 font-bold mt-1">Full-Time Collegiate Faculty</p>
+              </div>
+
+              <div className="bg-[#f8faf9] rounded-2xl p-4 border border-[#e2eae5] shadow-2xs">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Allocated Batches</span>
+                <p className="text-2xl font-black text-[#0d2b26] mt-1 font-mono">4 Classes</p>
+                <p className="text-[10px] text-slate-500 mt-1">Grade 12 &amp; Grade 13 A/L</p>
+              </div>
+
+              <div className="bg-[#f8faf9] rounded-2xl p-4 border border-[#e2eae5] shadow-2xs">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Enrolled Students</span>
+                <p className="text-2xl font-black text-[#0d2b26] mt-1 font-mono">142 Students</p>
+                <p className="text-[10px] text-slate-500 mt-1">Physical Science Stream</p>
+              </div>
+
+              <div className="bg-[#f8faf9] rounded-2xl p-4 border border-[#e2eae5] shadow-2xs">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Average Class Mastery</span>
+                <p className="text-2xl font-black text-amber-600 mt-1 font-mono">91.4%</p>
+                <p className="text-[10px] text-amber-700 font-bold mt-1">Highest in Science Faculty</p>
+              </div>
+            </div>
+
+            {/* Allocated Courses Cards */}
+            <div className="space-y-3 pt-2">
+              <h4 className="font-bold text-sm text-[#0d2b26]">Official Class Allocations &amp; Delivery Progress</h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  {
+                    title: "Combined Mathematics 12 (Pure & Applied)",
+                    code: "CMATH-12A",
+                    className: "Grade 12-Physical Science A",
+                    students: 42,
+                    periods: "8 Periods / Week",
+                    venue: "Hall 04 · Science Wing",
+                    schedule: "Mon (08:00), Wed (08:00), Fri (09:50)",
+                    progress: 76,
+                    unitsDone: 9,
+                    unitsTotal: 12,
+                    badgeColor: "border-indigo-200 bg-indigo-50/50 text-indigo-800"
+                  },
+                  {
+                    title: "Pure Mathematics 13 (Advanced Problem Solving)",
+                    code: "PMATH-13",
+                    className: "Grade 13-Physical Science",
+                    students: 38,
+                    periods: "8 Periods / Week",
+                    venue: "Lecture Hall A · Collegiate Complex",
+                    schedule: "Mon (09:50), Tue (09:50), Thu (08:00)",
+                    progress: 88,
+                    unitsDone: 14,
+                    unitsTotal: 16,
+                    badgeColor: "border-emerald-200 bg-emerald-50/50 text-emerald-800"
+                  },
+                  {
+                    title: "Applied Mathematics Mechanics & Computing",
+                    code: "AMATH-12B",
+                    className: "Grade 12-Physical Science B",
+                    students: 35,
+                    periods: "6 Periods / Week",
+                    venue: "Physics & Computing Lab 02",
+                    schedule: "Tue (08:00), Wed (09:50)",
+                    progress: 70,
+                    unitsDone: 7,
+                    unitsTotal: 10,
+                    badgeColor: "border-blue-200 bg-blue-50/50 text-blue-800"
+                  },
+                  {
+                    title: "G.C.E. A/L Model Paper Discussion & Booster",
+                    code: "MC-13",
+                    className: "Combined Science Stream",
+                    students: 27,
+                    periods: "6 Periods / Week",
+                    venue: "Collegiate Auditorium",
+                    schedule: "Fri (08:00), Sat Morning",
+                    progress: 92,
+                    unitsDone: 11,
+                    unitsTotal: 12,
+                    badgeColor: "border-amber-200 bg-amber-50/50 text-amber-800"
+                  }
+                ].map((course, idx) => (
+                  <div
+                    key={idx}
+                    className="p-5 rounded-2xl border border-[#e6ece8] bg-[#fcfdfc] hover:border-[#b2e5d9] hover:shadow-xs transition-all space-y-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${course.badgeColor}`}>
+                            {course.code}
+                          </span>
+                          <span className="text-[11px] font-semibold text-slate-500">{course.className}</span>
+                        </div>
+                        <h4 className="font-extrabold text-sm text-[#0d2b26] mt-1.5">{course.title}</h4>
+                      </div>
+                      <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700">
+                        {course.students} Students
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5 text-xs bg-white p-3 rounded-xl border border-slate-100">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Workload</span>
+                        <p className="font-semibold text-slate-800">{course.periods}</p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Assigned Venue</span>
+                        <p className="font-semibold text-slate-800 line-clamp-1">{course.venue}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Weekly Time Slot</span>
+                        <p className="font-semibold text-[#0d5c4d]">{course.schedule}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 font-medium">Syllabus Completion</span>
+                        <span className="font-bold text-[#0d5c4d]">
+                          {course.unitsDone} of {course.unitsTotal} Units ({course.progress}%)
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#0d5c4d] to-[#147a66] rounded-full transition-all"
+                          style={{ width: `${course.progress}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentView("syllabus_builder")}
+                        className="text-[11px] font-bold text-[#0d5c4d] hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>Open Syllabus Builder</span>
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentView("assignments")}
+                        className="text-[11px] font-bold text-slate-600 hover:text-[#0d5c4d] transition-colors cursor-pointer"
+                      >
+                        View Coursework &rarr;
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* TEACHER TAB 3: WEEKLY TEACHING TIMETABLE                            */}
+      {/* =================================================================== */}
+      {currentRole === "teacher" && activeTab === "schedule" && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-[#e2eae5] p-5 sm:p-7 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="font-extrabold text-base text-[#0d2b26] flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-[#0d5c4d]" />
+                  <span>Weekly Faculty Teaching Timetable &amp; Consultation Hours</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Daily period allocation, classroom locations, student office hours, and department meetings.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleDownloadTeacherTimetable}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#d6dfd9] text-[#0d5c4d] hover:bg-[#ecf8f5] font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>Print Timetable</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Day Selector Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const).map((day) => (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => setSelectedScheduleDay(day)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    selectedScheduleDay === day
+                      ? "bg-[#0d5c4d] text-white shadow-xs"
+                      : "bg-[#f8faf9] text-slate-600 hover:bg-[#ecf8f5] border border-slate-200"
+                  }`}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+
+            {/* Day Schedule Notice Banner */}
+            <div className="p-3 rounded-2xl bg-[#f6fbf9] border border-[#c4e9e0] flex items-center justify-between gap-3 text-xs text-[#0d5c4d]">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-bold">Schedule for {selectedScheduleDay} · 2026 Academic Term</span>
+              </div>
+              <span className="font-mono font-bold text-[11px] bg-white px-2.5 py-0.5 rounded-full border border-[#b2e5d9]">
+                Senior Master Schedule
+              </span>
+            </div>
+
+            {/* Period Cards Grid */}
+            <div className="space-y-3">
+              {[
+                ...(selectedScheduleDay === "Monday"
+                  ? [
+                      { period: "Period 1", time: "08:00 - 08:45", subject: "Combined Mathematics - Differential Calculus", class: "Grade 12-A", venue: "Hall 04 · Science Wing", type: "Lecture" },
+                      { period: "Period 2", time: "08:45 - 09:30", subject: "Combined Mathematics - Calculus Tutorial & Problem Sets", class: "Grade 12-A", venue: "Hall 04 · Science Wing", type: "Tutorial" },
+                      { period: "Recess", time: "09:30 - 09:50", subject: "Morning Interval & Faculty Refreshment", class: "Staff Council", venue: "Faculty Lounge", type: "Break" },
+                      { period: "Period 3", time: "09:50 - 10:35", subject: "Pure Mathematics - Complex Numbers & De Moivre's Theorem", class: "Grade 13-Science", venue: "Lecture Hall A", type: "Lecture" },
+                      { period: "Period 4", time: "10:35 - 11:20", subject: "Pure Mathematics - Advanced Exam Proofs Workshop", class: "Grade 13-Science", venue: "Lecture Hall A", type: "Masterclass" },
+                      { period: "Period 5", time: "11:20 - 12:05", subject: "Staff Office Hours & Student Doubt Clearing", class: "All A/L Students", venue: "HOD Office 12", type: "Consultation" },
+                      { period: "Lunch", time: "12:05 - 12:45", subject: "Lunch Interval", class: "Staff Dining", venue: "Staff Club", type: "Break" },
+                      { period: "Period 6", time: "12:45 - 01:30", subject: "Math Olympiad Elite Coaching Squad", class: "SLMC Selected Team", venue: "Seminar Room 01", type: "Co-Curricular" }
+                    ]
+                  : selectedScheduleDay === "Tuesday"
+                  ? [
+                      { period: "Period 1", time: "08:00 - 08:45", subject: "Applied Mathematics - Dynamics & Newton's Laws", class: "Grade 12-B", venue: "Room 12-B", type: "Lecture" },
+                      { period: "Period 2", time: "08:45 - 09:30", subject: "Applied Mathematics - Friction & Equilibrium Systems", class: "Grade 12-B", venue: "Room 12-B", type: "Lecture" },
+                      { period: "Recess", time: "09:30 - 09:50", subject: "Morning Interval & Faculty Refreshment", class: "Staff Council", venue: "Faculty Lounge", type: "Break" },
+                      { period: "Period 3", time: "09:50 - 10:35", subject: "Pure Mathematics - Trigonometric Integrals", class: "Grade 13-Science", venue: "Lecture Hall A", type: "Lecture" },
+                      { period: "Period 4", time: "10:35 - 11:20", subject: "Pure Mathematics - Differential Equations & Growth Models", class: "Grade 13-Science", venue: "Lecture Hall A", type: "Lecture" },
+                      { period: "Period 5", time: "11:20 - 12:05", subject: "Curriculum Planning & Scheme of Work Review", class: "Mathematics Faculty", venue: "HOD Office 12", type: "Admin" },
+                      { period: "Lunch", time: "12:05 - 12:45", subject: "Lunch Interval", class: "Staff Dining", venue: "Staff Club", type: "Break" },
+                      { period: "Period 6", time: "12:45 - 02:00", subject: "Department Assessment Moderation", class: "Senior Staff", venue: "Boardroom", type: "Evaluation" }
+                    ]
+                  : selectedScheduleDay === "Wednesday"
+                  ? [
+                      { period: "Period 1", time: "08:00 - 08:45", subject: "Combined Mathematics - Polynomials & Roots Theorem", class: "Grade 12-A", venue: "Hall 04 · Science Wing", type: "Lecture" },
+                      { period: "Period 2", time: "08:45 - 09:30", subject: "Combined Mathematics - Quadratic Expressions & Inequalities", class: "Grade 12-A", venue: "Hall 04 · Science Wing", type: "Tutorial" },
+                      { period: "Recess", time: "09:30 - 09:50", subject: "Morning Interval & Faculty Refreshment", class: "Staff Council", venue: "Faculty Lounge", type: "Break" },
+                      { period: "Period 3-4", time: "09:50 - 11:20", subject: "Applied Mathematics Mechanics Practical Lab", class: "Grade 12-B", venue: "Physics & Computing Lab 02", type: "Practical" },
+                      { period: "Period 5", time: "11:20 - 12:05", subject: "Remedial Coaching for Borderline Candidates", class: "Grade 12 Stream", venue: "Hall 04", type: "Mentoring" },
+                      { period: "Lunch", time: "12:05 - 12:45", subject: "Lunch Interval", class: "Staff Dining", venue: "Staff Club", type: "Break" },
+                      { period: "Period 6", time: "12:45 - 02:15", subject: "College Chess Club Practice Session", class: "Inter-School Squad", venue: "College Pavilion", type: "Co-Curricular" }
+                    ]
+                  : selectedScheduleDay === "Thursday"
+                  ? [
+                      { period: "Period 1-2", time: "08:00 - 09:30", subject: "Pure Mathematics - Vectors in 3D Space & Dot Products", class: "Grade 13-Science", venue: "Lecture Hall A", type: "Double Lecture" },
+                      { period: "Recess", time: "09:30 - 09:50", subject: "Morning Interval & Faculty Refreshment", class: "Staff Council", venue: "Faculty Lounge", type: "Break" },
+                      { period: "Period 3", time: "09:50 - 10:35", subject: "Combined Mathematics - Coordinate Geometry & Straight Lines", class: "Grade 12-A", venue: "Hall 04 · Science Wing", type: "Lecture" },
+                      { period: "Period 4", time: "10:35 - 11:20", subject: "Combined Mathematics - Circles & Tangents Formulation", class: "Grade 12-A", venue: "Hall 04 · Science Wing", type: "Lecture" },
+                      { period: "Period 5", time: "11:20 - 12:05", subject: "Parent Consultations & Student Academic Guidance", class: "By Appointment", venue: "Senior Staff Room", type: "Consultation" },
+                      { period: "Lunch", time: "12:05 - 12:45", subject: "Lunch Interval", class: "Staff Dining", venue: "Staff Club", type: "Break" },
+                      { period: "Period 6", time: "12:45 - 02:00", subject: "Collegiate Academic Council Meeting", class: "Senior Staff", venue: "Principal's Conference Room", type: "Admin" }
+                    ]
+                  : [
+                      { period: "Period 1-2", time: "08:00 - 09:30", subject: "Grade 13 Exam Booster & Past Paper Workshop", class: "Grade 13-Science", venue: "Lecture Hall A", type: "Workshop" },
+                      { period: "Recess", time: "09:30 - 09:50", subject: "Morning Interval & Faculty Refreshment", class: "Staff Council", venue: "Faculty Lounge", type: "Break" },
+                      { period: "Period 3", time: "09:50 - 10:35", subject: "Grade 12-B Hydrostatics & Fluid Pressure Theory", class: "Grade 12-B", venue: "Room 12-B", type: "Lecture" },
+                      { period: "Period 4", time: "10:35 - 11:20", subject: "Weekly Mathematics Faculty Sync & Briefing", class: "Department Staff", venue: "HOD Office 12", type: "Department Sync" },
+                      { period: "Period 5", time: "11:20 - 12:05", subject: "Teacher Reflection & Digital Lesson Upload", class: "LMS Portal", venue: "Staff IT Suite", type: "LMS Portal" },
+                      { period: "Lunch", time: "12:05 - 12:45", subject: "Lunch Interval", class: "Staff Dining", venue: "Staff Club", type: "Break" },
+                      { period: "Period 6", time: "12:45 - 02:15", subject: "G.C.E. Advanced Level Grading & Feedback Desk", class: "Assignments", venue: "Staff Room", type: "Grading" }
+                    ])
+              ].map((slot, idx) => (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    slot.type === "Break"
+                      ? "bg-slate-50/60 border-slate-200/60 opacity-80"
+                      : "bg-white border-[#e6ece8] hover:border-[#b2e5d9] shadow-2xs"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-24 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex flex-col items-center justify-center font-bold shrink-0">
+                      <span className="text-[11px] font-black">{slot.period}</span>
+                      <span className="text-[9px] text-slate-500 font-mono">{slot.time}</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-[#0d2b26]">{slot.subject}</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                          {slot.type}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Target: <span className="font-semibold text-slate-700">{slot.class}</span> · Room:{" "}
+                        <span className="font-semibold text-[#0d5c4d]">{slot.venue}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 self-start sm:self-auto shrink-0">
+                    Scheduled ✓
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* STUDENT TABS (Only for student / parent roles)                      */}
+      {/* =================================================================== */}
+      {currentRole !== "teacher" && (
+        <>
+          {/* TAB 2: ACADEMIC & SUBJECTS                                         */}
+          {activeTab === "academic" && (
         <div className="space-y-6 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl border border-[#e2eae5] p-5 sm:p-7 shadow-xs space-y-6">
             <div>
@@ -1420,6 +1960,8 @@ export function ProfileView() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

@@ -46,6 +46,14 @@ export const mockUsers: Record<string, User> = {
     role: 'admin',
     schoolId: 'sch_01',
     schoolName: 'St. Michael High School'
+  },
+  super_admin: {
+    id: 'usr_super_admin_01',
+    name: 'SaaS Platform Owner',
+    email: 'director@nawana.lk',
+    role: 'super_admin',
+    schoolId: 'global_platform',
+    schoolName: 'Nawana Cloud Multi-Tenant Platform'
   }
 };
 
@@ -1075,8 +1083,19 @@ export const initialEvents: SchoolEvent[] = [
 export const initialAnnouncements: Announcement[] = [
   {
     id: 'ann_01',
-    title: 'Term 2 Final Assessment Schedule Released',
-    message: 'The official timetable for Term 2 Combined Mathematics and Science examinations is now live under Academic Progress.',
+    title: 'Term 2 Final Assessment Schedule & Candidate Guidelines Released',
+    message: `The official examination timetable for Term 2 Combined Mathematics, Physics, and Chemistry examinations is now officially published.
+
+Key Candidate Guidelines & Instructions:
+1. Morning sessions commence sharply at 08:30 AM. Candidates must be seated in the examination hall 15 minutes prior to commencement.
+2. Only approved non-programmable scientific calculators are permitted for Mathematics and Physics papers.
+3. Index numbers and official admit cards must be displayed clearly on candidate desks throughout the session.
+
+Hall Allocations:
+• Physical Science Candidates: Senior Secondary Wing, Examination Hall 04 & 05.
+• Biological Science Candidates: Main Auditorium, Ground Floor.
+
+For timetable inquiries or special accommodation requests, please consult the Examination Unit.`,
     publishedAt: '2 hours ago',
     authorName: 'Dr. K. Rajasingham',
     authorRole: 'Principal / Admin',
@@ -1086,7 +1105,7 @@ export const initialAnnouncements: Announcement[] = [
   {
     id: 'ann_02',
     title: 'Cricket Under-17 Match Venue Confirmation',
-    message: 'Saturday fixture against Trinity Central will be held at the Main College Oval at 9:30 AM. Players arrive by 8:15 AM.',
+    message: 'Saturday fixture against Trinity Central will be held at the Main College Oval at 9:30 AM. Players arrive by 8:15 AM in full team whites.',
     publishedAt: 'Yesterday',
     authorName: 'Mr. Samantha Perera',
     authorRole: 'Cricket Master-in-Charge',

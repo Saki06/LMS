@@ -25,13 +25,15 @@ import {
   ChevronRight,
   ChevronLeft,
   Flame,
-  Sparkles,
   PanelLeftClose,
   PanelLeftOpen,
   CheckCircle2,
   Bookmark,
   Link2,
-  X
+  Video,
+  Sliders,
+  CreditCard,
+  Shield
 } from "lucide-react";
 
 interface SidebarProps {
@@ -57,13 +59,12 @@ interface NavItem {
 }
 
 export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
-  const { currentRole, currentView, setCurrentView, t, submissions } = useApp();
+  const { currentRole, currentView, setCurrentView, t, submissions, isFeatureEnabled } = useApp();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     my_learning: true,
     school_life: false
   });
-  const [isStreakCalendarOpen, setIsStreakCalendarOpen] = useState(false);
   const [selectedStreakDate, setSelectedStreakDate] = useState<number>(2);
   const [miniCalMonth, setMiniCalMonth] = useState<number>(9); // 9 = October
   const [miniCalYear, setMiniCalYear] = useState<number>(2026);
@@ -85,95 +86,145 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
   };
 
   // Structured Nav with Groups
-  const studentNav: NavItem[] = [
+  const rawStudentNav: NavItem[] = [
     // Core Learning Group
     { id: "dashboard", label: t.nav.dashboard, icon: Home, group: "Core Learning" },
-    {
-      id: "connect",
-      label: "Connect",
-      icon: Link2,
-      badge: "Classes",
-      badgeVariant: "gold",
-      group: "Core Learning"
-    },
+    ...(isFeatureEnabled("tuition_subscriptions") || isFeatureEnabled("bank_slip_approvals")
+      ? [
+          {
+            id: "connect",
+            label: "Connect",
+            icon: Link2,
+            badge: "Classes",
+            badgeVariant: "gold" as const,
+            group: "Core Learning"
+          }
+        ]
+      : []),
     {
       id: "my_learning",
       label: t.nav.myLearning || "My Learning",
       icon: BookOpen,
       group: "Core Learning",
       children: [
-        { id: "courses", label: "Syllabus & Lessons", icon: BookOpen },
-        {
-          id: "assignments",
-          label: t.nav.assignments,
-          icon: FileText,
-          badge: "2 Active"
-        },
-        { id: "quizzes", label: t.nav.quizzes, icon: GraduationCap },
-        {
-          id: "past_papers",
-          label: t.nav.pastPapers || "Past Papers",
-          icon: Layers,
-          badge: "Archive"
-        }
+        ...(isFeatureEnabled("syllabus_builder")
+          ? [{ id: "courses", label: "Syllabus & Lessons", icon: BookOpen }]
+          : []),
+        ...(isFeatureEnabled("assignments_grading")
+          ? [
+              {
+                id: "assignments",
+                label: t.nav.assignments,
+                icon: FileText,
+                badge: "2 Active"
+              },
+              { id: "quizzes", label: t.nav.quizzes, icon: GraduationCap }
+            ]
+          : []),
+        ...(isFeatureEnabled("past_papers_library")
+          ? [
+              {
+                id: "past_papers",
+                label: t.nav.pastPapers || "Past Papers",
+                icon: Layers,
+                badge: "Archive"
+              }
+            ]
+          : [])
       ]
     },
-    {
-      id: "library",
-      label: t.nav.library || "Library",
-      icon: Library,
-      badge: "Hub",
-      badgeVariant: "default",
-      group: "Core Learning"
-    },
+    ...(isFeatureEnabled("past_papers_library")
+      ? [
+          {
+            id: "library",
+            label: t.nav.library || "Library",
+            icon: Library,
+            badge: "Hub",
+            badgeVariant: "default" as const,
+            group: "Core Learning"
+          }
+        ]
+      : []),
 
-    // Campus Life Group
-    {
-      id: "school_life",
-      label: t.nav.schoolLife || "School Life",
-      icon: Trophy,
-      group: "Campus Life",
-      children: [
-        { id: "sports", label: "Sports", icon: Trophy },
-        { id: "events", label: "Events", icon: Calendar },
-        { id: "announcements", label: "Announcements", icon: Bell }
-      ]
-    },
+    // Campus Life Group (Filtered by feature flags)
+    ...((isFeatureEnabled("campus_sports") ||
+    isFeatureEnabled("campus_events") ||
+    isFeatureEnabled("campus_announcements"))
+      ? [
+          {
+            id: "school_life",
+            label: t.nav.schoolLife || "School Life",
+            icon: Trophy,
+            group: "Campus Life",
+            children: [
+              ...(isFeatureEnabled("campus_sports") ? [{ id: "sports", label: "Sports", icon: Trophy }] : []),
+              ...(isFeatureEnabled("campus_events") ? [{ id: "events", label: "Events", icon: Calendar }] : []),
+              ...(isFeatureEnabled("campus_announcements")
+                ? [{ id: "announcements", label: "Announcements", icon: Bell }]
+                : [])
+            ]
+          }
+        ]
+      : []),
 
     // Account & Profile
     { id: "profile", label: "My Profile", icon: User, group: "Personal Account" }
   ];
 
-  const teacherNav: NavItem[] = [
+  const rawTeacherNav: NavItem[] = [
     { id: "dashboard", label: t.nav.dashboard, icon: Home, group: "Teaching Studio" },
-    {
-      id: "connect",
-      label: "Connect Hub",
-      icon: Link2,
-      badge: "Subscribers",
-      badgeVariant: "gold",
-      group: "Teaching Studio"
-    },
-    { id: "syllabus", label: t.nav.syllabus, icon: Layers, group: "Teaching Studio" },
-    { id: "assignments", label: t.nav.assignments, icon: FileText, group: "Assessments & Review" },
-    {
-      id: "submissions",
-      label: t.nav.submissions,
-      icon: ClipboardCheck,
-      badge: pendingSubmissionsCount > 0 ? `${pendingSubmissionsCount} Pending` : undefined,
-      badgeVariant: "warning",
-      group: "Assessments & Review"
-    },
-    {
-      id: "library",
-      label: "Library Resources",
-      icon: Library,
-      badge: "Author",
-      badgeVariant: "gold",
-      group: "Assessments & Review"
-    },
-    { id: "sports", label: t.sports.teams, icon: Trophy, group: "Campus Operations" },
-    { id: "announcements", label: t.nav.announcements, icon: Bell, group: "Campus Operations" }
+    ...(isFeatureEnabled("live_broadcast_studio")
+      ? [
+          {
+            id: "live_schedule",
+            label: "Live Schedule",
+            icon: Video,
+            badge: "Live",
+            badgeVariant: "default" as const,
+            group: "Teaching Studio"
+          }
+        ]
+      : []),
+    ...(isFeatureEnabled("tuition_subscriptions") || isFeatureEnabled("bank_slip_approvals")
+      ? [
+          {
+            id: "connect",
+            label: "Connect Hub",
+            icon: Link2,
+            badge: "Subscribers",
+            badgeVariant: "gold" as const,
+            group: "Teaching Studio"
+          }
+        ]
+      : []),
+    ...(isFeatureEnabled("syllabus_builder")
+      ? [{ id: "syllabus", label: t.nav.syllabus, icon: Layers, group: "Teaching Studio" }]
+      : []),
+    ...(isFeatureEnabled("assignments_grading")
+      ? [
+          { id: "assignments", label: t.nav.assignments, icon: FileText, group: "Assessments & Review" },
+          {
+            id: "submissions",
+            label: t.nav.submissions,
+            icon: ClipboardCheck,
+            badge: pendingSubmissionsCount > 0 ? `${pendingSubmissionsCount} Pending` : undefined,
+            badgeVariant: "warning" as const,
+            group: "Assessments & Review"
+          }
+        ]
+      : []),
+    ...(isFeatureEnabled("past_papers_library")
+      ? [
+          {
+            id: "library",
+            label: "Library Resources",
+            icon: Library,
+            badge: "Author",
+            badgeVariant: "gold" as const,
+            group: "Assessments & Review"
+          }
+        ]
+      : [])
   ];
 
   const adminNav: NavItem[] = [
@@ -205,16 +256,44 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
     { id: "admin_settings", label: t.admin.profileSettings, icon: Settings, group: "Administration" }
   ];
 
-  const currentNavItems = {
-    student: studentNav,
-    teacher: teacherNav,
-    admin: adminNav
-  }[currentRole];
+  const superAdminNav: NavItem[] = [
+    { id: "dashboard", label: "Master Dashboard", icon: Home, group: "Platform Owner" },
+    {
+      id: "super_admin_tenants",
+      label: "Client Tenants",
+      icon: Building2,
+      badge: "Directory",
+      badgeVariant: "gold",
+      group: "Platform Owner"
+    },
+    {
+      id: "super_admin_matrix",
+      label: "Feature Flags",
+      icon: Sliders,
+      badge: "Matrix",
+      badgeVariant: "default",
+      group: "Platform Owner"
+    },
+    {
+      id: "super_admin_pricing",
+      label: "SaaS Packages",
+      icon: CreditCard,
+      badge: "Pricing",
+      group: "Platform Owner"
+    }
+  ];
+
+  const currentNavItems: NavItem[] = {
+    student: rawStudentNav,
+    teacher: rawTeacherNav,
+    admin: adminNav,
+    super_admin: superAdminNav
+  }[currentRole] || rawStudentNav;
 
   // Group items by their section
   const groupedItems = React.useMemo(() => {
-    const groups: { [key: string]: NavItem[] } = {};
-    currentNavItems.forEach((item) => {
+    const groups: Record<string, NavItem[]> = {};
+    currentNavItems.forEach((item: NavItem) => {
       const g = item.group || "General";
       if (!groups[g]) groups[g] = [];
       groups[g].push(item);
@@ -236,7 +315,7 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
       <aside
         className={`fixed lg:static top-[121px] bottom-3 left-3 z-40 flex flex-col transition-all duration-300 ease-in-out shrink-0 ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        } ${isCollapsed ? "w-20" : "w-[264px]"} my-0 lg:my-3 lg:ml-3 lg:mr-0 h-[calc(100vh-140px)]`}
+        } ${isCollapsed ? "w-20" : "w-[280px]"} my-0 lg:my-3 lg:ml-3 lg:mr-0 h-[calc(100vh-140px)]`}
       >
         <div className="h-full w-full rounded-3xl bg-white border border-[#e2eae5] shadow-[0_16px_40px_-12px_rgba(13,92,77,0.12),0_2px_8px_rgba(0,0,0,0.04)] ring-1 ring-black/5 flex flex-col overflow-hidden relative transition-all">
           {/* Top Glass Header & Collapse Toggle */}
@@ -372,8 +451,8 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
                     <button
                       key={item.id}
                       onClick={() => handleNavClick(item.id)}
-                      className={`w-full flex items-center ${
-                        isCollapsed ? "justify-center p-2.5" : "justify-between px-3 py-2"
+                      className={`w-full flex items-center text-left ${
+                        isCollapsed ? "justify-center p-2.5" : "justify-between px-2.5 py-2"
                       } rounded-xl text-xs font-bold transition-all group relative ${
                         isActive
                           ? "bg-gradient-to-r from-[#ecf8f5] to-white text-[#0d5c4d] border border-[#b2e5d9] shadow-[0_2px_10px_rgba(13,92,77,0.06)]"
@@ -386,21 +465,25 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
                         <span className="absolute left-1 top-2 bottom-2 w-1 rounded-full bg-[#0d5c4d] shadow-[0_0_8px_rgba(13,92,77,0.5)]" />
                       )}
 
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-2.5 min-w-0 text-left">
                         <Icon
-                          className={`h-4 w-4 transition-all group-hover:scale-110 ${
+                          className={`h-4 w-4 shrink-0 transition-all group-hover:scale-110 ${
                             isActive
                               ? "text-[#0d5c4d]"
                               : "text-slate-400 group-hover:text-[#0d5c4d]"
                           }`}
                         />
-                        {!isCollapsed && <span>{item.label}</span>}
+                        {!isCollapsed && (
+                          <span className="text-left font-bold leading-tight">
+                            {item.label}
+                          </span>
+                        )}
                       </div>
 
                       {/* Badge if present and not collapsed */}
                       {!isCollapsed && item.badge && (
                         <span
-                          className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full ${
+                          className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-1.5 whitespace-nowrap ${
                             item.badgeVariant === "warning"
                               ? "bg-[#fef7e6] text-[#b47a16] border border-[#fde4af]"
                               : item.badgeVariant === "gold"
@@ -498,7 +581,6 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
                               type="button"
                               onClick={() => {
                                 setSelectedStreakDate(d);
-                                setIsStreakCalendarOpen(true);
                               }}
                               className={`h-5 w-full rounded-md flex flex-col items-center justify-center text-[9.5px] transition-all relative group cursor-pointer ${
                                 isToday
@@ -529,13 +611,9 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
                           <Flame className="h-3 w-3 text-amber-500 fill-amber-500" />
                           <span>7d Streak Active</span>
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => setIsStreakCalendarOpen(true)}
-                          className="font-bold text-[#0d5c4d] hover:text-[#083e34] hover:underline cursor-pointer"
-                        >
-                          Full Schedule →
-                        </button>
+                        <span className="text-[9.5px] font-semibold text-slate-400">
+                          October 2026
+                        </span>
                       </div>
                     </div>
                   </>
@@ -554,9 +632,8 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
             ) : (
               /* Mini collapsed badge */
               <div
-                onClick={() => setIsStreakCalendarOpen(true)}
-                className="flex items-center justify-center p-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 cursor-pointer hover:bg-amber-100 transition-colors"
-                title="7-Day Study Streak Active - Click to view calendar"
+                className="flex items-center justify-center p-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200"
+                title="7-Day Study Streak Active"
               >
                 <Flame className="h-4 w-4 fill-current text-amber-500" />
               </div>
@@ -564,186 +641,6 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
           </div>
         </div>
       </aside>
-
-      {/* =================================================================== */}
-      {/* 7-DAY STUDY STREAK & MONTHLY ACTIVITY CALENDAR MODAL                 */}
-      {/* =================================================================== */}
-      {isStreakCalendarOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto no-scrollbar animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden my-6">
-            {/* Modal Header */}
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-[#ecf8f5] to-white">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-[#0d5c4d] text-white flex items-center justify-center shadow-xs">
-                  <Flame className="h-5 w-5 text-amber-300 fill-amber-300" />
-                </div>
-                <div>
-                  <h3 className="font-black text-base text-[#0d2b26]">
-                    Study Streak &amp; Activity Calendar
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    October 2026 Academic Term · Consistency Tracker
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsStreakCalendarOpen(false)}
-                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Streak Metrics Cards */}
-            <div className="p-5 pb-2">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center space-y-0.5">
-                  <div className="flex items-center justify-center gap-1 text-amber-700 font-black text-lg">
-                    <Flame className="h-4 w-4 fill-amber-500 text-amber-500" />
-                    <span>7 Days</span>
-                  </div>
-                  <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider">Current Streak</p>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-[#ecf8f5] border border-[#c4e9e0] text-center space-y-0.5">
-                  <div className="text-[#0d5c4d] font-black text-lg">
-                    14 Days
-                  </div>
-                  <p className="text-[10px] font-bold text-[#0d5c4d] uppercase tracking-wider">Best Record</p>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-purple-50 border border-purple-200 text-center space-y-0.5">
-                  <div className="text-purple-700 font-black text-lg">
-                    48.5 hrs
-                  </div>
-                  <p className="text-[10px] font-bold text-purple-900 uppercase tracking-wider">Month Total</p>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-sky-50 border border-sky-200 text-center space-y-0.5">
-                  <div className="text-sky-700 font-black text-lg">
-                    92%
-                  </div>
-                  <p className="text-[10px] font-bold text-sky-900 uppercase tracking-wider">Consistency</p>
-                </div>
-              </div>
-            </div>
-
-            {/* October 2026 Interactive Calendar Grid */}
-            <div className="p-5 pt-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-extrabold text-sm text-[#0d2b26] flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-[#0d5c4d]" />
-                  <span>October 2026</span>
-                </h4>
-                <div className="flex items-center gap-3 text-[11px] font-semibold text-slate-500">
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#0d5c4d]" /> Studied (2+ hrs)
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#f3b738] ring-2 ring-[#f3b738]/40" /> Today
-                  </span>
-                </div>
-              </div>
-
-              {/* Day Header Row */}
-              <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-slate-400">
-                <span>Sun</span>
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-                <span>Sat</span>
-              </div>
-
-              {/* Calendar Days Matrix (October 2026 starts on Thursday) */}
-              <div className="grid grid-cols-7 gap-1.5">
-                {/* Empty slots for Sun, Mon, Tue, Wed before Oct 1 */}
-                <div className="aspect-square rounded-xl bg-slate-50/50 border border-transparent opacity-30" />
-                <div className="aspect-square rounded-xl bg-slate-50/50 border border-transparent opacity-30" />
-                <div className="aspect-square rounded-xl bg-slate-50/50 border border-transparent opacity-30" />
-                <div className="aspect-square rounded-xl bg-slate-50/50 border border-transparent opacity-30" />
-
-                {/* Day 1: Today (Active Streak) */}
-                <button
-                  onClick={() => setSelectedStreakDate(1)}
-                  className={`aspect-square rounded-xl border flex flex-col items-center justify-center p-1 transition-all ${
-                    selectedStreakDate === 1
-                      ? "border-[#f3b738] bg-amber-50 ring-2 ring-[#f3b738]/50 shadow-xs"
-                      : "border-[#f3b738]/60 bg-amber-50/70"
-                  }`}
-                >
-                  <span className="font-black text-xs text-amber-950">1</span>
-                  <Flame className="h-3 w-3 text-amber-600 fill-amber-500" />
-                </button>
-
-                {/* Future Days 2 through 31 */}
-                {Array.from({ length: 30 }, (_, i) => i + 2).map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setSelectedStreakDate(d)}
-                    className={`aspect-square rounded-xl border flex flex-col items-center justify-center p-1 transition-all ${
-                      selectedStreakDate === d
-                        ? "border-[#0d5c4d] bg-[#ecf8f5] shadow-xs"
-                        : "border-slate-100 bg-[#fbfcfb] hover:bg-slate-50 text-slate-400"
-                    }`}
-                  >
-                    <span className="font-bold text-xs">{d}</span>
-                    <span className="text-[8px] text-slate-300">-</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Selected Day Activity Details */}
-            <div className="p-5 pt-0">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#f8faf9] to-[#edf5f2] border border-[#d6ede6] space-y-2">
-                <div className="flex items-center justify-between">
-                  <h5 className="font-extrabold text-xs text-[#0d2b26] flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                    <span>October {selectedStreakDate}, 2026 Activity Breakdown</span>
-                  </h5>
-                  <span className="text-[11px] font-black text-[#0d5c4d] bg-white px-2 py-0.5 rounded-full border border-[#c4e9e0]">
-                    {selectedStreakDate === 1 ? "2h 45m Logged 🔥" : "Scheduled"}
-                  </span>
-                </div>
-
-                {selectedStreakDate === 1 ? (
-                  <div className="space-y-1.5 text-xs text-slate-600">
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-100">
-                      <span className="font-bold text-slate-800">Advanced Mathematics — Calculus</span>
-                      <span className="text-[11px] text-emerald-700 font-bold">1h 15m · Lesson 19 ✓</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-100">
-                      <span className="font-bold text-slate-800">Physics — Circular Motion &amp; Gravity</span>
-                      <span className="text-[11px] text-emerald-700 font-bold">1h 00m · Problem Set ✓</span>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-100">
-                      <span className="font-bold text-slate-800">Chemistry Revision Quiz</span>
-                      <span className="text-[11px] text-[#b47a16] font-bold">30m · 94% Marks ✓</span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-500 italic">
-                    Study session planned for this date. Complete your modules to continue your 7-day streak!
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-100 bg-[#fbfcfb] flex items-center justify-end">
-              <button
-                type="button"
-                onClick={() => setIsStreakCalendarOpen(false)}
-                className="px-5 py-2.5 rounded-xl bg-[#0d5c4d] hover:bg-[#0a473b] text-white text-xs font-bold transition-all shadow-xs"
-              >
-                Close Calendar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

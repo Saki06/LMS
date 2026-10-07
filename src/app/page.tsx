@@ -23,6 +23,8 @@ import { StudentProgressView } from "@/components/views/StudentProgressView";
 import { ConnectView } from "@/components/views/ConnectView";
 import { ProfileView } from "@/components/views/ProfileView";
 import { SyllabusBuilderView } from "@/components/views/SyllabusBuilderView";
+import { LiveScheduleView } from "@/components/views/LiveScheduleView";
+import { SuperAdminPortalView } from "@/components/views/SuperAdminPortalView";
 
 export default function HomePage() {
   const { currentRole, currentView, theme } = useApp();
@@ -70,6 +72,9 @@ export default function HomePage() {
           return <SportsView />;
         case "events":
           return <EventsView />;
+        case "live_schedule":
+        case "liveSchedule":
+          return <LiveScheduleView />;
         case "announcements":
           return <AnnouncementsView />;
         default:
@@ -78,7 +83,10 @@ export default function HomePage() {
     } else if (currentRole === "teacher") {
       switch (currentView) {
         case "dashboard":
-          return <TeacherViews initialTab="grading" />;
+          return <TeacherViews initialTab="home" />;
+        case "live_schedule":
+        case "liveSchedule":
+          return <LiveScheduleView />;
         case "profile":
           return <ProfileView />;
         case "connect":
@@ -105,11 +113,27 @@ export default function HomePage() {
         default:
           return <TeacherViews initialTab="grading" />;
       }
+    } else if (currentRole === "super_admin") {
+      // Platform Owner Super Admin Master Portal
+      switch (currentView) {
+        case "profile":
+          return <ProfileView />;
+        case "super_admin_tenants":
+        case "super_admin_matrix":
+        case "super_admin_pricing":
+        case "super_admin_portal":
+        case "dashboard":
+        default:
+          return <SuperAdminPortalView />;
+      }
     } else {
       // Administrator
       switch (currentView) {
         case "dashboard":
           return <AdminViews initialTab="overview" />;
+        case "live_schedule":
+        case "liveSchedule":
+          return <LiveScheduleView />;
         case "profile":
           return <ProfileView />;
         case "connect":

@@ -30,6 +30,22 @@ export function PrototypeBar() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
+        {/* Tenant Simulator Selector */}
+        <div className="flex items-center gap-1.5 bg-[#051c18] border border-[#14473e] rounded-xl px-2 py-1">
+          <span className="text-[10px] uppercase font-bold text-slate-400">Client:</span>
+          <select
+            value={useApp().activeTenantId}
+            onChange={(e) => useApp().setActiveTenantId(e.target.value)}
+            className="bg-transparent text-[11px] font-bold text-emerald-300 focus:outline-hidden cursor-pointer"
+          >
+            {useApp().tenants.map((tenant) => (
+              <option key={tenant.id} value={tenant.id} className="bg-[#082a24] text-white">
+                {tenant.type === "school" ? "🏫" : tenant.type === "tuition_center" ? "🏛️" : "👨‍🏫"} {tenant.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Role Switcher */}
         <div className="flex items-center bg-[#051c18] border border-[#14473e] rounded-xl p-0.5">
           <button
@@ -64,6 +80,18 @@ export function PrototypeBar() {
           >
             <Shield className="h-3.5 w-3.5 text-slate-900" />
             <span>{t.roleAdmin}</span>
+          </button>
+          <button
+            onClick={() => setCurrentRole("super_admin")}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold transition-all ${
+              currentRole === "super_admin"
+                ? "bg-[#f3b738] text-slate-950 shadow-sm font-black"
+                : "text-amber-300 hover:text-amber-100"
+            }`}
+            title="Master Platform Management Portal"
+          >
+            <span className="text-xs">👑</span>
+            <span>Super Admin</span>
           </button>
         </div>
 
