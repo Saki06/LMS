@@ -47,7 +47,11 @@ import { Modal } from "@/components/ui/modal";
 
 type SuperAdminTab = "tenants" | "feature_matrix" | "pricing_plans";
 
-export function SuperAdminPortalView() {
+interface SuperAdminPortalViewProps {
+  initialTab?: SuperAdminTab;
+}
+
+export function SuperAdminPortalView({ initialTab }: SuperAdminPortalViewProps = {}) {
   const {
     tenants,
     activeTenantId,
@@ -57,10 +61,37 @@ export function SuperAdminPortalView() {
     applyTenantPreset,
     addTenant,
     updateTenant,
-    deleteTenant
+    deleteTenant,
+    currentView,
+    setCurrentView
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<SuperAdminTab>("tenants");
+  const getTabFromView = (view: string): SuperAdminTab => {
+    if (view === "super_admin_matrix" || view === "feature_matrix") return "feature_matrix";
+    if (view === "super_admin_pricing" || view === "pricing_plans") return "pricing_plans";
+    return "tenants";
+  };
+
+  const [activeTab, setActiveTab] = useState<SuperAdminTab>(() => {
+    if (initialTab) return initialTab;
+    return getTabFromView(currentView);
+  });
+
+  // Keep activeTab in sync with currentView and initialTab when sidebar items are clicked
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    } else {
+      setActiveTab(getTabFromView(currentView));
+    }
+  }, [currentView, initialTab]);
+
+  const handleTabChange = (tab: SuperAdminTab) => {
+    setActiveTab(tab);
+    if (tab === "tenants") setCurrentView("super_admin_tenants");
+    else if (tab === "feature_matrix") setCurrentView("super_admin_matrix");
+    else if (tab === "pricing_plans") setCurrentView("super_admin_pricing");
+  };
   const [selectedTenantForMatrix, setSelectedTenantForMatrix] = useState<string>(activeTenantId);
   const [typeFilter, setTypeFilter] = useState<"all" | TenantType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -326,7 +357,7 @@ export function SuperAdminPortalView() {
       </div>
 
       {/* Global SaaS Platform Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-[#e6ece8] bg-white shadow-2xs">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
@@ -365,25 +396,12 @@ export function SuperAdminPortalView() {
             </div>
           </CardContent>
         </Card>
-
-        <Card className="border-[#e6ece8] bg-white shadow-2xs">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold">Granular Controls</p>
-              <p className="text-2xl font-black text-[#0d2b26] mt-1">{totalSubOptionsCount} Sub-Options</p>
-              <p className="text-[10px] text-emerald-600 font-bold mt-0.5">{HIERARCHICAL_MODULES.length} Parent Modules</p>
-            </div>
-            <div className="h-11 w-11 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center">
-              <Sliders className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Main Tab Navigation */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-white border border-[#c4e9e0] shadow-xs">
         <button
-          onClick={() => setActiveTab("tenants")}
+          onClick={() => handleTabChange("tenants")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
             activeTab === "tenants"
               ? "bg-[#0d5c4d] text-white shadow-xs"
@@ -398,7 +416,7 @@ export function SuperAdminPortalView() {
         </button>
 
         <button
-          onClick={() => setActiveTab("feature_matrix")}
+          onClick={() => handleTabChange("feature_matrix")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
             activeTab === "feature_matrix"
               ? "bg-[#0d5c4d] text-white shadow-xs"
@@ -413,7 +431,7 @@ export function SuperAdminPortalView() {
         </button>
 
         <button
-          onClick={() => setActiveTab("pricing_plans")}
+          onClick={() => handleTabChange("pricing_plans")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
             activeTab === "pricing_plans"
               ? "bg-[#0d5c4d] text-white shadow-xs"
@@ -592,7 +610,7 @@ export function SuperAdminPortalView() {
                       variant="outline"
                       onClick={() => {
                         setSelectedTenantForMatrix(tenant.id);
-                        setActiveTab("feature_matrix");
+                        handleTabChange("feature_matrix");
                       }}
                       className="border-[#c4e9e0] text-[#0d5c4d] hover:bg-[#ecf8f5] text-xs font-bold cursor-pointer"
                     >

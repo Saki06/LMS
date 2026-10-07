@@ -118,13 +118,17 @@ export default function HomePage() {
       switch (currentView) {
         case "profile":
           return <ProfileView />;
-        case "super_admin_tenants":
         case "super_admin_matrix":
+        case "feature_matrix":
+          return <SuperAdminPortalView initialTab="feature_matrix" />;
         case "super_admin_pricing":
+        case "pricing_plans":
+          return <SuperAdminPortalView initialTab="pricing_plans" />;
+        case "super_admin_tenants":
         case "super_admin_portal":
         case "dashboard":
         default:
-          return <SuperAdminPortalView />;
+          return <SuperAdminPortalView initialTab="tenants" />;
       }
     } else {
       // Administrator

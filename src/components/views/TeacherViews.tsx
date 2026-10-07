@@ -508,48 +508,6 @@ export function TeacherViews({ initialTab = "home" }: TeacherViewsProps) {
         )}
       </div>
 
-      {/* KPI Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-[#e6ece8] bg-white shadow-2xs">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold">Assigned Classes</p>
-              <p className="text-2xl font-black text-[#0d2b26] mt-1">{courses.length} Classes</p>
-            </div>
-            <div className="h-11 w-11 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center">
-              <BookOpen className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[#e6ece8] bg-white shadow-2xs">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold">Pending Review</p>
-              <p className="text-2xl font-black text-[#b47a16] mt-1">
-                {submissions.filter((s) => s.status === "submitted").length} Submissions
-              </p>
-            </div>
-            <div className="h-11 w-11 rounded-xl bg-[#fef7e6] text-[#b47a16] flex items-center justify-center">
-              <ClipboardCheck className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[#e6ece8] bg-white shadow-2xs">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold">Graded & Released</p>
-              <p className="text-2xl font-black text-[#0d5c4d] mt-1">
-                {submissions.filter((s) => s.status === "result_released").length}
-              </p>
-            </div>
-            <div className="h-11 w-11 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center">
-              <Award className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* HOME VIEW: TEACHER DAILY COCKPIT & OPERATIONS DASHBOARD */}
       {activeTab === "home" && (

@@ -107,58 +107,6 @@ export function StudentDashboard() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
 
-      {/* KPI Cards Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-[#e6ece8] bg-white">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold">Enrolled Courses</p>
-              <p className="text-2xl font-black text-[#0d2b26] mt-1">{courses.length}</p>
-            </div>
-            <div className="h-11 w-11 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center">
-              <BookOpen className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[#e6ece8] bg-white">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold">Lessons Finished</p>
-              <p className="text-2xl font-black text-[#0d5c4d] mt-1">{completedLessons}</p>
-            </div>
-            <div className="h-11 w-11 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center">
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[#e6ece8] bg-white">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold">Assignments Due</p>
-              <p className="text-2xl font-black text-[#b47a16] mt-1">{assignments.length}</p>
-            </div>
-            <div className="h-11 w-11 rounded-xl bg-[#fef7e6] text-[#b47a16] flex items-center justify-center">
-              <FileText className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-[#e6ece8] bg-white">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 font-semibold">Upcoming Fixtures</p>
-              <p className="text-2xl font-black text-sky-700 mt-1">
-                {fixtures.filter((f) => f.status === "scheduled").length}
-              </p>
-            </div>
-            <div className="h-11 w-11 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center">
-              <Trophy className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Main Grid: Continue Learning + Performance Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
