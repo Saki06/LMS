@@ -33,7 +33,8 @@ import {
   Video,
   Sliders,
   CreditCard,
-  Shield
+  Shield,
+  X
 } from "lucide-react";
 
 interface SidebarProps {
@@ -68,6 +69,7 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
   const [selectedStreakDate, setSelectedStreakDate] = useState<number>(2);
   const [miniCalMonth, setMiniCalMonth] = useState<number>(9); // 9 = October
   const [miniCalYear, setMiniCalYear] = useState<number>(2026);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const pendingSubmissionsCount = submissions.filter(
     (s) => s.status === "submitted"
@@ -311,15 +313,15 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
         />
       )}
 
-      {/* FLOATING GLASS ISLAND ASIDE */}
+      {/* FLOATING GLASS ISLAND ASIDE - Full Length & No Cramped Scrolling */}
       <aside
-        className={`fixed lg:static top-[121px] bottom-3 left-3 z-40 flex flex-col transition-all duration-300 ease-in-out shrink-0 ${
+        className={`fixed lg:static inset-y-0 lg:inset-auto left-0 z-50 lg:z-30 flex flex-col transition-all duration-300 ease-in-out shrink-0 ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        } ${isCollapsed ? "w-20" : "w-[280px]"} my-0 lg:my-3 lg:ml-3 lg:mr-0 h-[calc(100vh-140px)]`}
+        } ${isCollapsed ? "w-20" : "w-[285px]"} h-full py-0 lg:py-2.5 pl-0 lg:pl-3 pr-0`}
       >
-        <div className="h-full w-full rounded-3xl bg-white border border-[#e2eae5] shadow-[0_16px_40px_-12px_rgba(13,92,77,0.12),0_2px_8px_rgba(0,0,0,0.04)] ring-1 ring-black/5 flex flex-col overflow-hidden relative transition-all">
-          {/* Top Glass Header & Collapse Toggle */}
-          <div className="p-3.5 pb-2 border-b border-[#eef4f0] flex items-center justify-between bg-white">
+        <div className="h-full w-full rounded-none lg:rounded-3xl bg-white border-r lg:border border-[#e2eae5] shadow-[0_16px_40px_-12px_rgba(13,92,77,0.12),0_2px_8px_rgba(0,0,0,0.04)] ring-1 ring-black/5 flex flex-col overflow-hidden relative transition-all">
+          {/* Top Glass Header & Collapse / Close Toggle */}
+          <div className="p-3 pb-2 border-b border-[#eef4f0] flex items-center justify-between bg-white shrink-0">
             {!isCollapsed && (
               <div className="flex items-center gap-2 pl-1">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
@@ -329,25 +331,36 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
               </div>
             )}
 
-            {/* Collapse / Expand Toggle Button */}
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className={`p-1.5 rounded-xl hover:bg-[#ecf8f5] text-slate-400 hover:text-[#0d5c4d] transition-colors ${
-                isCollapsed ? "mx-auto" : "ml-auto"
-              }`}
-              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              {isCollapsed ? (
-                <PanelLeftOpen className="h-4 w-4" />
-              ) : (
-                <PanelLeftClose className="h-4 w-4" />
-              )}
-            </button>
+            <div className="flex items-center gap-1 ml-auto">
+              {/* Collapse / Expand Toggle Button (Desktop) */}
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className={`hidden lg:flex p-1.5 rounded-xl hover:bg-[#ecf8f5] text-slate-400 hover:text-[#0d5c4d] transition-colors ${
+                  isCollapsed ? "mx-auto" : ""
+                }`}
+                title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+              >
+                {isCollapsed ? (
+                  <PanelLeftOpen className="h-4 w-4" />
+                ) : (
+                  <PanelLeftClose className="h-4 w-4" />
+                )}
+              </button>
+
+              {/* Close Button (Mobile Drawer) */}
+              <button
+                onClick={onCloseMobile}
+                className="lg:hidden p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                title="Close Sidebar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
-          {/* Navigation List Area */}
+          {/* Navigation List Area - Full length with clean spacing */}
           <div
-            className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            className="flex-1 overflow-y-auto px-2.5 py-2 space-y-2.5 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {Object.entries(groupedItems).map(([groupTitle, items], gIdx) => (
@@ -507,12 +520,37 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
           </div>
 
           {/* TRENDING BOTTOM MINI-WIDGET (Student Study Streak / Quick Info) */}
-          <div className="p-3 border-t border-[#eef4f0] bg-white">
+          <div className="p-2.5 border-t border-[#eef4f0] bg-white shrink-0">
             {!isCollapsed ? (
-              <div className="rounded-2xl p-3 bg-gradient-to-br from-[#f6fbf9] to-[#edf7f4] border border-[#d6ede6] text-[11px] text-slate-600 space-y-2 shadow-xs">
+              <div className="rounded-2xl p-2.5 bg-gradient-to-br from-[#f6fbf9] to-[#edf7f4] border border-[#d6ede6] text-[11px] text-slate-600 shadow-2xs">
                 {currentRole === "student" ? (
-                  <>
-                    {/* MINI CALENDAR WIDGET */}
+                  !isCalendarOpen ? (
+                    /* COMPACT STUDY STREAK CARD - Preserves vertical length for all menu options */
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-lg bg-amber-100/80 border border-amber-200/60 flex items-center justify-center shrink-0">
+                          <Flame className="h-4 w-4 text-amber-500 fill-amber-500" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-bold text-[#0d2b26] flex items-center gap-1 leading-tight">
+                            7d Streak Active
+                          </p>
+                          <p className="text-[9.5px] text-slate-500">October 2026</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsCalendarOpen(true)}
+                        className="px-2 py-1 rounded-lg text-[10px] font-bold text-[#0d5c4d] bg-white border border-[#c4e9e0] hover:bg-[#ecf8f5] transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                        title="Expand Calendar"
+                      >
+                        <Calendar className="h-3 w-3" />
+                        <span>Calendar</span>
+                        <ChevronDown className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    /* EXPANDED MINI CALENDAR WIDGET */
                     <div className="space-y-2">
                       {/* Mini Calendar Header */}
                       <div className="flex items-center justify-between">
@@ -545,6 +583,14 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
                           >
                             <ChevronRight className="h-3 w-3" />
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsCalendarOpen(false)}
+                            className="ml-1 p-1 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                            title="Minimize Calendar"
+                          >
+                            <ChevronDown className="h-3 w-3 rotate-180" />
+                          </button>
                         </div>
                       </div>
 
@@ -561,16 +607,13 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
 
                       {/* Date Cells Grid */}
                       <div className="grid grid-cols-7 gap-1 text-center">
-                        {/* Days from Sept (Padding: 27, 28, 29, 30) */}
                         {[27, 28, 29, 30].map((d) => (
                           <span key={`prev-${d}`} className="h-5 flex items-center justify-center text-[9px] text-slate-300 select-none">
                             {d}
                           </span>
                         ))}
-
-                        {/* Days 1 to 31 for October */}
                         {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
-                          const isToday = d === 2; // Today is Oct 2
+                          const isToday = d === 2;
                           const isSelected = selectedStreakDate === d;
                           const hasStreak = [25, 26, 27, 28, 29, 30, 1].includes(d);
                           const hasEvent = [4, 12, 15, 22].includes(d);
@@ -611,12 +654,16 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
                           <Flame className="h-3 w-3 text-amber-500 fill-amber-500" />
                           <span>7d Streak Active</span>
                         </span>
-                        <span className="text-[9.5px] font-semibold text-slate-400">
-                          October 2026
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsCalendarOpen(false)}
+                          className="text-[9.5px] font-bold text-[#0d5c4d] hover:underline cursor-pointer"
+                        >
+                          Collapse ▴
+                        </button>
                       </div>
                     </div>
-                  </>
+                  )
                 ) : (
                   <>
                     <p className="font-bold text-[#0d2b26] flex items-center gap-1.5">
