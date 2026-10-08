@@ -26,6 +26,8 @@ import {
   Activity,
   Database,
   MoreHorizontal,
+  MoreVertical,
+  Trash2,
   ArrowUpDown,
   Download,
   X
@@ -57,6 +59,8 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
     createSchool,
     createClass,
     createSubject,
+    updateSubject,
+    deleteSubject,
     currentUser,
     setCurrentView,
     addToast
@@ -100,6 +104,43 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
   const [subjectName, setSubjectName] = useState("");
   const [subjectCode, setSubjectCode] = useState("");
   const [subjectGradeId, setSubjectGradeId] = useState("grd_12");
+
+  // Subject 3-dot menu and edit/delete states
+  const [openSubjectMenuId, setOpenSubjectMenuId] = useState<string | null>(null);
+  const [isEditSubjectModalOpen, setIsEditSubjectModalOpen] = useState(false);
+  const [editingSubject, setEditingSubject] = useState<import("@/types/lms").Subject | null>(null);
+  const [editSubjectName, setEditSubjectName] = useState("");
+  const [editSubjectCode, setEditSubjectCode] = useState("");
+  const [editSubjectGradeId, setEditSubjectGradeId] = useState("grd_12");
+  const [deletingSubject, setDeletingSubject] = useState<import("@/types/lms").Subject | null>(null);
+
+  const handleOpenEditSubject = (sub: import("@/types/lms").Subject) => {
+    setEditingSubject(sub);
+    setEditSubjectName(sub.name);
+    setEditSubjectCode(sub.code);
+    setEditSubjectGradeId(sub.gradeId || "grd_12");
+    setIsEditSubjectModalOpen(true);
+  };
+
+  const handleSaveEditSubject = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSubject) return;
+    const grade = grades.find((g) => g.id === editSubjectGradeId);
+    updateSubject(editingSubject.id, {
+      name: editSubjectName,
+      code: editSubjectCode,
+      gradeId: editSubjectGradeId,
+      gradeName: grade?.name || "Grade 12"
+    });
+    setIsEditSubjectModalOpen(false);
+    setEditingSubject(null);
+  };
+
+  const handleConfirmDeleteSubject = () => {
+    if (!deletingSubject) return;
+    deleteSubject(deletingSubject.id);
+    setDeletingSubject(null);
+  };
 
   // User search
   const [userSearch, setUserSearch] = useState("");
@@ -748,15 +789,66 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {subjects.map((sub) => (
-              <Card key={sub.id} className="border-[#e6ece8] bg-white shadow-2xs hover:shadow-xs transition-shadow">
+              <Card key={sub.id} className="border-[#e6ece8] bg-white shadow-2xs hover:shadow-xs transition-shadow relative">
                 <CardContent className="p-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <Badge variant="outline" className="text-[#0d5c4d] border-[#c4e9e0] bg-[#ecf8f5] text-[10px] font-bold">
                       {sub.code}
                     </Badge>
-                    <Button variant="outline" size="sm" className="h-6 text-[10px] font-bold px-2">
-                      <Edit className="h-2.5 w-2.5 mr-0.5" /> Edit
-                    </Button>
+
+                    {/* 3-Dot Action Menu with Edit & Remove */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenSubjectMenuId(openSubjectMenuId === sub.id ? null : sub.id);
+                        }}
+                        className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Subject Actions"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+
+                      {openSubjectMenuId === sub.id && (
+                        <>
+                          {/* Backdrop to close menu */}
+                          <div
+                            className="fixed inset-0 z-20"
+                            onClick={() => setOpenSubjectMenuId(null)}
+                          />
+
+                          {/* Floating Dropdown */}
+                          <div className="absolute right-0 top-8 z-30 w-36 rounded-xl bg-white border border-[#e2eae5] shadow-lg py-1.5 animate-in fade-in zoom-in-95 duration-150">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenSubjectMenuId(null);
+                                handleOpenEditSubject(sub);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:text-[#0d5c4d] hover:bg-[#ecf8f5] transition-colors cursor-pointer"
+                            >
+                              <Edit className="h-3.5 w-3.5 text-[#0d5c4d]" />
+                              <span>Edit</span>
+                            </button>
+
+                            <div className="h-px bg-slate-100 my-1" />
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenSubjectMenuId(null);
+                                setDeletingSubject(sub);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                              <span>Remove</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-[#0d2b26]">{sub.name}</h3>
@@ -1344,6 +1436,109 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
       {selectedHubId && activeHub && !hubAction && <Modal isOpen={Boolean(selectedHubId)} onClose={() => setSelectedHubId(null)} title={`${activeHub.teacherName} subscribers`} description={`${hubSubscriptions.length} subscribers`}><div className="space-y-3">{hubSubscriptions.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No subscribers.</p>}{hubSubscriptions.map((subscription) => <div key={subscription.id} className="flex items-center justify-between rounded-xl border border-[#e6ece8] p-3"><div><p className="text-sm font-bold">{subscription.studentName}</p><p className="text-xs text-slate-500">{subscription.grade} · {subscription.subscribedDate}</p></div><Button size="sm" variant="outline" onClick={() => removeSubscription(subscription.id, "Removed by administrator")}>Remove</Button></div>)}</div></Modal>}
 
       <Modal isOpen={Boolean(confirmStaff)} onClose={() => setConfirmStaff(null)} title="Deactivate staff member" description="This keeps the record for audit history and prevents deletion."><div className="flex justify-end gap-3"><Button variant="outline" onClick={() => setConfirmStaff(null)}>Cancel</Button><Button variant="destructive" onClick={() => { if (confirmStaff) { setStaffStatus(confirmStaff.id, "inactive"); addToast({ type: "success", title: "Staff deactivated" }); setConfirmStaff(null); } }}>Deactivate</Button></div></Modal>
+
+      {/* Edit Subject Modal */}
+      <Modal
+        isOpen={isEditSubjectModalOpen}
+        onClose={() => {
+          setIsEditSubjectModalOpen(false);
+          setEditingSubject(null);
+        }}
+        title="Edit Curriculum Subject"
+        description="Update syllabus subject information and academic grade level."
+      >
+        <form onSubmit={handleSaveEditSubject} className="space-y-4 pt-2">
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Subject Name</label>
+              <input
+                type="text"
+                required
+                value={editSubjectName}
+                onChange={(e) => setEditSubjectName(e.target.value)}
+                placeholder="e.g. Combined Mathematics"
+                className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-[#0d5c4d]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Subject Code</label>
+              <input
+                type="text"
+                required
+                value={editSubjectCode}
+                onChange={(e) => setEditSubjectCode(e.target.value)}
+                placeholder="e.g. CMATH-12"
+                className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-[#0d5c4d]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Grade Level</label>
+              <select
+                value={editSubjectGradeId}
+                onChange={(e) => setEditSubjectGradeId(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-[#0d5c4d]"
+              >
+                {grades.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsEditSubjectModalOpen(false);
+                setEditingSubject(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-bold">
+              Save Changes
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Confirm Delete Subject Dialog */}
+      <Modal
+        isOpen={Boolean(deletingSubject)}
+        onClose={() => setDeletingSubject(null)}
+        title="Remove Subject"
+        description="Are you sure you want to remove this subject from the school curriculum?"
+      >
+        <div className="space-y-4 pt-2">
+          {deletingSubject && (
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-900">
+              <p className="font-bold">{deletingSubject.name} ({deletingSubject.code})</p>
+              <p className="text-[11px] text-rose-700 mt-0.5">{deletingSubject.gradeName}</p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeletingSubject(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmDeleteSubject}
+              className="bg-rose-600 hover:bg-rose-700 text-white font-bold"
+            >
+              Remove Subject
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

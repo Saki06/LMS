@@ -142,6 +142,8 @@ interface AppContextType {
   createSchool: (school: Partial<School>) => void;
   createClass: (schoolClass: Partial<SchoolClass>) => void;
   createSubject: (subject: Partial<Subject>) => void;
+  updateSubject: (id: string, updates: Partial<Subject>) => void;
+  deleteSubject: (id: string) => void;
   createEvent: (event: Partial<SchoolEvent>) => void;
   toggleSaveResource: (resourceId: string) => void;
   createLibraryResource: (resource: Partial<LibraryResource>) => void;
@@ -671,6 +673,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
     setSubjects((prev) => [...prev, newSub]);
     addToast({ type: 'success', title: 'Subject Added to Curriculum!' });
+  };
+
+  const updateSubject = (id: string, updates: Partial<Subject>) => {
+    setSubjects((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
+    );
+    addToast({ type: 'success', title: 'Subject Details Updated Successfully!' });
+  };
+
+  const deleteSubject = (id: string) => {
+    setSubjects((prev) => prev.filter((s) => s.id !== id));
+    addToast({ type: 'info', title: 'Subject Removed from Curriculum' });
   };
 
   const createEvent = (evt: Partial<SchoolEvent>) => {
@@ -1245,6 +1259,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         createSchool,
         createClass,
         createSubject,
+        updateSubject,
+        deleteSubject,
         createEvent,
         toggleSaveResource,
         createLibraryResource,
