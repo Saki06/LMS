@@ -315,18 +315,6 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           {/* KPI Cards */}
           <div className="order-3 grid grid-cols-1 gap-3 lg:col-start-2 lg:row-start-1">
-            <Card className="border-[#e6ece8] bg-white shadow-2xs">
-              <CardContent className="p-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-slate-500 font-semibold">Registered Schools</p>
-                  <p className="text-2xl font-black text-[#0d2b26] mt-1">{schools.length}</p>
-                  <p className="text-[10px] text-[#0d5c4d] font-bold mt-0.5">Multi-campus network</p>
-                </div>
-                <div className="h-11 w-11 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center">
-                  <Building2 className="h-5 w-5" />
-                </div>
-              </CardContent>
-            </Card>
 
             <Card className="border-[#e6ece8] bg-white shadow-2xs">
               <CardContent className="p-4 flex items-center justify-between">
