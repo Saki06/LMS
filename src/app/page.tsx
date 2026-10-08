@@ -54,6 +54,7 @@ export default function HomePage() {
           return <ProfileView />;
         case "connect":
           return <ConnectView />;
+        case "my_learning":
         case "courses":
           return <CourseViews />;
         case "assignments":
@@ -69,6 +70,7 @@ export default function HomePage() {
           return <ExamViews />;
         case "library":
           return <LibraryViews key="library" initialTab="all" />;
+        case "school_life":
         case "sports":
           return <SportsView />;
         case "events":
@@ -95,7 +97,7 @@ export default function HomePage() {
         case "submissions":
           return <TeacherViews initialTab="grading" />;
         case "assignments":
-          case "quizzes":
+        case "quizzes":
           return <TeacherViews initialTab="assignments" />;
         case "courses":
         case "syllabus":
@@ -107,6 +109,8 @@ export default function HomePage() {
           return <LibraryViews key="library_manage" initialTab="manage" />;
         case "sports":
           return <SportsView />;
+        case "events":
+          return <EventsView />;
         case "announcements":
           return <AnnouncementsView />;
         case "connect_admin":
@@ -147,6 +151,7 @@ export default function HomePage() {
           return <AdminViews initialTab="schools" />;
         case "classes":
           return <AdminViews initialTab="classes" />;
+        case "manage_staff":
         case "staff_teachers":
         case "staff_coaches":
           return <AdminViews initialTab="staff" />;
@@ -161,6 +166,7 @@ export default function HomePage() {
         case "settings":
         case "admin_settings":
           return <AdminViews initialTab="settings" />;
+        case "campus_operations":
         case "sports_admin":
           return <SportsView />;
         case "events_admin":

@@ -463,7 +463,13 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => handleNavClick(item.id)}
+                      onClick={() => {
+                        if (hasChildren && item.children && item.children.length > 0) {
+                          handleNavClick(item.children[0].id);
+                        } else {
+                          handleNavClick(item.id);
+                        }
+                      }}
                       className={`w-full flex items-center text-left ${
                         isCollapsed ? "justify-center p-2.5" : "justify-between px-2.5 py-2"
                       } rounded-xl text-xs font-bold transition-all group relative ${
