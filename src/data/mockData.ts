@@ -1099,17 +1099,56 @@ For timetable inquiries or special accommodation requests, please consult the Ex
     publishedAt: '2 hours ago',
     authorName: 'Dr. K. Rajasingham',
     authorRole: 'Principal / Admin',
-    targetAudience: 'All Grade 12 Students',
+    targetAudience: 'Students Only',
+    priority: 'high'
+  },
+  {
+    id: 'ann_03',
+    title: 'Faculty Notice: Term 2 Moderation & Continuous Assessment Submission',
+    message: `Confidential memo to all secondary teaching faculty and academic department heads:
+
+1. Graded answer scripts, continuous assessment rubrics, and final term marks sheets must be verified and uploaded via the Faculty Portal before this Friday at 4:00 PM.
+2. Special consideration requests for absent candidates must be attached with valid medical certificates approved by the School Medical Officer.
+3. The Academic Moderation Committee will convene on Monday at 08:30 AM in the Conference Room. Attendance for heads of departments is mandatory.`,
+    publishedAt: '3 hours ago',
+    authorName: 'Dr. K. Rajasingham',
+    authorRole: 'Principal / Admin',
+    targetAudience: 'Teachers Only',
+    priority: 'urgent'
+  },
+  {
+    id: 'ann_04',
+    title: '118th Annual Inter-House Athletic Championships & Track Meet Schedule',
+    message: `The College Annual Athletic Championships and Track Meet will be hosted at the Main College Oval from October 18th to 20th.
+
+House Assemblies:
+• All students, teachers, and house masters must assemble at 07:45 AM sharply at the respective house tents.
+• Track and field prelims will take place in the morning sessions followed by the relay heats.
+• Parents and alumni are warmly invited for the Grand Closing Ceremony on Saturday afternoon.`,
+    publishedAt: 'Yesterday',
+    authorName: 'Mr. Samantha Perera',
+    authorRole: 'Master-in-Charge of Sports',
+    targetAudience: 'Whole School (Everyone)',
     priority: 'high'
   },
   {
     id: 'ann_02',
     title: 'Cricket Under-17 Match Venue Confirmation',
     message: 'Saturday fixture against Trinity Central will be held at the Main College Oval at 9:30 AM. Players arrive by 8:15 AM in full team whites.',
-    publishedAt: 'Yesterday',
+    publishedAt: '2 days ago',
     authorName: 'Mr. Samantha Perera',
     authorRole: 'Cricket Master-in-Charge',
-    targetAudience: 'Sports Players & Coaches',
+    targetAudience: 'Students & Sports Squad',
+    priority: 'normal'
+  },
+  {
+    id: 'ann_05',
+    title: 'STEM Innovation Suite & Robotics Workshop Inauguration',
+    message: 'The new Artificial Intelligence and Robotics lab on the 3rd floor Science Wing will be officially opened this Wednesday at 10:30 AM. Hands-on coding workstations and 3D printing sessions will begin next week for registered students and faculty mentors.',
+    publishedAt: '3 days ago',
+    authorName: 'Dr. K. Rajasingham',
+    authorRole: 'Principal / Admin',
+    targetAudience: 'Whole School (Everyone)',
     priority: 'normal'
   }
 ];

@@ -203,8 +203,8 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
   const [enrollmentOpen, setEnrollmentOpen] = useState(true);
   const [defaultLocale, setDefaultLocale] = useState("en");
 
-  // Mock platform user data for the directory
-  const platformUsers = [
+  // Platform user directory state & mock records
+  const [platformUsers, setPlatformUsers] = useState([
     { id: "usr_admin_01", name: "Dr. K. Rajasingham", email: "principal@school.lk", role: "admin", school: "St. Michael High School", status: "Active", lastLogin: "2026-10-01 08:15" },
     { id: "usr_teacher_01", name: "Mr. Samantha Perera", email: "samantha.p@school.lk", role: "teacher", school: "St. Michael High School", status: "Active", lastLogin: "2026-10-01 07:30" },
     { id: "usr_teacher_02", name: "Mrs. N. Gunasekara", email: "gunasekara.n@school.lk", role: "teacher", school: "St. Michael High School", status: "Active", lastLogin: "2026-09-30 15:20" },
@@ -215,7 +215,55 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
     { id: "usr_student_04", name: "Dineth Perera", email: "dineth.p@school.lk", role: "student", school: "St. Michael High School", status: "Active", lastLogin: "2026-09-28 16:30" },
     { id: "usr_student_05", name: "Tharushi Fernando", email: "tharushi.f@school.lk", role: "student", school: "Hillwood Central College", status: "Active", lastLogin: "2026-09-30 14:10" },
     { id: "usr_teacher_04", name: "Mrs. S. Ratnam", email: "ratnam.s@hcc.lk", role: "teacher", school: "Hillwood Central College", status: "Inactive", lastLogin: "2026-08-15 10:00" }
-  ];
+  ]);
+
+  // User 3-dot menu and action states
+  const [openUserMenuId, setOpenUserMenuId] = useState<string | null>(null);
+  const [viewingUser, setViewingUser] = useState<typeof platformUsers[0] | null>(null);
+  const [editingUser, setEditingUser] = useState<typeof platformUsers[0] | null>(null);
+  const [editUserName, setEditUserName] = useState("");
+  const [editUserEmail, setEditUserEmail] = useState("");
+  const [editUserRole, setEditUserRole] = useState<"student" | "teacher" | "admin">("student");
+  const [editUserSchool, setEditUserSchool] = useState("");
+  const [editUserStatus, setEditUserStatus] = useState("Active");
+  const [deletingUser, setDeletingUser] = useState<typeof platformUsers[0] | null>(null);
+
+  const handleOpenEditUser = (user: typeof platformUsers[0]) => {
+    setEditingUser(user);
+    setEditUserName(user.name);
+    setEditUserEmail(user.email);
+    setEditUserRole(user.role as "student" | "teacher" | "admin");
+    setEditUserSchool(user.school);
+    setEditUserStatus(user.status);
+  };
+
+  const handleSaveEditUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setPlatformUsers((prev) =>
+      prev.map((u) =>
+        u.id === editingUser.id
+          ? {
+              ...u,
+              name: editUserName,
+              email: editUserEmail,
+              role: editUserRole,
+              school: editUserSchool,
+              status: editUserStatus
+            }
+          : u
+      )
+    );
+    setEditingUser(null);
+    addToast({ type: "success", title: "User Details Updated Successfully!" });
+  };
+
+  const handleConfirmDeleteUser = () => {
+    if (!deletingUser) return;
+    setPlatformUsers((prev) => prev.filter((u) => u.id !== deletingUser.id));
+    setDeletingUser(null);
+    addToast({ type: "info", title: "User Account Removed Successfully" });
+  };
 
   const filteredUsers = platformUsers.filter((u) => {
     const matchesRole = userRoleFilter === "all" || u.role === userRoleFilter;
@@ -1009,13 +1057,70 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
                       </td>
                       <td className="p-4 text-slate-500 font-mono text-[10px]">{user.lastLogin}</td>
                       <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold px-2">
-                            <Eye className="h-3 w-3 mr-0.5" /> View
-                          </Button>
-                          <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold px-2">
-                            <Edit className="h-3 w-3 mr-0.5" /> Edit
-                          </Button>
+                        {/* 3-Dot Action Menu with View, Edit & Delete */}
+                        <div className="relative inline-block text-left">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenUserMenuId(openUserMenuId === user.id ? null : user.id);
+                            }}
+                            className="h-7 w-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                            title="User actions"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+
+                          {openUserMenuId === user.id && (
+                            <>
+                              {/* Click-outside backdrop */}
+                              <div
+                                className="fixed inset-0 z-20"
+                                onClick={() => setOpenUserMenuId(null)}
+                              />
+
+                              {/* Floating Dropdown */}
+                              <div className="absolute right-0 top-8 z-30 w-36 rounded-xl bg-white border border-[#e2eae5] shadow-lg py-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenUserMenuId(null);
+                                    setViewingUser(user);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:text-[#0d5c4d] hover:bg-[#ecf8f5] transition-colors cursor-pointer"
+                                >
+                                  <Eye className="h-3.5 w-3.5 text-[#0d5c4d]" />
+                                  <span>View</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenUserMenuId(null);
+                                    handleOpenEditUser(user);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 hover:text-[#0d5c4d] hover:bg-[#ecf8f5] transition-colors cursor-pointer"
+                                >
+                                  <Edit className="h-3.5 w-3.5 text-[#0d5c4d]" />
+                                  <span>Edit</span>
+                                </button>
+
+                                <div className="h-px bg-slate-100 my-1" />
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenUserMenuId(null);
+                                    setDeletingUser(user);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                                  <span>Delete</span>
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1535,6 +1640,188 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
               className="bg-rose-600 hover:bg-rose-700 text-white font-bold"
             >
               Remove Subject
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* View User Details Modal */}
+      <Modal
+        isOpen={Boolean(viewingUser)}
+        onClose={() => setViewingUser(null)}
+        title="User Account Details"
+        description="Comprehensive profile credentials and platform activity."
+      >
+        {viewingUser && (
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-[#ecf8f5] border border-[#c4e9e0]">
+              <div className="h-12 w-12 rounded-full bg-[#0d5c4d] text-white flex items-center justify-center font-black text-lg">
+                {viewingUser.name.charAt(0)}
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#0d2b26]">{viewingUser.name}</h3>
+                <p className="text-xs text-slate-500 font-mono">{viewingUser.email}</p>
+              </div>
+              <Badge
+                variant={
+                  viewingUser.role === "admin"
+                    ? "default"
+                    : viewingUser.role === "teacher"
+                    ? "warning"
+                    : "success"
+                }
+                className="ml-auto capitalize text-xs font-bold"
+              >
+                {viewingUser.role}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Assigned Institution</p>
+                <p className="font-bold text-slate-900 mt-0.5">{viewingUser.school}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Account Status</p>
+                <p className="font-bold text-[#0d5c4d] mt-0.5 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-[#0d5c4d]" />
+                  {viewingUser.status}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 col-span-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Last Authenticated Session</p>
+                <p className="font-mono text-slate-700 mt-0.5">{viewingUser.lastLogin}</p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+              <Button type="button" variant="outline" onClick={() => setViewingUser(null)}>
+                Close
+              </Button>
+              <Button
+                type="button"
+                className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-bold"
+                onClick={() => {
+                  const target = viewingUser;
+                  setViewingUser(null);
+                  handleOpenEditUser(target);
+                }}
+              >
+                <Edit className="h-3.5 w-3.5 mr-1.5" /> Edit Profile
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal
+        isOpen={Boolean(editingUser)}
+        onClose={() => setEditingUser(null)}
+        title="Edit User Profile"
+        description="Update user account information, institutional role, and status."
+      >
+        <form onSubmit={handleSaveEditUser} className="space-y-4 pt-2">
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+              <input
+                type="text"
+                required
+                value={editUserName}
+                onChange={(e) => setEditUserName(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-[#0d5c4d]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+              <input
+                type="email"
+                required
+                value={editUserEmail}
+                onChange={(e) => setEditUserEmail(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-[#0d5c4d]"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Platform Role</label>
+                <select
+                  value={editUserRole}
+                  onChange={(e) => setEditUserRole(e.target.value as "student" | "teacher" | "admin")}
+                  className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-[#0d5c4d]"
+                >
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="admin">Administrator</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Account Status</label>
+                <select
+                  value={editUserStatus}
+                  onChange={(e) => setEditUserStatus(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-[#0d5c4d]"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Suspended">Suspended</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Assigned School / Campus</label>
+              <input
+                type="text"
+                required
+                value={editUserSchool}
+                onChange={(e) => setEditUserSchool(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl bg-[#f8faf9] border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-[#0d5c4d]"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <Button type="button" variant="outline" onClick={() => setEditingUser(null)}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-bold">
+              Save Changes
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete User Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(deletingUser)}
+        onClose={() => setDeletingUser(null)}
+        title="Delete User Account"
+        description="Are you sure you want to remove this user from the platform directory?"
+      >
+        <div className="space-y-4 pt-2">
+          {deletingUser && (
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-900">
+              <p className="font-bold">{deletingUser.name}</p>
+              <p className="text-[11px] text-rose-700 mt-0.5">{deletingUser.email} &bull; {deletingUser.school}</p>
+            </div>
+          )}
+
+          <p className="text-xs text-slate-500">
+            This will revoke their authentication credentials and access permissions across the system.
+          </p>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+            <Button type="button" variant="outline" onClick={() => setDeletingUser(null)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmDeleteUser}
+              className="bg-rose-600 hover:bg-rose-700 text-white font-bold"
+            >
+              Delete User
             </Button>
           </div>
         </div>
