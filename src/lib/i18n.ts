@@ -2,7 +2,7 @@ import { LocaleCode } from '@/types/lms';
 
 export const translations = {
   en: {
-    brand: "nawana",
+    brand: "LimaT Smart Book",
     tagline: "LEARN · GROW · LEAD",
     roleStudent: "Student",
     roleTeacher: "Teacher",

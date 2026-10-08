@@ -10,9 +10,9 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "nawana — Learning and school life, beautifully connected",
+  title: "LimaT Smart Book — Learning and school life, beautifully connected",
   description:
-    "Nawana brings lessons, assessments, progress, sports, and events together in one calm, trusted platform. Built for Sri Lankan schools in English, Sinhala, and Tamil."
+    "LimaT Smart Book brings lessons, assessments, progress, sports, and events together in one calm, trusted platform. Built for Sri Lankan schools in English, Sinhala, and Tamil."
 };
 
 export default function RootLayout({

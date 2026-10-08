@@ -563,7 +563,7 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
                 Registered School Campuses
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Multi-school institutions connected to the nawana platform.
+                Multi-school institutions connected to the LimaT Smart Book platform.
               </p>
             </div>
             <Button
@@ -1158,7 +1158,7 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
                   <p className="text-[10px] text-slate-500">The branded name visible across all portals</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-[#0d5c4d]">nawana</span>
+                  <span className="text-xs font-black text-[#0d5c4d]">LimaT Smart Book</span>
                   <Badge variant="outline" className="text-[10px]">v1.0 MVP</Badge>
                 </div>
               </div>
@@ -1301,7 +1301,7 @@ export function AdminViews({ initialTab = "overview" }: AdminViewsProps) {
         isOpen={isSchoolModalOpen}
         onClose={() => setIsSchoolModalOpen(false)}
         title="Register New School"
-        description="Add a new educational institution to the multi-school nawana platform."
+        description="Add a new educational institution to the multi-school LimaT Smart Book platform."
       >
         <form onSubmit={handleCreateSchoolSubmit} className="space-y-4">
           <div>

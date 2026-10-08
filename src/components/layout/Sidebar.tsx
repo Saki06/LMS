@@ -668,7 +668,7 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
                   <>
                     <p className="font-bold text-[#0d2b26] flex items-center gap-1.5">
                       <span className="h-2 w-2 rounded-full bg-[#f3b738]" />
-                      Nawana Platform
+                      LimaT Smart Book Platform
                     </p>
                     <p className="text-[10px] leading-relaxed text-slate-500">
                       Educating, inspiring, and connecting learners across Sri Lanka.

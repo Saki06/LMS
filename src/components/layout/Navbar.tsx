@@ -53,19 +53,19 @@ export function Navbar({ onToggleMobileSidebar }: { onToggleMobileSidebar: () =>
           <Menu className="h-5 w-5" />
         </button>
 
-        {/* Nawana Brand & Active Tenant Badge */}
+        {/* LimaT Smart Book Brand & Active Tenant Badge */}
         <div
           onClick={() => setCurrentView("dashboard")}
           className="flex items-center gap-3 cursor-pointer group"
         >
-          {/* Honey Gold Logo with Bold letter 'n' */}
+          {/* Honey Gold Logo with Bold letter 'L' */}
           <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-sm group-hover:scale-105 transition-transform font-sans">
-            n
+            L
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight text-[#0d2b26] lowercase">
-                nawana
+              <span className="font-extrabold text-xl tracking-tight text-[#0d2b26]">
+                LimaT Smart Book
               </span>
               <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-bold">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#0d5c4d]" />

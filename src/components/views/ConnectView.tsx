@@ -983,7 +983,7 @@ export function ConnectView() {
                       Bank: <span className="font-bold">Commercial Bank of Ceylon</span>
                     </p>
                     <p className="text-slate-600 font-mono text-[11px]">
-                      Account: <span className="font-bold">80019284019</span> (Nawana LMS)
+                      Account: <span className="font-bold">80019284019</span> (LimaT Smart Book)
                     </p>
                     <p className="text-slate-600 font-mono text-[11px]">
                       Branch: <span className="font-bold">Colombo City Center</span>

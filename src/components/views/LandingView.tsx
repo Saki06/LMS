@@ -43,11 +43,11 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
       <nav className="h-20 border-b border-[#e6ece8] bg-white/90 backdrop-blur-md px-6 sm:px-12 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs">
-            n
+            L
           </div>
           <div>
-            <span className="font-black text-2xl tracking-tight text-[#0d2b26] lowercase">
-              nawana
+            <span className="font-black text-2xl tracking-tight text-[#0d2b26]">
+              LimaT Smart Book
             </span>
             <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-extrabold">
               LEARN · GROW · LEAD
@@ -102,7 +102,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
 
             {/* Description */}
             <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
-              Nawana brings lessons, assessments, progress, sports, and events together in one calm, trusted platform.
+              LimaT Smart Book brings lessons, assessments, progress, sports, and events together in one calm, trusted platform.
             </p>
 
             {/* Action Buttons */}
@@ -281,7 +281,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
       {/* Footer */}
       <footer className="border-t border-[#e6ece8] bg-white py-8 px-6 text-center text-xs text-slate-500">
         <p className="font-bold text-[#0d2b26]">
-          nawana — LEARN · GROW · LEAD
+          LimaT Smart Book — LEARN · GROW · LEAD
         </p>
         <p className="mt-1">
           Digital Learning and School Management Platform • Built for Sri Lankan schools in English, Sinhala, and Tamil.

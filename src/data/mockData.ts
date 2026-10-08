@@ -50,10 +50,10 @@ export const mockUsers: Record<string, User> = {
   super_admin: {
     id: 'usr_super_admin_01',
     name: 'SaaS Platform Owner',
-    email: 'director@nawana.lk',
+    email: 'director@limat.lk',
     role: 'super_admin',
     schoolId: 'global_platform',
-    schoolName: 'Nawana Cloud Multi-Tenant Platform'
+    schoolName: 'LimaT Smart Book Multi-Tenant Platform'
   }
 };
 

@@ -2145,7 +2145,7 @@ export function LibraryViews({ initialTab = "all" }: LibraryViewsProps) {
               <div className="border-b-2 border-[#0d5c4d] pb-4 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-bold tracking-wider text-[#0d5c4d]">
-                    Sri Lanka Senior Secondary Education · Nawana LMS
+                    Sri Lanka Senior Secondary Education · LimaT Smart Book
                   </span>
                   <h2 className="text-xl font-extrabold text-[#0d2b26] mt-0.5">
                     {activeViewerResource.title}
