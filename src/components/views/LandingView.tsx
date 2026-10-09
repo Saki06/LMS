@@ -36,13 +36,19 @@ import {
 
 type SupportedRole = "student" | "teacher" | "admin";
 type AuthDisplayMode = "closed" | "drawer" | "fullpage";
-type PortalType = "student" | "staff";
+export type PortalType = "gateway" | "student" | "staff";
 
-export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
+export function LandingView({
+  onEnterApp,
+  initialPortal = "gateway"
+}: {
+  onEnterApp: () => void;
+  initialPortal?: PortalType;
+}) {
   const { setCurrentRole, addToast, schools, t } = useApp();
 
-  // Portal Landing Mode: "student" for Students & Parents, "staff" for Teachers & Administrators
-  const [portalType, setPortalType] = useState<PortalType>("student");
+  // Portal Landing Mode: "gateway" for Welcome Selector, "student" for Students, "staff" for Teachers & Admin
+  const [portalType, setPortalType] = useState<PortalType>(initialPortal);
 
   // Auth Display Mode: "closed", "drawer" (slide in from side), or "fullpage" (dedicated new page)
   const [authMode, setAuthMode] = useState<AuthDisplayMode>("closed");
@@ -113,7 +119,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
     setPortalType(type);
     if (type === "student") {
       handleRoleSelect("student");
-    } else {
+    } else if (type === "staff") {
       handleRoleSelect("teacher");
     }
   };
@@ -775,84 +781,413 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
   // =========================================================================
   return (
     <div className="min-h-screen bg-[#fbfcfb] text-[#0d2b26] flex flex-col justify-between selection:bg-[#0d5c4d] selection:text-white">
-      {/* LimaT Smart Book Public Navigation Header with Portal Switcher */}
-      <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
-        {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs font-sans">
-            L
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
-                LimaT Smart Book
-              </span>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-extrabold">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#0d5c4d]" />
-                Sri Lanka Education
-              </span>
+      {/* ----------------- 1. STUDENT PORTAL NAVIGATION ----------------- */}
+      {portalType === "student" && (
+        <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs font-sans">
+              L
             </div>
-            <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
-              LEARN · GROW · LEAD
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
+                  LimaT Smart Book
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-extrabold">
+                  <GraduationCap className="h-3 w-3" />
+                  Student Portal
+                </span>
+              </div>
+              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
+                LEARN · GROW · LEAD
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Nav Links */}
+          <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-600">
+            <a href="#courses" className="hover:text-[#0d5c4d] transition-colors">Courses & Subjects</a>
+            <a href="#past-papers" className="hover:text-[#0d5c4d] transition-colors">Past Papers</a>
+            <a href="#online-exams" className="hover:text-[#0d5c4d] transition-colors">Online Exams</a>
+            <a href="#house-sports" className="hover:text-[#0d5c4d] transition-colors">House Sports</a>
+          </div>
+
+          {/* Right Action Buttons: Return to Gateway + Auth */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("gateway")}
+              className="text-xs font-bold text-slate-600 hover:text-slate-950 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-200"
+              title="Return to Portal Selection Gateway"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Change Portal</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuth("login", "student", "drawer")}
+              className="text-xs font-bold text-slate-700 hover:text-[#0d5c4d] px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <LogIn className="h-3.5 w-3.5 text-[#0d5c4d]" />
+              <span>Sign In</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuth("signup", "student", "drawer")}
+              className="text-xs font-black bg-[#0d5c4d] hover:bg-[#083e34] text-white rounded-xl px-4 sm:px-5 py-2.5 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              <span>Join as Student</span>
+            </button>
+          </div>
+        </nav>
+      )}
+
+      {/* ----------------- 2. FACULTY & ADMIN PORTAL NAVIGATION ----------------- */}
+      {portalType === "staff" && (
+        <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs font-sans">
+              L
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
+                  LimaT Smart Book
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-900 text-amber-300 border border-slate-700 text-[10px] font-extrabold">
+                  <School className="h-3 w-3 text-[#f3b738]" />
+                  Faculty & Admin Hub
+                </span>
+              </div>
+              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
+                LEARN · GROW · LEAD
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Nav Links */}
+          <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-600">
+            <a href="#curriculum" className="hover:text-[#0d5c4d] transition-colors">Curriculum Builder</a>
+            <a href="#grading-desk" className="hover:text-[#0d5c4d] transition-colors">Grading Desk</a>
+            <a href="#classrooms" className="hover:text-[#0d5c4d] transition-colors">Class Allocations</a>
+            <a href="#circulars" className="hover:text-[#0d5c4d] transition-colors">Official Circulars</a>
+          </div>
+
+          {/* Right Action Buttons: Return to Gateway + Auth */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("gateway")}
+              className="text-xs font-bold text-slate-600 hover:text-slate-950 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-200"
+              title="Return to Portal Selection Gateway"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Change Portal</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuth("login", "teacher", "drawer")}
+              className="text-xs font-bold text-slate-700 hover:text-slate-950 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <LogIn className="h-3.5 w-3.5 text-[#b47a16]" />
+              <span>Staff Sign In</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuth("signup", "teacher", "drawer")}
+              className="text-xs font-black bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-4 sm:px-5 py-2.5 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <UserPlus className="h-3.5 w-3.5 text-[#f3b738]" />
+              <span>Register Staff</span>
+            </button>
+          </div>
+        </nav>
+      )}
+
+      {/* ----------------- 0. GATEWAY PORTAL NAVIGATION ----------------- */}
+      {portalType === "gateway" && (
+        <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs font-sans">
+              L
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
+                  LimaT Smart Book
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-extrabold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#0d5c4d]" />
+                  Sri Lanka Education Platform
+                </span>
+              </div>
+              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
+                LEARN · GROW · LEAD
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("student")}
+              className="text-xs font-bold text-[#0d5c4d] hover:bg-[#ecf8f5] px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer border border-[#c4e9e0]"
+            >
+              <GraduationCap className="h-3.5 w-3.5" />
+              <span>Student Portal</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("staff")}
+              className="text-xs font-bold text-slate-800 hover:bg-slate-100 px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-200"
+            >
+              <School className="h-3.5 w-3.5 text-[#b47a16]" />
+              <span>Faculty & Admin Portal</span>
+            </button>
+          </div>
+        </nav>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 0. GATEWAY / STARTUP SELECTION PAGE (Active when portalType === "gateway")*/}
+      {/* ========================================================================= */}
+      {portalType === "gateway" ? (
+        <main className="px-4 sm:px-8 lg:px-12 py-10 sm:py-16 max-w-7xl mx-auto w-full space-y-16">
+          {/* Gateway Hero */}
+          <div className="text-center max-w-3xl mx-auto space-y-5">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-xs font-black shadow-2xs">
+              <span className="h-2 w-2 rounded-full bg-[#0d5c4d] animate-pulse" />
+              <span>Sri Lanka's Central Education Platform • Trilingual LMS</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.14]">
+              Select Your Dedicated <br />
+              <span className="text-[#0d5c4d]">School Portal.</span>
+            </h1>
+
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              LimaT Smart Book provides specialized digital environments designed for Sri Lankan students, subject teachers, and school leadership.
             </p>
           </div>
-        </div>
 
-        {/* Center Portal Switcher: [Student Portal] vs [Faculty & Admin] */}
-        <div className="flex items-center bg-[#f0f4f2] border border-[#d6ede6] p-1 rounded-2xl shadow-2xs">
-          <button
-            type="button"
-            onClick={() => handlePortalSwitch("student")}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              portalType === "student"
-                ? "bg-[#0d5c4d] text-white shadow-xs font-black"
-                : "text-slate-600 hover:text-slate-950"
-            }`}
-          >
-            <GraduationCap className={`h-4 w-4 ${portalType === "student" ? "text-white" : "text-[#0d5c4d]"}`} />
-            <span>For Students</span>
-          </button>
+          {/* 2 Big Dedicated Portal Doors */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* 🎓 PORTAL 1: STUDENT LEARNING PORTAL */}
+            <div className="rounded-3xl border-2 border-[#c4e9e0] bg-white p-7 sm:p-9 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between space-y-8 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-36 h-36 bg-[#ecf8f5] rounded-bl-full -z-0 opacity-80 group-hover:scale-110 transition-transform" />
+              
+              <div className="space-y-5 relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="h-14 w-14 rounded-2xl bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] flex items-center justify-center shadow-xs">
+                    <GraduationCap className="h-8 w-8 text-[#0d5c4d]" />
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-wider text-[#0d5c4d] bg-[#ecf8f5] border border-[#c4e9e0] px-3 py-1 rounded-full">
+                    Pupils & Parents
+                  </span>
+                </div>
 
-          <button
-            type="button"
-            onClick={() => handlePortalSwitch("staff")}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              portalType === "staff"
-                ? "bg-slate-900 text-white shadow-xs font-black"
-                : "text-slate-600 hover:text-slate-950"
-            }`}
-          >
-            <School className={`h-4 w-4 ${portalType === "staff" ? "text-[#f3b738]" : "text-slate-600"}`} />
-            <span>For Teachers & Admin</span>
-          </button>
-        </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-[#0d2b26]">
+                    Student Learning Portal
+                  </h2>
+                  <p className="text-xs font-bold text-[#0d5c4d] mt-1">
+                    Grades 6 to 13 • G.C.E. O/L & A/L Exam Preparation
+                  </p>
+                </div>
 
-        {/* Auth Navigation Triggers */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={() => openAuth("login", portalType === "student" ? "student" : "teacher", "drawer")}
-            className="text-xs font-bold text-slate-700 hover:text-[#0d5c4d] px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <LogIn className="h-3.5 w-3.5 text-[#0d5c4d]" />
-            <span>Sign In</span>
-          </button>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Study curriculum units, download past papers with marking schemes, submit term homework, complete timed exams, and celebrate house sports.
+                </p>
 
-          <button
-            type="button"
-            onClick={() => openAuth("signup", portalType === "student" ? "student" : "teacher", "drawer")}
-            className="text-xs font-black bg-[#0d5c4d] hover:bg-[#083e34] text-white rounded-xl px-4 sm:px-5 py-2.5 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-          >
-            <UserPlus className="h-3.5 w-3.5" />
-            <span>{portalType === "student" ? "Join School" : "Register Staff"}</span>
-          </button>
-        </div>
-      </nav>
+                {/* Features List */}
+                <div className="space-y-2.5 pt-2">
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#0d5c4d] shrink-0" />
+                    <span>G.C.E. O/L & A/L Past Papers with Marking Schemes</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#0d5c4d] shrink-0" />
+                    <span>Timed Online Exams with Instant Result Analytics</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#0d5c4d] shrink-0" />
+                    <span>Homework Submission & Teacher Feedback Desk</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#0d5c4d] shrink-0" />
+                    <span>House Athletics: Vijaya, Parakrama, Gemunu, Mahasen</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#0d5c4d] shrink-0" />
+                    <span>Trilingual Lessons: English, සිංහල & தமிழ் Mediums</span>
+                  </div>
+                </div>
+              </div>
 
-      {/* ========================================================================= */}
-      {/* 1. STUDENT LANDING PAGE (Active when portalType === "student")           */}
-      {/* ========================================================================= */}
-      {portalType === "student" ? (
+              {/* Action Buttons */}
+              <div className="space-y-3 relative z-10 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => handlePortalSwitch("student")}
+                  className="w-full bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-sm py-4 rounded-2xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Enter Student Portal</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+
+                <div className="flex items-center justify-center gap-4 text-xs font-bold text-slate-500 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("student");
+                      openAuth("login", "student", "drawer");
+                    }}
+                    className="hover:text-[#0d5c4d] cursor-pointer"
+                  >
+                    Student Sign In
+                  </button>
+                  <span>•</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("student");
+                      openAuth("signup", "student", "drawer");
+                    }}
+                    className="hover:text-[#0d5c4d] cursor-pointer"
+                  >
+                    Create Student Account
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 🏫 PORTAL 2: FACULTY & ADMIN PORTAL */}
+            <div className="rounded-3xl border-2 border-slate-200 bg-white p-7 sm:p-9 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between space-y-8 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-36 h-36 bg-amber-50 rounded-bl-full -z-0 opacity-80 group-hover:scale-110 transition-transform" />
+              
+              <div className="space-y-5 relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="h-14 w-14 rounded-2xl bg-slate-900 text-[#f3b738] flex items-center justify-center shadow-xs">
+                    <School className="h-8 w-8 text-[#f3b738]" />
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-800 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
+                    Educators & Leadership
+                  </span>
+                </div>
+
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-[#0d2b26]">
+                    Faculty & Admin Portal
+                  </h2>
+                  <p className="text-xs font-bold text-[#b47a16] mt-1">
+                    Teachers, Section Heads & School Principals • Passcode Protected
+                  </p>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Design digital lesson syllabi, mark student answers with criteria rubrics, manage classroom timetables, coordinate faculty staff, and publish official circulars.
+                </p>
+
+                {/* Features List */}
+                <div className="space-y-2.5 pt-2">
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#b47a16] shrink-0" />
+                    <span>Visual Curriculum Builder & Syllabus Sync</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#b47a16] shrink-0" />
+                    <span>Rubric Grading Desk with Criteria Marking</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#b47a16] shrink-0" />
+                    <span>Classroom, Section & Timetable Allocations</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#b47a16] shrink-0" />
+                    <span>Institutional Circulars & Zonal Noticeboard</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                    <CheckCircle2 className="h-4 w-4 text-[#b47a16] shrink-0" />
+                    <span>Passcode Protected Verification (No Unauthorized Signups)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3 relative z-10 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => handlePortalSwitch("staff")}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black text-sm py-4 rounded-2xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Enter Faculty & Admin Portal</span>
+                  <ArrowRight className="h-4 w-4 text-[#f3b738]" />
+                </button>
+
+                <div className="flex items-center justify-center gap-4 text-xs font-bold text-slate-500 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("staff");
+                      openAuth("login", "teacher", "drawer");
+                    }}
+                    className="hover:text-slate-950 cursor-pointer"
+                  >
+                    Teacher Login
+                  </button>
+                  <span>•</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("staff");
+                      openAuth("login", "admin", "drawer");
+                    }}
+                    className="hover:text-slate-950 cursor-pointer"
+                  >
+                    Admin Access
+                  </button>
+                  <span>•</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("staff");
+                      openAuth("signup", "teacher", "drawer");
+                    }}
+                    className="hover:text-slate-950 cursor-pointer"
+                  >
+                    Register Staff
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Highlights Row */}
+          <div className="p-6 rounded-3xl bg-white border border-[#e6ece8] shadow-xs max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div className="space-y-1">
+              <p className="text-xl font-black text-[#0d5c4d]">4 Sports Houses</p>
+              <p className="text-xs text-slate-500 font-medium">Vijaya, Parakrama, Gemunu & Mahasen with live athletics scoreboard</p>
+            </div>
+            <div className="space-y-1 md:border-x md:border-slate-100">
+              <p className="text-xl font-black text-[#0d2b26]">3 Official Mediums</p>
+              <p className="text-xs text-slate-500 font-medium">English, Sinhala (සිංහල), and Tamil (தமிழ்) localization</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xl font-black text-[#b47a16]">100% Security Verified</p>
+              <p className="text-xs text-slate-500 font-medium">Teacher Passcode & Admin Master Key prevent unauthorized access</p>
+            </div>
+          </div>
+        </main>
+      ) : portalType === "student" ? (
+        /* ========================================================================= */
+        /* 1. STUDENT LANDING PAGE (Active when portalType === "student")           */
+        /* ========================================================================= */
         <main className="px-4 sm:px-8 lg:px-12 py-10 sm:py-16 max-w-7xl mx-auto w-full space-y-16">
           {/* Student Hero Section */}
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
@@ -1248,8 +1583,16 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
           <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
             <button
               type="button"
+              onClick={() => handlePortalSwitch("gateway")}
+              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "gateway" ? "text-[#0d5c4d] font-bold underline" : ""}`}
+            >
+              Portal Directory
+            </button>
+            <span>•</span>
+            <button
+              type="button"
               onClick={() => handlePortalSwitch("student")}
-              className={`hover:text-[#0d5c4d] ${portalType === "student" ? "text-[#0d5c4d] font-bold underline" : ""}`}
+              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "student" ? "text-[#0d5c4d] font-bold underline" : ""}`}
             >
               Student Portal
             </button>
@@ -1257,7 +1600,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
             <button
               type="button"
               onClick={() => handlePortalSwitch("staff")}
-              className={`hover:text-[#0d5c4d] ${portalType === "staff" ? "text-[#0d5c4d] font-bold underline" : ""}`}
+              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "staff" ? "text-[#0d5c4d] font-bold underline" : ""}`}
             >
               Faculty & Admin Portal
             </button>
