@@ -38,6 +38,29 @@ type SupportedRole = "student" | "teacher" | "admin";
 type AuthDisplayMode = "closed" | "drawer" | "fullpage";
 export type PortalType = "student" | "staff";
 
+const BANNER_SLIDES = [
+  {
+    image: "/images/school_banner_1.jpg",
+    alt: "High School Students in Modern Classroom - Evolve Beyond",
+    caption: "Smart High School Classrooms & Dedicated Teachers"
+  },
+  {
+    image: "/images/school_banner_2.jpg",
+    alt: "School Students with Science Faculty - Evolve Beyond",
+    caption: "Interactive Science Lab Practical & Guided Studies"
+  },
+  {
+    image: "/images/school_banner_3.jpg",
+    alt: "School Students Studying in Library - Evolve Beyond",
+    caption: "Trilingual Term Revision & Past Exam Library"
+  },
+  {
+    image: "/images/student_banner_evolve.jpg",
+    alt: "Sri Lankan Students Campus Learning - Evolve Beyond",
+    caption: "Holistic Academics, Sports & Leadership"
+  }
+];
+
 export function LandingView({
   onEnterApp,
   initialPortal
@@ -46,6 +69,15 @@ export function LandingView({
   initialPortal?: PortalType;
 }) {
   const { setCurrentRole, addToast, schools, t, landingPortal, setLandingPortal } = useApp();
+
+  // Auto-rotate the student banner image every 3.5 seconds
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % BANNER_SLIDES.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, []);
 
   // Sync initialPortal prop if explicitly passed (e.g. from direct URL routes)
   React.useEffect(() => {
@@ -61,9 +93,9 @@ export function LandingView({
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const [selectedRole, setSelectedRole] = useState<SupportedRole>("student");
 
-  // Sign In Form State
-  const [loginEmail, setLoginEmail] = useState("sathurjan@school.lk");
-  const [loginPassword, setLoginPassword] = useState("••••••••");
+  // Sign In Form State (Empty by default for a clean, generic portal)
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -84,28 +116,27 @@ export function LandingView({
   // Pre-fill credentials based on role (STRICTLY 3 ROLES - NO SUPER ADMIN)
   const rolePresetCredentials = {
     student: {
-      name: "Sathurjan K.",
-      email: "sathurjan@school.lk",
-      detail: "Grade 12-Physical Science",
+      name: "Student",
+      email: "student@school.lk",
+      detail: "Student Learning Desk",
       school: "St. Michael High School"
     },
     teacher: {
-      name: "Mr. Samantha Perera",
-      email: "samantha.p@school.lk",
-      detail: "Senior Science Faculty",
+      name: "Faculty Member",
+      email: "teacher@school.lk",
+      detail: "Teaching Faculty",
       school: "St. Michael High School"
     },
     admin: {
-      name: "Dr. K. Rajasingham",
-      email: "principal@school.lk",
-      detail: "Head Administrator / Principal",
+      name: "Campus Administrator",
+      email: "admin@school.lk",
+      detail: "Campus Administration",
       school: "St. Michael High School"
     }
   };
 
   const handleRoleSelect = (role: SupportedRole) => {
     setSelectedRole(role);
-    setLoginEmail(rolePresetCredentials[role].email);
     if (role === "student") {
       setSignupGradeOrDept("Grade 11-A");
     } else if (role === "teacher") {
@@ -230,35 +261,12 @@ export function LandingView({
         </button>
       </div>
 
-      {/* Role Selector: Filtered by Portal Type */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
+      {/* Role Selector: Only shown for Staff Portal so staff can select Teacher vs Admin */}
+      {portalType === "staff" && (
+        <div className="space-y-1.5">
           <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block">
-            {portalType === "student" ? "Account Role:" : "Select Staff Role:"}
+            Select Staff Role:
           </label>
-          <span className="text-[10px] font-bold text-slate-500">
-            {portalType === "student" ? "Student Access" : "Staff Protection Active"}
-          </span>
-        </div>
-
-        {portalType === "student" ? (
-          /* Student Only Portal Button */
-          <div className="p-3 rounded-2xl bg-[#ecf8f5] border-2 border-[#0d5c4d] text-[#0d5c4d] flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-white text-[#0d5c4d] flex items-center justify-center shadow-xs">
-                <GraduationCap className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-xs font-black">Student & Parent Portal</p>
-                <p className="text-[10px] text-emerald-800 font-semibold">Enrolled School Pupil</p>
-              </div>
-            </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200/60 text-[#0d5c4d]">
-              Active Role
-            </span>
-          </div>
-        ) : (
-          /* Teacher and Admin Staff Selector */
           <div className="grid grid-cols-2 gap-2.5">
             {/* Teacher */}
             <button
@@ -273,10 +281,9 @@ export function LandingView({
               <div className="flex items-center gap-1.5">
                 <School className="h-4 w-4" />
                 <span className="text-xs font-black">Teacher</span>
-                {authTab === "signup" && <span className="text-[10px]">🔒</span>}
               </div>
               <span className="text-[9.5px] opacity-75">
-                {authTab === "signup" ? "Faculty (Passcode)" : "Faculty Desk"}
+                Faculty Desk
               </span>
             </button>
 
@@ -293,73 +300,18 @@ export function LandingView({
               <div className="flex items-center gap-1.5">
                 <Shield className="h-4 w-4" />
                 <span className="text-xs font-black">Admin</span>
-                {authTab === "signup" && <span className="text-[10px]">🛡️</span>}
               </div>
               <span className="text-[9.5px] opacity-75">
-                {authTab === "signup" ? "Principal (Master Key)" : "School Leadership"}
+                School Leadership
               </span>
             </button>
           </div>
-        )}
-
-        {/* Security Info Callout in Signup mode */}
-        {authTab === "signup" && (
-          <div className="pt-1">
-            {selectedRole === "student" && (
-              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-600 shrink-0" />
-                <span>Open Registration: Any enrolled student can sign up with their class and admission number.</span>
-              </div>
-            )}
-            {selectedRole === "teacher" && (
-              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-2">
-                <Lock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                <span>Staff Protection: Students cannot create teacher accounts. School faculty passcode required.</span>
-              </div>
-            )}
-            {selectedRole === "admin" && (
-              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-900 flex items-center gap-2">
-                <Shield className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-                <span>Restricted Access: Administrator & Principal accounts require authorization from school board.</span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* -------------------- SIGN IN TAB CONTENT -------------------- */}
       {authTab === "login" && (
         <div className="space-y-4 pt-1">
-          {/* Quick 1-Click Evaluation Login Bar */}
-          <div className="p-3.5 rounded-2xl bg-[#f8faf9] border border-[#e6ece8] space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                ⚡ 1-Click Evaluation Login:
-              </span>
-              <span className="text-[10px] font-bold text-[#0d5c4d]">Instant entry</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => handle1ClickDemoLogin(selectedRole)}
-              className="w-full p-2.5 rounded-xl bg-white border border-[#c4e9e0] hover:border-[#0d5c4d] hover:bg-[#ecf8f5] text-left transition-all flex items-center justify-between group cursor-pointer shadow-2xs"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center font-bold text-xs">
-                  {rolePresetCredentials[selectedRole].name.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-xs font-black text-[#0d2b26] group-hover:text-[#0d5c4d] transition-colors">
-                    {rolePresetCredentials[selectedRole].name}
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    {rolePresetCredentials[selectedRole].detail} • {rolePresetCredentials[selectedRole].school}
-                  </p>
-                </div>
-              </div>
-              <ArrowRight className="h-4 w-4 text-[#0d5c4d] group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-
           {/* Manual Login Form */}
           <form onSubmit={handleLoginSubmit} className="space-y-3">
             <div>
@@ -384,11 +336,11 @@ export function LandingView({
               <div className="relative">
                 <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
-                  type="email"
+                  type="text"
                   required
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder={portalType === "student" ? "e.g. sathurjan@school.lk" : "e.g. samantha.p@school.lk"}
+                  placeholder={portalType === "student" ? "e.g. student@school.lk or Index No" : "e.g. staff@school.lk or Faculty ID"}
                   className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
                 />
               </div>
@@ -406,7 +358,7 @@ export function LandingView({
                     addToast({
                       type: "info",
                       title: "Password Reset",
-                      message: "Please contact your school office or use the 1-click evaluation demo login above."
+                      message: "Please contact your school office or administration to reset your password."
                     });
                   }}
                   className="text-[11px] font-bold text-[#0d5c4d] hover:underline"
@@ -473,7 +425,7 @@ export function LandingView({
                 required
                 value={signupName}
                 onChange={(e) => setSignupName(e.target.value)}
-                placeholder="e.g. Sathurjan K. / Samantha Perera"
+                placeholder="e.g. Enter your full name"
                 className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
               />
             </div>
@@ -551,9 +503,6 @@ export function LandingView({
                 placeholder="Enter faculty passcode (e.g. TEACH-2026)"
                 className="w-full h-10 px-3 rounded-xl bg-white border border-amber-300 text-xs text-amber-950 font-mono font-bold placeholder-amber-400 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 transition-all"
               />
-              <p className="text-[10px] text-amber-900 leading-snug">
-                ⚠️ <strong>Staff Protection:</strong> Students cannot register as teachers. This passcode is issued exclusively to verified school faculty.
-              </p>
             </div>
           )}
 
@@ -576,9 +525,6 @@ export function LandingView({
                 placeholder="Enter master admin key (e.g. ADMIN-MASTER)"
                 className="w-full h-10 px-3 rounded-xl bg-white border border-rose-300 text-xs text-rose-950 font-mono font-bold placeholder-rose-400 focus:outline-none focus:border-rose-600 focus:ring-2 focus:ring-rose-500/20 transition-all"
               />
-              <p className="text-[10px] text-rose-900 leading-snug">
-                🛡️ <strong>Access Restricted:</strong> School Administrator & Principal accounts are managed centrally. Master authorization key is required.
-              </p>
             </div>
           )}
 
@@ -953,60 +899,304 @@ export function LandingView({
               </div>
             </div>
 
-            {/* Right Student Card */}
+            {/* Right Student Card (Generic Platform Overview) */}
             <div className="lg:col-span-5">
               <div className="rounded-3xl overflow-hidden border border-[#e6ece8] bg-white shadow-xl">
                 <div className="bg-gradient-to-br from-[#0d5c4d] to-[#082a24] p-7 text-white space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold">
-                      Grade 12 — Physical Science
+                    <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold flex items-center gap-1.5">
+                      <GraduationCap className="h-3.5 w-3.5 text-[#f3b738]" />
+                      <span>Student Academic Hub</span>
                     </span>
-                    <span className="text-xs font-mono font-bold text-[#f3b738]">Term 2 Active</span>
+                    <span className="text-xs font-mono font-bold text-[#f3b738]">Grades 6 — 13</span>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-black text-white">Sathurjan K.</h3>
-                    <p className="text-xs text-slate-200">St. Michael High School • Index: STU-1204</p>
+                    <h3 className="text-2xl font-black text-white">Interactive Learning Desk</h3>
+                    <p className="text-xs text-slate-200">National Curriculum • Term Exams • Digital Classroom</p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 pt-2">
                     <div className="p-2.5 rounded-xl bg-white/10 text-center">
-                      <p className="text-base font-black text-white">4</p>
-                      <p className="text-[10px] text-slate-300">Enrolled Courses</p>
+                      <p className="text-base font-black text-white">All Streams</p>
+                      <p className="text-[10px] text-slate-300">Sci / Art / Com / Tech</p>
                     </div>
                     <div className="p-2.5 rounded-xl bg-white/10 text-center">
-                      <p className="text-base font-black text-[#f3b738]">92%</p>
-                      <p className="text-[10px] text-slate-300">Avg Score</p>
+                      <p className="text-base font-black text-[#f3b738]">100%</p>
+                      <p className="text-[10px] text-slate-300">Syllabus Aligned</p>
                     </div>
                     <div className="p-2.5 rounded-xl bg-white/10 text-center">
-                      <p className="text-base font-black text-emerald-300">Vijaya</p>
-                      <p className="text-[10px] text-slate-300">Sports House</p>
+                      <p className="text-base font-black text-emerald-300">Trilingual</p>
+                      <p className="text-[10px] text-slate-300">Notes & Papers</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-5 bg-white space-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-700">Immediate Actions:</span>
-                    <span className="text-[10px] text-slate-400">2 Pending</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-[#f8faf9] border border-[#e6ece8] flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-bold text-[#0d2b26]">Combined Mathematics Assignment</p>
-                      <p className="text-[10px] text-slate-500">Problem Set: Quadratic Inequations</p>
+                <div className="p-5 bg-white space-y-3.5">
+                  <p className="text-xs font-bold text-slate-700">Student Portal Capabilities:</p>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-[#f8faf9] border border-[#e6ece8] flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center shrink-0">
+                        <BookOpen className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-[#0d2b26]">Lesson Notes & Past Papers</p>
+                        <p className="text-[10px] text-slate-500">Downloadable PDFs, videos, and term revision guides</p>
+                      </div>
                     </div>
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">Due Soon</span>
+
+                    <div className="p-2.5 rounded-xl bg-[#f8faf9] border border-[#e6ece8] flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center shrink-0">
+                        <FileText className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-[#0d2b26]">Assignments & Online Quizzes</p>
+                        <p className="text-[10px] text-slate-500">Submit homework and receive teacher feedback with marks</p>
+                      </div>
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handle1ClickDemoLogin("student")}
-                    className="w-full bg-[#ecf8f5] hover:bg-[#0d5c4d] text-[#0d5c4d] hover:text-white font-extrabold text-xs py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <span>⚡ Try Student Demo: Sathurjan K.</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => openAuth("login", "student", "drawer")}
+                      className="w-full bg-[#0d5c4d] hover:bg-[#0a483c] text-white font-extrabold text-xs py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      <LogIn className="h-3.5 w-3.5" />
+                      <span>Student Sign In</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => openAuth("signup", "student", "drawer")}
+                      className="w-full bg-[#ecf8f5] hover:bg-[#d8f1ea] text-[#0d5c4d] border border-[#c4e9e0] font-extrabold text-xs py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      <span>Register Account</span>
+                    </button>
+                  </div>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ========================================================= */}
+          {/* EVOLVE BEYOND SHOWCASE BANNER & 5 QUICK ACCESS CARDS      */}
+          {/* ========================================================= */}
+          <section className="space-y-4">
+            {/* Visual Banner */}
+            <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#031d28] via-[#083e47] to-[#0284c7] text-white shadow-2xl border border-cyan-400/20">
+              {/* Dynamic Wave Background Accents */}
+              <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-200 via-transparent to-transparent" />
+              <div className="absolute -left-16 -bottom-16 w-64 h-64 rounded-full bg-cyan-400/20 blur-3xl pointer-events-none" />
+              <div className="absolute right-0 top-0 w-96 h-96 rounded-full bg-blue-500/20 blur-3xl pointer-events-none" />
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 items-center relative z-10 min-h-[260px] sm:min-h-[300px]">
+                {/* Left Typography Block */}
+                <div className="lg:col-span-5 p-6 sm:p-10 space-y-3">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[11px] font-black text-cyan-200 tracking-wider uppercase">
+                    <Sparkles className="h-3 w-3 text-[#f3b738]" />
+                    <span>Collegiate Academic Portal</span>
+                  </div>
+
+                  <h2 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-none uppercase drop-shadow-md">
+                    <span className="block text-sky-200">EVOLVE</span>
+                    <span className="block text-white">BEYOND</span>
+                  </h2>
+
+                  <p className="text-xs sm:text-sm text-cyan-100/90 font-medium max-w-sm leading-relaxed">
+                    Unleash your academic brilliance. Interactive digital coursework, trilingual lessons, and continuous exam preparation designed for Sri Lankan students.
+                  </p>
+
+                  <div className="pt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openAuth("login", "student", "drawer")}
+                      className="px-5 py-2.5 rounded-xl bg-white text-[#083e47] hover:bg-cyan-50 font-black text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Explore Student Hub</span>
+                      <ArrowRight className="h-3.5 w-3.5 text-cyan-600" />
+                    </button>
+                    <span className="text-[11px] font-semibold text-cyan-200/80">Grades 6 – 13</span>
+                  </div>
+                </div>
+
+                {/* Right Students Photography (Auto-Rotating School Students Slideshow) */}
+                <div className="lg:col-span-7 h-full flex items-end justify-center lg:justify-end relative pr-0 lg:pr-6 overflow-hidden">
+                  <div className="relative w-full max-h-[340px] flex items-end justify-center">
+                    <div className="relative w-full h-[240px] sm:h-[300px] rounded-2xl lg:rounded-l-2xl overflow-hidden shadow-2xl border border-white/10 bg-slate-900">
+                      {BANNER_SLIDES.map((slide, idx) => (
+                        <img
+                          key={idx}
+                          src={slide.image}
+                          alt={slide.alt}
+                          className={`absolute inset-0 w-full h-full object-cover object-center transition-all duration-1000 ease-in-out ${
+                            idx === currentSlideIndex
+                              ? "opacity-100 scale-100"
+                              : "opacity-0 scale-105 pointer-events-none"
+                          }`}
+                        />
+                      ))}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#031d28]/70 via-transparent to-transparent lg:hidden pointer-events-none" />
+
+                      {/* Floating Caption & Dots */}
+                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-black/45 backdrop-blur-md text-[11px] text-white border border-white/15 pointer-events-auto">
+                        <span className="truncate font-semibold text-cyan-200">
+                          {BANNER_SLIDES[currentSlideIndex].caption}
+                        </span>
+                        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                          {BANNER_SLIDES.map((_, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setCurrentSlideIndex(idx)}
+                              aria-label={`Go to slide ${idx + 1}`}
+                              className={`h-2 rounded-full transition-all cursor-pointer ${
+                                idx === currentSlideIndex
+                                  ? "w-5 bg-cyan-400"
+                                  : "w-2 bg-white/40 hover:bg-white/70"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 5 Quick Access Cards (Direct Visual Links - Verified Local Images) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4 pt-1">
+              {/* Card 1: Student Help Desk */}
+              <div
+                onClick={() => {
+                  addToast({
+                    type: "info",
+                    title: "Student Help Desk",
+                    message: "Sign in to access academic counseling, query tickets, and teacher mentorship."
+                  });
+                  openAuth("login", "student", "drawer");
+                }}
+                className="group bg-white rounded-2xl p-3 border border-[#e6ece8] shadow-sm hover:shadow-xl hover:border-amber-400 -translate-y-0 hover:-translate-y-1 transition-all duration-300 cursor-pointer text-center flex flex-col items-center"
+              >
+                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-2.5 relative bg-slate-100">
+                  <img
+                    src="/images/card_helpdesk.jpg"
+                    alt="Student Help Desk"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h4 className="text-xs font-black text-amber-700 group-hover:text-amber-600 transition-colors">
+                  Student Help Desk
+                </h4>
+                <p className="text-[10px] text-slate-500 mt-0.5">Advising & Support</p>
+              </div>
+
+              {/* Card 2: Student Service */}
+              <div
+                onClick={() => {
+                  addToast({
+                    type: "info",
+                    title: "Student Service",
+                    message: "Sign in to view student services, sports house points, and campus activities."
+                  });
+                  openAuth("login", "student", "drawer");
+                }}
+                className="group bg-white rounded-2xl p-3 border border-[#e6ece8] shadow-sm hover:shadow-xl hover:border-amber-400 -translate-y-0 hover:-translate-y-1 transition-all duration-300 cursor-pointer text-center flex flex-col items-center"
+              >
+                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-2.5 relative bg-slate-100">
+                  <img
+                    src="/images/card_service.jpg"
+                    alt="Student Service"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h4 className="text-xs font-black text-amber-700 group-hover:text-amber-600 transition-colors">
+                  Student Service
+                </h4>
+                <p className="text-[10px] text-slate-500 mt-0.5">House & Campus Desk</p>
+              </div>
+
+              {/* Card 3: Online Library */}
+              <div
+                onClick={() => {
+                  addToast({
+                    type: "info",
+                    title: "Online Library",
+                    message: "Access trilingual textbooks, unit notes, and digital study packs."
+                  });
+                  openAuth("login", "student", "drawer");
+                }}
+                className="group bg-white rounded-2xl p-3 border border-[#e6ece8] shadow-sm hover:shadow-xl hover:border-amber-400 -translate-y-0 hover:-translate-y-1 transition-all duration-300 cursor-pointer text-center flex flex-col items-center"
+              >
+                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-2.5 relative bg-slate-100">
+                  <img
+                    src="/images/card_library.jpg"
+                    alt="Online Library"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h4 className="text-xs font-black text-amber-700 group-hover:text-amber-600 transition-colors">
+                  Online Library
+                </h4>
+                <p className="text-[10px] text-slate-500 mt-0.5">Digital Notes & Books</p>
+              </div>
+
+              {/* Card 4: Video Repository */}
+              <div
+                onClick={() => {
+                  addToast({
+                    type: "info",
+                    title: "Video Repository",
+                    message: "Watch recorded classroom video lessons and lab practical explanations."
+                  });
+                  openAuth("login", "student", "drawer");
+                }}
+                className="group bg-white rounded-2xl p-3 border border-[#e6ece8] shadow-sm hover:shadow-xl hover:border-amber-400 -translate-y-0 hover:-translate-y-1 transition-all duration-300 cursor-pointer text-center flex flex-col items-center"
+              >
+                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-2.5 relative bg-slate-100">
+                  <img
+                    src="/images/card_video.jpg"
+                    alt="Video Repository"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h4 className="text-xs font-black text-amber-700 group-hover:text-amber-600 transition-colors">
+                  Video Repository
+                </h4>
+                <p className="text-[10px] text-slate-500 mt-0.5">Recorded Class Units</p>
+              </div>
+
+              {/* Card 5: Research Archive */}
+              <div
+                onClick={() => {
+                  addToast({
+                    type: "info",
+                    title: "Research Archive",
+                    message: "Official G.C.E O/L and A/L Past Examination Papers & Marking Schemes."
+                  });
+                  openAuth("login", "student", "drawer");
+                }}
+                className="group bg-white rounded-2xl p-3 border border-[#e6ece8] shadow-sm hover:shadow-xl hover:border-amber-400 -translate-y-0 hover:-translate-y-1 transition-all duration-300 cursor-pointer text-center flex flex-col items-center"
+              >
+                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-2.5 relative bg-slate-100">
+                  <img
+                    src="/images/card_archive.jpg"
+                    alt="Research Archive"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h4 className="text-xs font-black text-amber-700 group-hover:text-amber-600 transition-colors">
+                  Research Archive
+                </h4>
+                <p className="text-[10px] text-slate-500 mt-0.5">Past Papers & Marking</p>
               </div>
             </div>
           </section>
@@ -1065,22 +1255,6 @@ export function LandingView({
             </div>
           </section>
 
-          {/* Switch Prompt: Go to Staff Portal */}
-          <div className="p-6 rounded-3xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="space-y-1 text-center sm:text-left">
-              <h3 className="text-base font-black">Are you a Teacher, Principal, or School Administrator?</h3>
-              <p className="text-xs text-slate-300">
-                Switch to the School Faculty & Administration Portal for curriculum planning and governance.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => handlePortalSwitch("staff")}
-              className="bg-[#f3b738] hover:bg-[#e0a424] text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer shrink-0 shadow-md flex items-center gap-1.5"
-            >
-              <span>Faculty & Admin Portal ➔</span>
-            </button>
-          </div>
         </main>
       ) : (
         /* ========================================================================= */
@@ -1138,57 +1312,64 @@ export function LandingView({
               </div>
             </div>
 
-            {/* Right Staff Leadership Card */}
+            {/* Right Staff Leadership Card (Generic Institutional Overview) */}
             <div className="lg:col-span-5">
               <div className="rounded-3xl overflow-hidden border border-[#e6ece8] bg-white shadow-xl">
                 <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-[#082a24] p-7 text-white space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-amber-300">
-                      Faculty & Campus HQ
+                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                      <Shield className="h-3.5 w-3.5" />
+                      <span>Faculty & Campus HQ</span>
                     </span>
                     <span className="text-xs font-mono font-bold text-emerald-400">Institutional Governance</span>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-black text-white">St. Michael High School</h3>
-                    <p className="text-xs text-slate-300">86 Verified Teachers • 1,420 Enrolled Students</p>
+                    <h3 className="text-2xl font-black text-white">Faculty & Admin Operations</h3>
+                    <p className="text-xs text-slate-300">Centralized Academic Administration & Teacher Governance</p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 pt-2">
                     <div className="p-2.5 rounded-xl bg-white/10 text-center">
-                      <p className="text-base font-black text-[#f3b738]">86</p>
-                      <p className="text-[10px] text-slate-300">Faculty Staff</p>
+                      <p className="text-base font-black text-[#f3b738]">Syllabus</p>
+                      <p className="text-[10px] text-slate-300">Term Tracking</p>
                     </div>
                     <div className="p-2.5 rounded-xl bg-white/10 text-center">
-                      <p className="text-base font-black text-white">42</p>
-                      <p className="text-[10px] text-slate-300">Classrooms</p>
+                      <p className="text-base font-black text-white">Rubrics</p>
+                      <p className="text-[10px] text-slate-300">Grading Suite</p>
                     </div>
                     <div className="p-2.5 rounded-xl bg-white/10 text-center">
-                      <p className="text-base font-black text-emerald-300">100%</p>
-                      <p className="text-[10px] text-slate-300">Syllabus Sync</p>
+                      <p className="text-base font-black text-emerald-300">Registry</p>
+                      <p className="text-[10px] text-slate-300">Student Records</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-5 bg-white space-y-3">
-                  <p className="text-xs font-bold text-slate-700">Quick Evaluation Staff Portals:</p>
+                <div className="p-5 bg-white space-y-3.5">
+                  <p className="text-xs font-bold text-slate-700">Staff Access Portals:</p>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={() => handle1ClickDemoLogin("teacher")}
+                      onClick={() => openAuth("login", "teacher", "drawer")}
                       className="p-3 rounded-xl bg-[#fef7e6] hover:bg-[#faebd0] border border-[#fde4af] text-left transition-all cursor-pointer"
                     >
-                      <p className="text-xs font-black text-[#b47a16]">👨‍🏫 Mr. S. Perera</p>
-                      <p className="text-[10px] text-slate-500">Teacher Science Faculty</p>
+                      <p className="text-xs font-black text-[#b47a16] flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5" />
+                        <span>Teacher Portal</span>
+                      </p>
+                      <p className="text-[10px] text-slate-500">Lesson Plans & Grading</p>
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => handle1ClickDemoLogin("admin")}
+                      onClick={() => openAuth("login", "admin", "drawer")}
                       className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-left transition-all cursor-pointer"
                     >
-                      <p className="text-xs font-black text-slate-800">🏫 Dr. K. Rajasingham</p>
-                      <p className="text-[10px] text-slate-500">Principal Administrator</p>
+                      <p className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <School className="h-3.5 w-3.5" />
+                        <span>Admin Portal</span>
+                      </p>
+                      <p className="text-[10px] text-slate-500">Principal & Governance</p>
                     </button>
                   </div>
 
@@ -1259,22 +1440,6 @@ export function LandingView({
             </div>
           </section>
 
-          {/* Switch Prompt: Go to Student Portal */}
-          <div className="p-6 rounded-3xl bg-[#ecf8f5] border border-[#c4e9e0] text-[#0d2b26] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="space-y-1 text-center sm:text-left">
-              <h3 className="text-base font-black">Are you a Student or Parent?</h3>
-              <p className="text-xs text-slate-600">
-                Switch to the Student Learning Portal for course notes, homework submissions, and sports.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => handlePortalSwitch("student")}
-              className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer shrink-0 shadow-md flex items-center gap-1.5"
-            >
-              <span>Student Portal ➔</span>
-            </button>
-          </div>
         </main>
       )}
 
