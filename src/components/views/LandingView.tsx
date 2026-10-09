@@ -274,7 +274,7 @@ export function LandingView({
               onClick={() => handleRoleSelect("teacher")}
               className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-0.5 ${
                 selectedRole === "teacher"
-                  ? "bg-[#fef7e6] border-[#f3b738] text-[#b47a16] shadow-xs ring-2 ring-[#f3b738]/25"
+                  ? "bg-slate-100 border-slate-800 text-slate-900 shadow-xs ring-2 ring-slate-800/20"
                   : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
               }`}
             >
@@ -485,46 +485,52 @@ export function LandingView({
 
           {/* Role-Specific Security Verification Inputs */}
           {selectedRole === "teacher" && (
-            <div className="p-3.5 rounded-2xl bg-amber-50/90 border-2 border-amber-300 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-black text-amber-950 flex items-center gap-1.5">
-                  <Lock className="h-4 w-4 text-amber-600" />
-                  <span>Teacher Faculty Verification Passcode *</span>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Teacher Verification Passcode *</span>
                 </label>
-                <span className="text-[10px] font-mono font-bold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded-md">
-                  Demo: TEACH-2026
+                <span className="text-[10px] text-slate-400 font-medium">
+                  (Demo: TEACH-2026)
                 </span>
               </div>
-              <input
-                type="text"
-                required
-                value={teacherPasscode}
-                onChange={(e) => setTeacherPasscode(e.target.value)}
-                placeholder="Enter faculty passcode (e.g. TEACH-2026)"
-                className="w-full h-10 px-3 rounded-xl bg-white border border-amber-300 text-xs text-amber-950 font-mono font-bold placeholder-amber-400 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 transition-all"
-              />
+              <div className="relative">
+                <Lock className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  required
+                  value={teacherPasscode}
+                  onChange={(e) => setTeacherPasscode(e.target.value)}
+                  placeholder="Enter teacher passcode"
+                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
+                />
+              </div>
             </div>
           )}
 
           {selectedRole === "admin" && (
-            <div className="p-3.5 rounded-2xl bg-rose-50/90 border-2 border-rose-300 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-black text-rose-950 flex items-center gap-1.5">
-                  <Shield className="h-4 w-4 text-rose-600" />
-                  <span>Administrator Master Authorization Key *</span>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Shield className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Admin Security Key *</span>
                 </label>
-                <span className="text-[10px] font-mono font-bold text-rose-900 bg-rose-200/80 px-2 py-0.5 rounded-md">
-                  Demo: ADMIN-MASTER
+                <span className="text-[10px] text-slate-400 font-medium">
+                  (Demo: ADMIN-MASTER)
                 </span>
               </div>
-              <input
-                type="password"
-                required
-                value={adminSecurityKey}
-                onChange={(e) => setAdminSecurityKey(e.target.value)}
-                placeholder="Enter master admin key (e.g. ADMIN-MASTER)"
-                className="w-full h-10 px-3 rounded-xl bg-white border border-rose-300 text-xs text-rose-950 font-mono font-bold placeholder-rose-400 focus:outline-none focus:border-rose-600 focus:ring-2 focus:ring-rose-500/20 transition-all"
-              />
+              <div className="relative">
+                <Shield className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="password"
+                  required
+                  value={adminSecurityKey}
+                  onChange={(e) => setAdminSecurityKey(e.target.value)}
+                  placeholder="Enter admin authorization key"
+                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
+                />
+              </div>
             </div>
           )}
 
@@ -756,13 +762,6 @@ export function LandingView({
             </div>
           </div>
 
-          {/* Quick Nav Links */}
-          <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-600">
-            <a href="#courses" className="hover:text-[#0d5c4d] transition-colors">Courses & Subjects</a>
-            <a href="#past-papers" className="hover:text-[#0d5c4d] transition-colors">Past Papers</a>
-            <a href="#online-exams" className="hover:text-[#0d5c4d] transition-colors">Online Exams</a>
-            <a href="#house-sports" className="hover:text-[#0d5c4d] transition-colors">House Sports</a>
-          </div>
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -810,13 +809,6 @@ export function LandingView({
             </div>
           </div>
 
-          {/* Quick Nav Links */}
-          <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-600">
-            <a href="#curriculum" className="hover:text-[#0d5c4d] transition-colors">Curriculum Builder</a>
-            <a href="#grading-desk" className="hover:text-[#0d5c4d] transition-colors">Grading Desk</a>
-            <a href="#classrooms" className="hover:text-[#0d5c4d] transition-colors">Class Allocations</a>
-            <a href="#circulars" className="hover:text-[#0d5c4d] transition-colors">Official Circulars</a>
-          </div>
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
