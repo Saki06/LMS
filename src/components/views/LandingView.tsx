@@ -9,8 +9,6 @@ import {
   BookOpen,
   CheckCircle2,
   FileText,
-  ClipboardCheck,
-  Award,
   TrendingUp,
   ArrowRight,
   Sparkles,
@@ -172,16 +170,6 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
     });
     onEnterApp();
   };
-
-  const learningLoop = [
-    { title: "Teacher Creates", desc: "Syllabus, units, video lessons & learning media", icon: BookOpen },
-    { title: "Student Learns", desc: "Interactive study notes & digital classroom", icon: Sparkles },
-    { title: "Student Practices", desc: "Past papers, quizzes & term exercise sets", icon: Zap },
-    { title: "Student Submits", desc: "Digital assignments & written answers", icon: FileText },
-    { title: "Teacher Marks", desc: "Grading desk with structured rubrics", icon: ClipboardCheck },
-    { title: "Feedback Delivered", desc: "Transparent release of scores & notes", icon: Award },
-    { title: "Progress Measured", desc: "Visual analytics, reports & mastery", icon: TrendingUp }
-  ];
 
   // =========================================================================
   // REUSABLE AUTH FORM COMPONENT (Used in Side Drawer AND Full Page View)
@@ -792,7 +780,6 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
         {/* Desktop Anchor Links */}
         <div className="hidden lg:flex items-center gap-8 text-xs font-bold text-slate-600">
           <a href="#roles" className="hover:text-[#0d5c4d] transition-colors">Portals & Roles</a>
-          <a href="#learning-loop" className="hover:text-[#0d5c4d] transition-colors">Learning Loop</a>
           <a href="#curriculum" className="hover:text-[#0d5c4d] transition-colors">Sri Lankan Curriculum</a>
           <a href="#school-life" className="hover:text-[#0d5c4d] transition-colors">School Life</a>
         </div>
@@ -1137,40 +1124,6 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* 7-Step Academic Learning Loop */}
-        <div id="learning-loop" className="mt-20 p-8 sm:p-10 rounded-3xl bg-white border border-[#e6ece8] space-y-8 shadow-xs scroll-mt-24">
-          <div className="text-center max-w-xl mx-auto">
-            <span className="text-[11px] font-black uppercase tracking-wider text-[#0d5c4d] bg-[#ecf8f5] px-3 py-1 rounded-full border border-[#c4e9e0]">
-              Pedagogy Architecture
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-[#0d2b26] mt-2">
-              End-to-End Academic Learning Loop
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Every lesson moves through an integrated cycle from instruction to mastery.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 text-center">
-            {learningLoop.map((step, idx) => {
-              const Icon = step.icon;
-              return (
-                <div
-                  key={idx}
-                  className="p-4 rounded-2xl bg-[#f8faf9] border border-[#e6ece8] hover:border-[#0d5c4d] hover:bg-[#edf5f2] transition-all flex flex-col items-center justify-between group"
-                >
-                  <div className="h-10 w-10 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] group-hover:bg-[#0d5c4d] group-hover:text-white transition-colors flex items-center justify-center mb-3 shadow-2xs">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <span className="text-[10px] font-mono font-bold text-slate-400">Step 0{idx + 1}</span>
-                  <p className="text-xs font-black text-[#0d2b26] mt-1">{step.title}</p>
-                  <p className="text-[10px] text-slate-500 mt-1 leading-snug">{step.desc}</p>
-                </div>
-              );
-            })}
           </div>
         </div>
 
