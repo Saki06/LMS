@@ -28,14 +28,21 @@ import {
   X,
   Maximize2,
   Minimize2,
-  ArrowLeft
+  ArrowLeft,
+  Users,
+  Layers,
+  Settings
 } from "lucide-react";
 
 type SupportedRole = "student" | "teacher" | "admin";
 type AuthDisplayMode = "closed" | "drawer" | "fullpage";
+type PortalType = "student" | "staff";
 
 export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
   const { setCurrentRole, addToast, schools, t } = useApp();
+
+  // Portal Landing Mode: "student" for Students & Parents, "staff" for Teachers & Administrators
+  const [portalType, setPortalType] = useState<PortalType>("student");
 
   // Auth Display Mode: "closed", "drawer" (slide in from side), or "fullpage" (dedicated new page)
   const [authMode, setAuthMode] = useState<AuthDisplayMode>("closed");
@@ -100,6 +107,15 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
     setAuthTab(tab);
     handleRoleSelect(role);
     setAuthMode(mode);
+  };
+
+  const handlePortalSwitch = (type: PortalType) => {
+    setPortalType(type);
+    if (type === "student") {
+      handleRoleSelect("student");
+    } else {
+      handleRoleSelect("teacher");
+    }
   };
 
   const handle1ClickDemoLogin = (role: SupportedRole) => {
@@ -172,7 +188,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
   };
 
   // =========================================================================
-  // REUSABLE AUTH FORM COMPONENT (Used in Side Drawer AND Full Page View)
+  // REUSABLE AUTH FORM COMPONENT (Tailored per portal type: student vs staff)
   // =========================================================================
   const renderAuthContent = () => (
     <div className="space-y-4">
@@ -202,99 +218,97 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
         </button>
       </div>
 
-      {/* Role Selector: ONLY 3 ROLES (Student, Teacher, Admin - STRICTLY NO super_admin) */}
+      {/* Role Selector: Filtered by Portal Type */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block">
-            Select Your School Role:
+            {portalType === "student" ? "Account Role:" : "Select Staff Role:"}
           </label>
-          {authTab === "signup" && (
-            <span className="text-[10px] font-bold text-slate-500">
-              Role Protection Active
-            </span>
-          )}
+          <span className="text-[10px] font-bold text-slate-500">
+            {portalType === "student" ? "Student Access" : "Staff Protection Active"}
+          </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {/* Student */}
-          <button
-            type="button"
-            onClick={() => handleRoleSelect("student")}
-            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-0.5 ${
-              selectedRole === "student"
-                ? "bg-[#ecf8f5] border-[#0d5c4d] text-[#0d5c4d] shadow-xs ring-2 ring-[#0d5c4d]/20"
-                : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-            }`}
-          >
-            <div className="flex items-center gap-1.5">
-              <GraduationCap className="h-4 w-4" />
-              <span className="text-xs font-black">Student</span>
+        {portalType === "student" ? (
+          /* Student Only Portal Button */
+          <div className="p-3 rounded-2xl bg-[#ecf8f5] border-2 border-[#0d5c4d] text-[#0d5c4d] flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-xl bg-white text-[#0d5c4d] flex items-center justify-center shadow-xs">
+                <GraduationCap className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-black">Student & Parent Portal</p>
+                <p className="text-[10px] text-emerald-800 font-semibold">Enrolled School Pupil</p>
+              </div>
             </div>
-            <span className="text-[9.5px] opacity-75">
-              {authTab === "signup" ? "Pupil (Open)" : "Pupil"}
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200/60 text-[#0d5c4d]">
+              Active Role
             </span>
-          </button>
+          </div>
+        ) : (
+          /* Teacher and Admin Staff Selector */
+          <div className="grid grid-cols-2 gap-2.5">
+            {/* Teacher */}
+            <button
+              type="button"
+              onClick={() => handleRoleSelect("teacher")}
+              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-0.5 ${
+                selectedRole === "teacher"
+                  ? "bg-[#fef7e6] border-[#f3b738] text-[#b47a16] shadow-xs ring-2 ring-[#f3b738]/25"
+                  : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <School className="h-4 w-4" />
+                <span className="text-xs font-black">Teacher</span>
+                {authTab === "signup" && <span className="text-[10px]">🔒</span>}
+              </div>
+              <span className="text-[9.5px] opacity-75">
+                {authTab === "signup" ? "Faculty (Passcode)" : "Faculty Desk"}
+              </span>
+            </button>
 
-          {/* Teacher */}
-          <button
-            type="button"
-            onClick={() => handleRoleSelect("teacher")}
-            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-0.5 ${
-              selectedRole === "teacher"
-                ? "bg-[#fef7e6] border-[#f3b738] text-[#b47a16] shadow-xs ring-2 ring-[#f3b738]/25"
-                : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-            }`}
-          >
-            <div className="flex items-center gap-1.5">
-              <School className="h-4 w-4" />
-              <span className="text-xs font-black">Teacher</span>
-              {authTab === "signup" && <span className="text-[10px]">🔒</span>}
-            </div>
-            <span className="text-[9.5px] opacity-75">
-              {authTab === "signup" ? "Staff (Passcode)" : "Faculty"}
-            </span>
-          </button>
-
-          {/* Admin */}
-          <button
-            type="button"
-            onClick={() => handleRoleSelect("admin")}
-            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-0.5 ${
-              selectedRole === "admin"
-                ? "bg-slate-100 border-slate-800 text-slate-900 shadow-xs ring-2 ring-slate-800/20"
-                : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-            }`}
-          >
-            <div className="flex items-center gap-1.5">
-              <Shield className="h-4 w-4" />
-              <span className="text-xs font-black">Admin</span>
-              {authTab === "signup" && <span className="text-[10px]">🛡️</span>}
-            </div>
-            <span className="text-[9.5px] opacity-75">
-              {authTab === "signup" ? "Restricted Key" : "Principal"}
-            </span>
-          </button>
-        </div>
+            {/* Admin */}
+            <button
+              type="button"
+              onClick={() => handleRoleSelect("admin")}
+              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-0.5 ${
+                selectedRole === "admin"
+                  ? "bg-slate-100 border-slate-800 text-slate-900 shadow-xs ring-2 ring-slate-800/20"
+                  : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <Shield className="h-4 w-4" />
+                <span className="text-xs font-black">Admin</span>
+                {authTab === "signup" && <span className="text-[10px]">🛡️</span>}
+              </div>
+              <span className="text-[9.5px] opacity-75">
+                {authTab === "signup" ? "Principal (Master Key)" : "School Leadership"}
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* Security Info Callout in Signup mode */}
         {authTab === "signup" && (
           <div className="pt-1">
             {selectedRole === "student" && (
-              <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0" />
-                <span>Open Registration: Any enrolled school student can register an account.</span>
+              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-600 shrink-0" />
+                <span>Open Registration: Any enrolled student can sign up with their class and admission number.</span>
               </div>
             )}
             {selectedRole === "teacher" && (
-              <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-1.5">
+              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-2">
                 <Lock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                <span>Security Protected: Students cannot self-register as teachers. School staff passcode required.</span>
+                <span>Staff Protection: Students cannot create teacher accounts. School faculty passcode required.</span>
               </div>
             )}
             {selectedRole === "admin" && (
-              <div className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-900 flex items-center gap-1.5">
+              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-900 flex items-center gap-2">
                 <Shield className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-                <span>Access Restricted: School Administrator accounts require authorization from school management.</span>
+                <span>Restricted Access: Administrator & Principal accounts require authorization from school board.</span>
               </div>
             )}
           </div>
@@ -353,7 +367,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
 
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                Email Address or Index No
+                {portalType === "student" ? "Student Email or Index No" : "Staff Email or Faculty ID"}
               </label>
               <div className="relative">
                 <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -362,7 +376,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
                   required
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="e.g. sathurjan@school.lk"
+                  placeholder={portalType === "student" ? "e.g. sathurjan@school.lk" : "e.g. samantha.p@school.lk"}
                   className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
                 />
               </div>
@@ -380,7 +394,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
                     addToast({
                       type: "info",
                       title: "Password Reset",
-                      message: "Please contact your school administrator or use the 1-click evaluation login above."
+                      message: "Please contact your school office or use the 1-click evaluation demo login above."
                     });
                   }}
                   className="text-[11px] font-bold text-[#0d5c4d] hover:underline"
@@ -425,7 +439,9 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
               className="w-full bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer mt-1"
             >
               <LogIn className="h-4 w-4" />
-              <span>Sign In to {selectedRole === "student" ? "Student" : selectedRole === "teacher" ? "Teacher" : "Admin"} Portal</span>
+              <span>
+                Sign In to {selectedRole === "student" ? "Student" : selectedRole === "teacher" ? "Teacher" : "Admin"} Portal
+              </span>
             </button>
           </form>
         </div>
@@ -646,7 +662,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
                 LimaT Smart Book
               </span>
               <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
-                LEARN · GROW · LEAD
+                {portalType === "student" ? "STUDENT & PARENT ACCESS" : "FACULTY & CAMPUS GOVERNANCE"}
               </p>
             </div>
           </div>
@@ -680,15 +696,19 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
             <div className="lg:col-span-5 space-y-5 hidden lg:block">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-xs font-black">
                 <span className="h-2 w-2 rounded-full bg-[#0d5c4d]" />
-                <span>Sri Lanka School Portal</span>
+                <span>{portalType === "student" ? "Student Learning Portal" : "Faculty Leadership Hub"}</span>
               </div>
 
               <h2 className="text-3xl font-black text-[#0d2b26] leading-tight">
-                Welcome to your school community hub.
+                {portalType === "student"
+                  ? "Welcome to your digital learning classroom."
+                  : "Empowering Sri Lankan school leadership & educators."}
               </h2>
 
               <p className="text-sm text-slate-600 leading-relaxed">
-                Connect with lessons, past papers, term assessments, sports tournaments, and official school circulars in real-time.
+                {portalType === "student"
+                  ? "Study course units, download national past papers, complete timed tests, and celebrate house sports."
+                  : "Design syllabi, mark student answers with rubrics, manage class allocations, and publish official school circulars."}
               </p>
 
               <div className="p-4 rounded-2xl bg-white border border-[#e6ece8] shadow-xs space-y-3">
@@ -703,7 +723,7 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
                 </div>
                 <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold">
                   <Check className="h-3.5 w-3.5 text-[#0d5c4d]" />
-                  <span>English • සිංஹල • தமிழ் Mediums Supported</span>
+                  <span>English • සිංහල • தமிழ் Mediums Supported</span>
                 </div>
               </div>
             </div>
@@ -714,15 +734,15 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
                     <h3 className="text-xl font-black text-[#0d2b26]">
-                      {authTab === "login" ? "Sign In to LimaT" : "Create School Account"}
+                      {authTab === "login" ? "Sign In to LimaT" : "Create Account"}
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Select your role and proceed to your dashboard
+                      {portalType === "student" ? "Pupil & Student Portal" : "Faculty & Administrative Access"}
                     </p>
                   </div>
 
                   <span className="h-9 w-9 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center font-bold">
-                    <Shield className="h-5 w-5" />
+                    {portalType === "student" ? <GraduationCap className="h-5 w-5" /> : <Shield className="h-5 w-5" />}
                   </span>
                 </div>
 
@@ -751,12 +771,13 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
   }
 
   // =========================================================================
-  // VIEW MODE: STANDARD LANDING PAGE (With Right-Side Slide Drawer)
+  // VIEW MODE: STANDARD LANDING PAGE (Student View OR Faculty/Admin View)
   // =========================================================================
   return (
     <div className="min-h-screen bg-[#fbfcfb] text-[#0d2b26] flex flex-col justify-between selection:bg-[#0d5c4d] selection:text-white">
-      {/* LimaT Smart Book Public Navigation Header */}
+      {/* LimaT Smart Book Public Navigation Header with Portal Switcher */}
       <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
+        {/* Brand */}
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs font-sans">
             L
@@ -777,18 +798,40 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
           </div>
         </div>
 
-        {/* Desktop Anchor Links */}
-        <div className="hidden lg:flex items-center gap-8 text-xs font-bold text-slate-600">
-          <a href="#roles" className="hover:text-[#0d5c4d] transition-colors">Portals & Roles</a>
-          <a href="#curriculum" className="hover:text-[#0d5c4d] transition-colors">Sri Lankan Curriculum</a>
-          <a href="#school-life" className="hover:text-[#0d5c4d] transition-colors">School Life</a>
+        {/* Center Portal Switcher: [Student Portal] vs [Faculty & Admin] */}
+        <div className="flex items-center bg-[#f0f4f2] border border-[#d6ede6] p-1 rounded-2xl shadow-2xs">
+          <button
+            type="button"
+            onClick={() => handlePortalSwitch("student")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              portalType === "student"
+                ? "bg-[#0d5c4d] text-white shadow-xs font-black"
+                : "text-slate-600 hover:text-slate-950"
+            }`}
+          >
+            <GraduationCap className={`h-4 w-4 ${portalType === "student" ? "text-white" : "text-[#0d5c4d]"}`} />
+            <span>For Students</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handlePortalSwitch("staff")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              portalType === "staff"
+                ? "bg-slate-900 text-white shadow-xs font-black"
+                : "text-slate-600 hover:text-slate-950"
+            }`}
+          >
+            <School className={`h-4 w-4 ${portalType === "staff" ? "text-[#f3b738]" : "text-slate-600"}`} />
+            <span>For Teachers & Admin</span>
+          </button>
         </div>
 
-        {/* Auth Navigation Triggers (Opens the Sleek Side Drawer or Full Page) */}
+        {/* Auth Navigation Triggers */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
-            onClick={() => openAuth("login", "student", "drawer")}
+            onClick={() => openAuth("login", portalType === "student" ? "student" : "teacher", "drawer")}
             className="text-xs font-bold text-slate-700 hover:text-[#0d5c4d] px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <LogIn className="h-3.5 w-3.5 text-[#0d5c4d]" />
@@ -797,474 +840,397 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
 
           <button
             type="button"
-            onClick={() => openAuth("signup", "student", "drawer")}
+            onClick={() => openAuth("signup", portalType === "student" ? "student" : "teacher", "drawer")}
             className="text-xs font-black bg-[#0d5c4d] hover:bg-[#083e34] text-white rounded-xl px-4 sm:px-5 py-2.5 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
             <UserPlus className="h-3.5 w-3.5" />
-            <span>Join School</span>
+            <span>{portalType === "student" ? "Join School" : "Register Staff"}</span>
           </button>
         </div>
       </nav>
 
-      {/* Hero Section (Clean, Expansive & Beautiful) */}
-      <section className="px-4 sm:px-8 lg:px-12 py-12 sm:py-20 max-w-7xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          {/* Left Hero Content */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* National Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-xs font-black shadow-2xs">
-              <span className="h-2 w-2 rounded-full bg-[#0d5c4d] animate-pulse" />
-              <span>Built for Sri Lankan Schools • English | සිංහල | தமிழ்</span>
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.12]">
-              Learning and school life, <br />
-              <span className="text-[#0d5c4d]">beautifully connected.</span>
-            </h1>
-
-            {/* Descriptive Summary */}
-            <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
-              LimaT Smart Book brings syllabus units, past papers, timed exams, homework grading, sports tournaments, and official circulars into one calm, trusted platform for your school.
-            </p>
-
-            {/* Action CTAs */}
-            <div className="flex flex-wrap items-center gap-3.5 pt-2">
-              <button
-                type="button"
-                onClick={() => openAuth("signup", "student", "drawer")}
-                className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-sm px-7 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
-              >
-                Join your school <ArrowRight className="h-4 w-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => openAuth("login", "student", "drawer")}
-                className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
-              >
-                Sign in to your account
-              </button>
-            </div>
-
-            {/* Tri-lingual & Curriculum Checknotes */}
-            <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600 pt-2">
-              <div className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-[#0d5c4d]" />
-                <span>Designed for English, සිංහල and தமிழ்</span>
+      {/* ========================================================================= */}
+      {/* 1. STUDENT LANDING PAGE (Active when portalType === "student")           */}
+      {/* ========================================================================= */}
+      {portalType === "student" ? (
+        <main className="px-4 sm:px-8 lg:px-12 py-10 sm:py-16 max-w-7xl mx-auto w-full space-y-16">
+          {/* Student Hero Section */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-xs font-black shadow-2xs">
+                <span className="h-2 w-2 rounded-full bg-[#0d5c4d] animate-pulse" />
+                <span>Student & Parent Portal • Sri Lankan Schools</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-[#0d5c4d]" />
-                <span>G.C.E. O/L & A/L Exam Ready</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Right Hero Community Preview Card */}
-          <div className="lg:col-span-5">
-            <div className="relative rounded-3xl overflow-hidden border border-[#e6ece8] bg-white shadow-xl">
-              {/* Graphic Header with School Info */}
-              <div className="h-80 sm:h-96 w-full bg-gradient-to-br from-[#0d5c4d] via-[#10705e] to-[#082a24] p-7 sm:p-8 flex flex-col justify-between text-white relative">
-                <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold">
-                    St. Michael High School
-                  </span>
-                  <div className="h-8 w-8 rounded-full bg-[#f3b738] text-slate-950 font-black flex items-center justify-center text-xs">
-                    L
-                  </div>
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.12]">
+                Learn, practice & excel <br />
+                <span className="text-[#0d5c4d]">in every term test.</span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+                Study curriculum units, download past papers with marking schemes, submit assignments, take timed exams, and track your house sports team.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => openAuth("signup", "student", "drawer")}
+                  className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-sm px-7 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  Join as Student <ArrowRight className="h-4 w-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => openAuth("login", "student", "drawer")}
+                  className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  Sign in to student account
+                </button>
+              </div>
+
+              {/* Student Features Bar */}
+              <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600 pt-2">
+                <div className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-[#0d5c4d]" />
+                  <span>G.C.E. O/L & A/L Past Papers</span>
                 </div>
-
-                <div className="space-y-3">
-                  <span className="text-[11px] font-black text-[#f3b738] uppercase tracking-wider">
-                    School Academic Hub
-                  </span>
-                  <h3 className="text-2xl font-black text-white leading-tight">
-                    Academics, Athletics & Community
-                  </h3>
-                  <p className="text-xs text-slate-200/90 leading-relaxed">
-                    Connecting 1,420 students, 86 faculty teachers, and 11 sports teams with real-time updates.
-                  </p>
-
-                  {/* Micro Badges */}
-                  <div className="grid grid-cols-3 gap-2 pt-2">
-                    <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm text-center">
-                      <p className="text-sm font-black text-white">1,420</p>
-                      <p className="text-[9px] text-slate-300 font-bold uppercase">Students</p>
-                    </div>
-                    <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm text-center">
-                      <p className="text-sm font-black text-white">86</p>
-                      <p className="text-[9px] text-slate-300 font-bold uppercase">Faculty</p>
-                    </div>
-                    <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm text-center">
-                      <p className="text-sm font-black text-white">11</p>
-                      <p className="text-[9px] text-slate-300 font-bold uppercase">Houses & Teams</p>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-[#0d5c4d]" />
+                  <span>Timed Online Exams</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-[#0d5c4d]" />
+                  <span>House Athletic Standings</span>
                 </div>
               </div>
+            </div>
 
-              {/* Floating Footer Card */}
-              <div className="p-5 bg-white border-t border-[#e6ece8] flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center shrink-0">
-                    <TrendingUp className="h-5 w-5" />
+            {/* Right Student Card */}
+            <div className="lg:col-span-5">
+              <div className="rounded-3xl overflow-hidden border border-[#e6ece8] bg-white shadow-xl">
+                <div className="bg-gradient-to-br from-[#0d5c4d] to-[#082a24] p-7 text-white space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold">
+                      Grade 12 — Physical Science
+                    </span>
+                    <span className="text-xs font-mono font-bold text-[#f3b738]">Term 2 Active</span>
                   </div>
+
                   <div>
-                    <h4 className="text-xs font-black text-[#0d2b26]">
-                      One Connected School Community
-                    </h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      Learning, progress & campus life in harmony
-                    </p>
+                    <h3 className="text-2xl font-black text-white">Sathurjan K.</h3>
+                    <p className="text-xs text-slate-200">St. Michael High School • Index: STU-1204</p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-2">
+                    <div className="p-2.5 rounded-xl bg-white/10 text-center">
+                      <p className="text-base font-black text-white">4</p>
+                      <p className="text-[10px] text-slate-300">Enrolled Courses</p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white/10 text-center">
+                      <p className="text-base font-black text-[#f3b738]">92%</p>
+                      <p className="text-[10px] text-slate-300">Avg Score</p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white/10 text-center">
+                      <p className="text-base font-black text-emerald-300">Vijaya</p>
+                      <p className="text-[10px] text-slate-300">Sports House</p>
+                    </div>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => openAuth("login", "student", "drawer")}
-                  className="px-3.5 py-2 rounded-xl bg-[#0d5c4d] text-white hover:bg-[#083e34] text-xs font-black transition-all shrink-0 cursor-pointer shadow-xs"
-                >
-                  Sign In →
-                </button>
+
+                <div className="p-5 bg-white space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700">Immediate Actions:</span>
+                    <span className="text-[10px] text-slate-400">2 Pending</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-[#f8faf9] border border-[#e6ece8] flex items-center justify-between text-xs">
+                    <div>
+                      <p className="font-bold text-[#0d2b26]">Combined Mathematics Assignment</p>
+                      <p className="text-[10px] text-slate-500">Problem Set: Quadratic Inequations</p>
+                    </div>
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">Due Soon</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handle1ClickDemoLogin("student")}
+                    className="w-full bg-[#ecf8f5] hover:bg-[#0d5c4d] text-[#0d5c4d] hover:text-white font-extrabold text-xs py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <span>⚡ Try Student Demo: Sathurjan K.</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </section>
 
-        {/* 3 User Role Pathways Section (ONLY Student, Teacher, Administrator - NO super_admin) */}
-        <div id="roles" className="mt-20 scroll-mt-24">
-          <div className="text-center max-w-2xl mx-auto space-y-2 mb-10">
-            <span className="text-[11px] font-black uppercase tracking-wider text-[#0d5c4d] bg-[#ecf8f5] px-3 py-1 rounded-full border border-[#c4e9e0]">
-              Dedicated Portals
-            </span>
-            <h2 className="text-3xl font-black text-[#0d2b26]">
-              Choose Your School Pathway
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Tailored workspaces engineered specifically for each member of the school ecosystem.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* 1. Student Portal */}
-            <div className="p-7 rounded-3xl bg-white border border-[#e6ece8] hover:border-[#0d5c4d] hover:shadow-xl transition-all group flex flex-col justify-between">
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <div className="h-14 w-14 rounded-2xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
-                    <GraduationCap className="h-7 w-7" />
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-[#ecf8f5] text-[#0d5c4d]">
-                    Student
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-black text-[#0d2b26] group-hover:text-[#0d5c4d] transition-colors">
-                    Student Portal
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                    Access syllabus courses, download past papers, submit homework, take timed exams, and track house points.
-                  </p>
-                </div>
-
-                <ul className="space-y-2 text-xs font-semibold text-slate-700">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#0d5c4d]" />
-                    <span>Interactive syllabus units & video lessons</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#0d5c4d]" />
-                    <span>Past papers & marking scheme library</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#0d5c4d]" />
-                    <span>Homework upload & instant score feedback</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#0d5c4d]" />
-                    <span>House athletic meets & team fixtures</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="mt-8 space-y-2">
-                <button
-                  type="button"
-                  onClick={() => openAuth("login", "student", "drawer")}
-                  className="w-full bg-[#0d5c4d] hover:bg-[#083e34] text-white font-extrabold text-xs py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-                >
-                  <LogIn className="h-3.5 w-3.5" />
-                  <span>Sign In as Student</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handle1ClickDemoLogin("student")}
-                  className="w-full bg-[#ecf8f5] hover:bg-[#d8f2eb] text-[#0d5c4d] font-bold text-[11px] py-2 rounded-xl transition-all cursor-pointer"
-                >
-                  ⚡ Instant Demo: Sathurjan K. (12-Sci)
-                </button>
-              </div>
+          {/* Student Key Learning Highlights */}
+          <section className="space-y-6">
+            <div className="text-center max-w-xl mx-auto">
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#0d5c4d] bg-[#ecf8f5] px-3 py-1 rounded-full border border-[#c4e9e0]">
+                Student Experience
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#0d2b26] mt-2">
+                Everything for School Success in One Place
+              </h2>
             </div>
 
-            {/* 2. Teacher Faculty */}
-            <div className="p-7 rounded-3xl bg-white border border-[#e6ece8] hover:border-[#f3b738] hover:shadow-xl transition-all group flex flex-col justify-between">
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <div className="h-14 w-14 rounded-2xl bg-[#fef7e6] text-[#b47a16] flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
-                    <School className="h-7 w-7" />
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-[#fef7e6] text-[#b47a16]">
-                    Teacher
-                  </span>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-[#0d5c4d] transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center">
+                  <BookOpen className="h-5 w-5" />
                 </div>
-
-                <div>
-                  <h3 className="text-xl font-black text-[#0d2b26] group-hover:text-[#b47a16] transition-colors">
-                    Teacher Faculty
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                    Design curricula, upload learning resources, grade submissions with rubrics, and deliver transparent marks.
-                  </p>
-                </div>
-
-                <ul className="space-y-2 text-xs font-semibold text-slate-700">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#f3b738]" />
-                    <span>Curriculum & syllabus builder desk</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#f3b738]" />
-                    <span>PDF homework grading desk with rubrics</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#f3b738]" />
-                    <span>Timed quiz & term exam generator</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#f3b738]" />
-                    <span>Publish circulars & parent notifications</span>
-                  </li>
-                </ul>
+                <h3 className="font-black text-sm text-[#0d2b26]">Structured Lessons</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Video units, downloadable PDF notes, and chapter summaries aligned with school term syllabus.
+                </p>
               </div>
 
-              <div className="mt-8 space-y-2">
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-[#0d5c4d] transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-[#fef7e6] text-[#b47a16] flex items-center justify-center">
+                  <Layers className="h-5 w-5" />
+                </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Past Papers Library</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  National examination past papers and official marking schemes for G.C.E. O/L and A/L.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-[#0d5c4d] transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Homework Submission</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Upload homework files easily and receive clear scores, written teacher feedback, and rubrics.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-[#0d5c4d] transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                  <Trophy className="h-5 w-5" />
+                </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Sports & Houses</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Inter-house athletics standings, football and cricket match fixtures, and house leaderboard.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Switch Prompt: Go to Staff Portal */}
+          <div className="p-6 rounded-3xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="space-y-1 text-center sm:text-left">
+              <h3 className="text-base font-black">Are you a Teacher, Principal, or School Administrator?</h3>
+              <p className="text-xs text-slate-300">
+                Switch to the School Faculty & Administration Portal for curriculum planning and governance.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("staff")}
+              className="bg-[#f3b738] hover:bg-[#e0a424] text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer shrink-0 shadow-md flex items-center gap-1.5"
+            >
+              <span>Faculty & Admin Portal ➔</span>
+            </button>
+          </div>
+        </main>
+      ) : (
+        /* ========================================================================= */
+        /* 2. FACULTY & ADMIN LANDING PAGE (Active when portalType === "staff")     */
+        /* ========================================================================= */
+        <main className="px-4 sm:px-8 lg:px-12 py-10 sm:py-16 max-w-7xl mx-auto w-full space-y-16">
+          {/* Staff Hero Section */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200 text-xs font-black shadow-2xs">
+                <span className="h-2 w-2 rounded-full bg-amber-600 animate-pulse" />
+                <span>School Faculty & Administration Hub • Sri Lanka</span>
+              </div>
+
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.12]">
+                Empowering teachers & <br />
+                <span className="text-[#0d5c4d]">modern school leadership.</span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+                Build digital curricula, mark assignments with rubrics, manage classroom timetables, coordinate faculty staff, and publish official school circulars.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3.5 pt-2">
                 <button
                   type="button"
                   onClick={() => openAuth("login", "teacher", "drawer")}
-                  className="w-full bg-[#f3b738] hover:bg-[#e0a424] text-slate-950 font-black text-xs py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                  className="bg-[#f3b738] hover:bg-[#e0a424] text-slate-950 font-black text-sm px-7 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  <LogIn className="h-3.5 w-3.5" />
-                  <span>Sign In as Teacher</span>
+                  <LogIn className="h-4 w-4" />
+                  <span>Teacher Login</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handle1ClickDemoLogin("teacher")}
-                  className="w-full bg-[#fef7e6] hover:bg-[#faebd0] text-[#b47a16] font-bold text-[11px] py-2 rounded-xl transition-all cursor-pointer"
-                >
-                  ⚡ Instant Demo: Mr. Samantha Perera
-                </button>
-              </div>
-            </div>
 
-            {/* 3. School Administrator */}
-            <div className="p-7 rounded-3xl bg-white border border-slate-300 hover:border-slate-500 hover:shadow-xl transition-all group flex flex-col justify-between">
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <div className="h-14 w-14 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
-                    <Shield className="h-7 w-7" />
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-slate-100 text-slate-800">
-                    Administrator
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-black text-[#0d2b26]">
-                    School Administrator
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                    Manage campuses, grades 1-13, classrooms, teacher assignments, master timetable, and institutional circulars.
-                  </p>
-                </div>
-
-                <ul className="space-y-2 text-xs font-semibold text-slate-700">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-slate-800" />
-                    <span>Campus operations & class allocations</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-slate-800" />
-                    <span>Faculty & sports coach directory</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-slate-800" />
-                    <span>Master school timetable management</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-slate-800" />
-                    <span>Official school circulars & approvals</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="mt-8 space-y-2">
                 <button
                   type="button"
                   onClick={() => openAuth("login", "admin", "drawer")}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  <LogIn className="h-3.5 w-3.5" />
-                  <span>Sign In as Admin</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handle1ClickDemoLogin("admin")}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px] py-2 rounded-xl transition-all cursor-pointer"
-                >
-                  ⚡ Instant Demo: Dr. K. Rajasingham
+                  <Shield className="h-4 w-4" />
+                  <span>Administrator Access</span>
                 </button>
               </div>
+
+              {/* Staff Security Badges */}
+              <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600 pt-2">
+                <div className="flex items-center gap-1.5">
+                  <Lock className="h-4 w-4 text-amber-600" />
+                  <span>Faculty Passcode Protected Registration</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Shield className="h-4 w-4 text-slate-800" />
+                  <span>Restricted Admin Master Authorization</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Sri Lankan Curriculum Highlight Section */}
-        <div id="curriculum" className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-8 items-center scroll-mt-24">
-          <div className="space-y-5">
-            <span className="text-[11px] font-black uppercase tracking-wider text-[#0d5c4d] bg-[#ecf8f5] px-3 py-1 rounded-full border border-[#c4e9e0]">
-              National Standards
-            </span>
-            <h2 className="text-3xl font-black text-[#0d2b26] leading-tight">
-              Aligned with Sri Lankan School Education
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              LimaT Smart Book comes pre-configured with syllabus frameworks for both national and international schools across Sri Lanka.
-            </p>
+            {/* Right Staff Leadership Card */}
+            <div className="lg:col-span-5">
+              <div className="rounded-3xl overflow-hidden border border-[#e6ece8] bg-white shadow-xl">
+                <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-[#082a24] p-7 text-white space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-amber-300">
+                      Faculty & Campus HQ
+                    </span>
+                    <span className="text-xs font-mono font-bold text-emerald-400">Institutional Governance</span>
+                  </div>
 
-            <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-white border border-[#e6ece8] flex items-start gap-3.5">
-                <div className="h-9 w-9 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center shrink-0">
+                  <div>
+                    <h3 className="text-2xl font-black text-white">St. Michael High School</h3>
+                    <p className="text-xs text-slate-300">86 Verified Teachers • 1,420 Enrolled Students</p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-2">
+                    <div className="p-2.5 rounded-xl bg-white/10 text-center">
+                      <p className="text-base font-black text-[#f3b738]">86</p>
+                      <p className="text-[10px] text-slate-300">Faculty Staff</p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white/10 text-center">
+                      <p className="text-base font-black text-white">42</p>
+                      <p className="text-[10px] text-slate-300">Classrooms</p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white/10 text-center">
+                      <p className="text-base font-black text-emerald-300">100%</p>
+                      <p className="text-[10px] text-slate-300">Syllabus Sync</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 bg-white space-y-3">
+                  <p className="text-xs font-bold text-slate-700">Quick Evaluation Staff Portals:</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handle1ClickDemoLogin("teacher")}
+                      className="p-3 rounded-xl bg-[#fef7e6] hover:bg-[#faebd0] border border-[#fde4af] text-left transition-all cursor-pointer"
+                    >
+                      <p className="text-xs font-black text-[#b47a16]">👨‍🏫 Mr. S. Perera</p>
+                      <p className="text-[10px] text-slate-500">Teacher Science Faculty</p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handle1ClickDemoLogin("admin")}
+                      className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-left transition-all cursor-pointer"
+                    >
+                      <p className="text-xs font-black text-slate-800">🏫 Dr. K. Rajasingham</p>
+                      <p className="text-[10px] text-slate-500">Principal Administrator</p>
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => openAuth("signup", "teacher", "drawer")}
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <UserPlus className="h-3.5 w-3.5 text-[#f3b738]" />
+                    <span>Register New Faculty Account (Passcode Required)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Staff Pillars */}
+          <section className="space-y-6">
+            <div className="text-center max-w-xl mx-auto">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-800 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                Staff Governance Modules
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#0d2b26] mt-2">
+                Engineered for Academic Excellence & Administration
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-amber-400 transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-[#fef7e6] text-[#b47a16] flex items-center justify-center">
                   <BookOpen className="h-5 w-5" />
                 </div>
-                <div>
-                  <h4 className="text-xs font-black text-[#0d2b26]">G.C.E. O/L & A/L Preparation</h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Structured streams for Physical Science, Biological Science, Commerce, Arts, and Technology.
-                  </p>
-                </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Curriculum Builder</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Design units, organize lessons, upload learning PDFs, and sync with term tests easily.
+                </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-white border border-[#e6ece8] flex items-start gap-3.5">
-                <div className="h-9 w-9 rounded-xl bg-[#fef7e6] text-[#b47a16] flex items-center justify-center shrink-0">
-                  <Globe className="h-5 w-5" />
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-amber-400 transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-[#ecf8f5] text-[#0d5c4d] flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5" />
                 </div>
-                <div>
-                  <h4 className="text-xs font-black text-[#0d2b26]">Trilingual Mediums</h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Course materials and circulars delivered in English, Sinhala, and Tamil for inclusive learning.
-                  </p>
-                </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Grading Desk</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Review student answers, assign marks with rubric criteria, and release results transparently.
+                </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-white border border-[#e6ece8] flex items-start gap-3.5">
-                <div className="h-9 w-9 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center shrink-0">
-                  <Trophy className="h-5 w-5" />
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-amber-400 transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center">
+                  <Users className="h-5 w-5" />
                 </div>
-                <div>
-                  <h4 className="text-xs font-black text-[#0d2b26]">Inter-House Sports & Campus Life</h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Track athletic meets, cricket matches, football fixtures, and house points in real-time.
-                  </p>
+                <h3 className="font-black text-sm text-[#0d2b26]">Classroom Allocations</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Manage grades 1 to 13, sections (A/B/C), teacher subjects, and master timetable coordination.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-amber-400 transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center">
+                  <Shield className="h-5 w-5" />
                 </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Official Circulars</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Issue verified institutional notices and emergency announcements to parents and students.
+                </p>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div id="school-life" className="p-8 rounded-3xl bg-gradient-to-br from-[#082a24] to-[#0d5c4d] text-white space-y-6 shadow-xl scroll-mt-24">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-mono tracking-widest text-[#f3b738]">
-                School Life & Events
-              </span>
-              <span className="px-2.5 py-1 rounded-full bg-white/10 text-[10px] font-bold">
-                Live Campus Feed
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-2xl font-black text-white">
-                Beyond the Classroom: Sports, Houses & Community
-              </h3>
-              <p className="text-xs text-slate-200 leading-relaxed">
-                Foster school pride and teamwork with live athletic standings, house leaderboards, and official circular announcements.
+          {/* Switch Prompt: Go to Student Portal */}
+          <div className="p-6 rounded-3xl bg-[#ecf8f5] border border-[#c4e9e0] text-[#0d2b26] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="space-y-1 text-center sm:text-left">
+              <h3 className="text-base font-black">Are you a Student or Parent?</h3>
+              <p className="text-xs text-slate-600">
+                Switch to the Student Learning Portal for course notes, homework submissions, and sports.
               </p>
             </div>
-
-            <div className="space-y-3">
-              <div className="p-3.5 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Trophy className="h-5 w-5 text-[#f3b738]" />
-                  <div>
-                    <p className="text-xs font-black text-white">Annual Inter-House Athletic Meet</p>
-                    <p className="text-[10px] text-slate-300">Vijaya • Parakrama • Gemunu • Mahasen</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">Active</span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-emerald-300" />
-                  <div>
-                    <p className="text-xs font-black text-white">Term 2 Examination Desk</p>
-                    <p className="text-[10px] text-slate-300">Grades 10 to 13 Timetable Published</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">Upcoming</span>
-              </div>
-            </div>
-
             <button
               type="button"
-              onClick={() => openAuth("login", "student", "drawer")}
-              className="w-full bg-[#f3b738] hover:bg-[#e0a424] text-slate-950 font-black text-xs py-3 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              onClick={() => handlePortalSwitch("student")}
+              className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer shrink-0 shadow-md flex items-center gap-1.5"
             >
-              <span>Explore School Hub</span>
-              <ArrowRight className="h-4 w-4" />
+              <span>Student Portal ➔</span>
             </button>
           </div>
-        </div>
-
-        {/* Bottom Call to Action Banner */}
-        <div className="mt-20 p-8 sm:p-12 rounded-3xl bg-white border border-[#e6ece8] text-center space-y-6 shadow-sm">
-          <div className="max-w-xl mx-auto space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-black text-[#0d2b26]">
-              Ready to experience LimaT Smart Book?
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Sign in to your school account or try one of our interactive demo profiles in seconds.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => openAuth("signup", "student", "drawer")}
-              className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-xs px-6 py-3 rounded-xl transition-all shadow-xs cursor-pointer flex items-center gap-2"
-            >
-              <UserPlus className="h-3.5 w-3.5" />
-              <span>Create Free Account</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => openAuth("login", "student", "drawer")}
-              className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-xs px-6 py-3 rounded-xl transition-all shadow-2xs cursor-pointer flex items-center gap-2"
-            >
-              <LogIn className="h-3.5 w-3.5 text-[#0d5c4d]" />
-              <span>Sign In to Account</span>
-            </button>
-          </div>
-        </div>
-      </section>
+        </main>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-[#e6ece8] bg-white py-10 px-6 text-center text-xs text-slate-500">
@@ -1279,8 +1245,26 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
             </div>
           </div>
 
-          <p className="text-center sm:text-right">
-            Digital Learning and School Management Platform • Built for Sri Lankan schools in English, Sinhala, and Tamil.
+          <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("student")}
+              className={`hover:text-[#0d5c4d] ${portalType === "student" ? "text-[#0d5c4d] font-bold underline" : ""}`}
+            >
+              Student Portal
+            </button>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("staff")}
+              className={`hover:text-[#0d5c4d] ${portalType === "staff" ? "text-[#0d5c4d] font-bold underline" : ""}`}
+            >
+              Faculty & Admin Portal
+            </button>
+          </div>
+
+          <p className="text-center sm:text-right text-[11px] text-slate-400">
+            Sri Lanka Digital School Platform • Built for English, Sinhala, and Tamil.
           </p>
         </div>
       </footer>
@@ -1306,7 +1290,9 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
                 </div>
                 <div>
                   <h3 className="font-black text-base text-[#0d2b26]">LimaT Smart Book</h3>
-                  <p className="text-[10px] uppercase font-bold text-[#0d5c4d]">School Portal Access</p>
+                  <p className="text-[10px] uppercase font-bold text-[#0d5c4d]">
+                    {portalType === "student" ? "Student Access" : "Staff Governance"}
+                  </p>
                 </div>
               </div>
 
