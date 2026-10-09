@@ -14,8 +14,17 @@ export function PrototypeBar() {
     setTheme,
     activeTenantId,
     setActiveTenantId,
-    tenants
+    tenants,
+    isLanding,
+    setIsLanding
   } = useApp();
+
+  const handleRoleChange = (role: any) => {
+    setCurrentRole(role);
+    if (isLanding) {
+      setIsLanding(false);
+    }
+  };
 
   return (
     <div className="bg-[#082a24] text-slate-200 border-b border-[#0f443b] px-3 sm:px-4 py-1.5 text-xs sticky top-0 z-50">
@@ -31,6 +40,17 @@ export function PrototypeBar() {
               Interactive System
             </span>
           </div>
+
+          {/* Startup Landing / Dashboard Switcher Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsLanding(!isLanding)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#051c18] border border-[#14473e] text-emerald-300 hover:text-white hover:bg-emerald-950/60 transition-all cursor-pointer shadow-2xs"
+            title="Toggle between Startup Landing page and Application Dashboard"
+          >
+            <Globe className="h-3 w-3 text-[#f3b738]" />
+            <span>{isLanding ? "Enter App ➔" : "Startup Page"}</span>
+          </button>
 
           {/* Client Tenant Selector */}
           <div className="flex items-center gap-1.5 bg-[#051c18] border border-[#14473e] rounded-xl px-2 py-1 shrink-0">
@@ -56,7 +76,7 @@ export function PrototypeBar() {
             {/* Student */}
             <button
               type="button"
-              onClick={() => setCurrentRole("student")}
+              onClick={() => handleRoleChange("student")}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 currentRole === "student"
                   ? "bg-[#0d5c4d] text-white shadow-xs"
@@ -70,7 +90,7 @@ export function PrototypeBar() {
             {/* Teacher */}
             <button
               type="button"
-              onClick={() => setCurrentRole("teacher")}
+              onClick={() => handleRoleChange("teacher")}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 currentRole === "teacher"
                   ? "bg-[#f3b738] text-slate-950 shadow-xs font-black"
@@ -84,7 +104,7 @@ export function PrototypeBar() {
             {/* Admin (concise 5-letter label to prevent text wrap & clipping) */}
             <button
               type="button"
-              onClick={() => setCurrentRole("admin")}
+              onClick={() => handleRoleChange("admin")}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 currentRole === "admin"
                   ? "bg-[#ecf8f5] text-[#0d5c4d] shadow-xs font-black"

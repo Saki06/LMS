@@ -14,14 +14,15 @@ import {
   X,
   CheckCheck,
   CheckCircle2,
-  FileText
+  FileText,
+  LogOut
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { Announcement } from "@/types/lms";
 
 export function Navbar({ onToggleMobileSidebar }: { onToggleMobileSidebar: () => void }) {
-  const { currentRole, currentUser, t, announcements, setCurrentView } = useApp();
+  const { currentRole, currentUser, t, announcements, setCurrentView, setIsLanding } = useApp();
   const [showNotifications, setShowNotifications] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
   const [selectedAnnouncementModal, setSelectedAnnouncementModal] = useState<Announcement | null>(null);
@@ -222,6 +223,17 @@ export function Navbar({ onToggleMobileSidebar }: { onToggleMobileSidebar: () =>
               {currentUser.role === "student" ? currentUser.class : currentUser.role} · <span className="text-[#0d5c4d] font-semibold">View Profile</span>
             </p>
           </div>
+        </button>
+
+        {/* Exit / Log Out to Startup Landing Page */}
+        <button
+          type="button"
+          onClick={() => setIsLanding(true)}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 text-xs font-bold transition-all cursor-pointer shadow-2xs ml-1"
+          title="Sign out & return to LimaT Smart Book startup page"
+        >
+          <LogOut className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Log Out</span>
         </button>
       </div>
 

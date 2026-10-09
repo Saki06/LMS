@@ -69,6 +69,8 @@ interface AppContextType {
   setDeviceMode: (mode: DeviceViewMode) => void;
   currentView: string;
   setCurrentView: (view: string) => void;
+  isLanding: boolean;
+  setIsLanding: (isLanding: boolean) => void;
   t: ReturnType<typeof getTranslation>;
 
   // Data Collections
@@ -178,6 +180,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [deviceMode, setDeviceMode] = useState<DeviceViewMode>('responsive');
   const [currentView, setCurrentView] = useState<string>('dashboard');
+  const [isLanding, setIsLanding] = useState<boolean>(true);
 
   const [schools, setSchools] = useState<School[]>(initialSchools);
   const [grades, setGrades] = useState<GradeLevel[]>(initialGrades);
@@ -1200,6 +1203,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setDeviceMode,
         currentView,
         setCurrentView,
+        isLanding,
+        setIsLanding,
         t,
         schools,
         grades,

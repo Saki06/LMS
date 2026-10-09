@@ -28,8 +28,7 @@ import { LiveScheduleView } from "@/components/views/LiveScheduleView";
 import { SuperAdminPortalView } from "@/components/views/SuperAdminPortalView";
 
 export default function HomePage() {
-  const { currentRole, currentView, theme } = useApp();
-  const [isLanding, setIsLanding] = useState(false);
+  const { currentRole, currentView, theme, isLanding, setIsLanding } = useApp();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // If user requests landing page
