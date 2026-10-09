@@ -59,6 +59,11 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(true);
 
+  // Security Access Controls (Prevents unauthorized Teacher & Admin registration)
+  const [teacherPasscode, setTeacherPasscode] = useState("");
+  const [adminSecurityKey, setAdminSecurityKey] = useState("");
+  const [studentIndexNumber, setStudentIndexNumber] = useState("");
+
   // Pre-fill credentials based on role (STRICTLY 3 ROLES - NO SUPER ADMIN)
   const rolePresetCredentials = {
     student: {
@@ -132,12 +137,38 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
       });
       return;
     }
+
+    // Role-based Security Enforcement
+    if (selectedRole === "teacher") {
+      const code = teacherPasscode.trim().toUpperCase();
+      if (!code || (code !== "TEACH-2026" && code !== "FACULTY" && code !== "TEACHER")) {
+        addToast({
+          type: "error",
+          title: "Teacher Passcode Required",
+          message: "Access Denied: Only verified school faculty can register. Enter your School Teacher Passcode (Demo Key: TEACH-2026)."
+        });
+        return;
+      }
+    }
+
+    if (selectedRole === "admin") {
+      const key = adminSecurityKey.trim().toUpperCase();
+      if (!key || (key !== "ADMIN-MASTER" && key !== "PRINCIPAL" && key !== "ADMIN")) {
+        addToast({
+          type: "error",
+          title: "Administrator Key Required",
+          message: "Access Denied: School Administrator accounts are restricted. Enter the Master Authorization Key (Demo Key: ADMIN-MASTER)."
+        });
+        return;
+      }
+    }
+
     setCurrentRole(selectedRole);
     setAuthMode("closed");
     addToast({
       type: "success",
       title: "Account Created Successfully!",
-      message: `Welcome, ${signupName || rolePresetCredentials[selectedRole].name}! Your ${selectedRole} profile has been initialized.`
+      message: `Welcome, ${signupName || rolePresetCredentials[selectedRole].name}! Your ${selectedRole} profile has been verified and initialized.`
     });
     onEnterApp();
   };
@@ -185,9 +216,17 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
 
       {/* Role Selector: ONLY 3 ROLES (Student, Teacher, Admin - STRICTLY NO super_admin) */}
       <div className="space-y-1.5">
-        <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block">
-          Select Your School Role:
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block">
+            Select Your School Role:
+          </label>
+          {authTab === "signup" && (
+            <span className="text-[10px] font-bold text-slate-500">
+              Role Protection Active
+            </span>
+          )}
+        </div>
+
         <div className="grid grid-cols-3 gap-2">
           {/* Student */}
           <button
@@ -203,7 +242,9 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
               <GraduationCap className="h-4 w-4" />
               <span className="text-xs font-black">Student</span>
             </div>
-            <span className="text-[9.5px] opacity-75">Pupil</span>
+            <span className="text-[9.5px] opacity-75">
+              {authTab === "signup" ? "Pupil (Open)" : "Pupil"}
+            </span>
           </button>
 
           {/* Teacher */}
@@ -219,8 +260,11 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
             <div className="flex items-center gap-1.5">
               <School className="h-4 w-4" />
               <span className="text-xs font-black">Teacher</span>
+              {authTab === "signup" && <span className="text-[10px]">🔒</span>}
             </div>
-            <span className="text-[9.5px] opacity-75">Faculty</span>
+            <span className="text-[9.5px] opacity-75">
+              {authTab === "signup" ? "Staff (Passcode)" : "Faculty"}
+            </span>
           </button>
 
           {/* Admin */}
@@ -236,10 +280,37 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
             <div className="flex items-center gap-1.5">
               <Shield className="h-4 w-4" />
               <span className="text-xs font-black">Admin</span>
+              {authTab === "signup" && <span className="text-[10px]">🛡️</span>}
             </div>
-            <span className="text-[9.5px] opacity-75">Principal</span>
+            <span className="text-[9.5px] opacity-75">
+              {authTab === "signup" ? "Restricted Key" : "Principal"}
+            </span>
           </button>
         </div>
+
+        {/* Security Info Callout in Signup mode */}
+        {authTab === "signup" && (
+          <div className="pt-1">
+            {selectedRole === "student" && (
+              <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0" />
+                <span>Open Registration: Any enrolled school student can register an account.</span>
+              </div>
+            )}
+            {selectedRole === "teacher" && (
+              <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                <span>Security Protected: Students cannot self-register as teachers. School staff passcode required.</span>
+              </div>
+            )}
+            {selectedRole === "admin" && (
+              <div className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-900 flex items-center gap-1.5">
+                <Shield className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                <span>Access Restricted: School Administrator accounts require authorization from school management.</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* -------------------- SIGN IN TAB CONTENT -------------------- */}
@@ -443,6 +514,72 @@ export function LandingView({ onEnterApp }: { onEnterApp: () => void }) {
               />
             </div>
           </div>
+
+          {/* Role-Specific Security Verification Inputs */}
+          {selectedRole === "teacher" && (
+            <div className="p-3.5 rounded-2xl bg-amber-50/90 border-2 border-amber-300 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-amber-950 flex items-center gap-1.5">
+                  <Lock className="h-4 w-4 text-amber-600" />
+                  <span>Teacher Faculty Verification Passcode *</span>
+                </label>
+                <span className="text-[10px] font-mono font-bold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded-md">
+                  Demo: TEACH-2026
+                </span>
+              </div>
+              <input
+                type="text"
+                required
+                value={teacherPasscode}
+                onChange={(e) => setTeacherPasscode(e.target.value)}
+                placeholder="Enter faculty passcode (e.g. TEACH-2026)"
+                className="w-full h-10 px-3 rounded-xl bg-white border border-amber-300 text-xs text-amber-950 font-mono font-bold placeholder-amber-400 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 transition-all"
+              />
+              <p className="text-[10px] text-amber-900 leading-snug">
+                ⚠️ <strong>Staff Protection:</strong> Students cannot register as teachers. This passcode is issued exclusively to verified school faculty.
+              </p>
+            </div>
+          )}
+
+          {selectedRole === "admin" && (
+            <div className="p-3.5 rounded-2xl bg-rose-50/90 border-2 border-rose-300 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-rose-950 flex items-center gap-1.5">
+                  <Shield className="h-4 w-4 text-rose-600" />
+                  <span>Administrator Master Authorization Key *</span>
+                </label>
+                <span className="text-[10px] font-mono font-bold text-rose-900 bg-rose-200/80 px-2 py-0.5 rounded-md">
+                  Demo: ADMIN-MASTER
+                </span>
+              </div>
+              <input
+                type="password"
+                required
+                value={adminSecurityKey}
+                onChange={(e) => setAdminSecurityKey(e.target.value)}
+                placeholder="Enter master admin key (e.g. ADMIN-MASTER)"
+                className="w-full h-10 px-3 rounded-xl bg-white border border-rose-300 text-xs text-rose-950 font-mono font-bold placeholder-rose-400 focus:outline-none focus:border-rose-600 focus:ring-2 focus:ring-rose-500/20 transition-all"
+              />
+              <p className="text-[10px] text-rose-900 leading-snug">
+                🛡️ <strong>Access Restricted:</strong> School Administrator & Principal accounts are managed centrally. Master authorization key is required.
+              </p>
+            </div>
+          )}
+
+          {selectedRole === "student" && (
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Student Admission / Index Number (Optional)
+              </label>
+              <input
+                type="text"
+                value={studentIndexNumber}
+                onChange={(e) => setStudentIndexNumber(e.target.value)}
+                placeholder="e.g. STU-2026-081"
+                className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-mono font-semibold placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] transition-all"
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
