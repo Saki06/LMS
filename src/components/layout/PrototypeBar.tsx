@@ -16,13 +16,19 @@ export function PrototypeBar() {
     setActiveTenantId,
     tenants,
     isLanding,
-    setIsLanding
+    setIsLanding,
+    landingPortal,
+    setLandingPortal
   } = useApp();
 
   const handleRoleChange = (role: any) => {
     setCurrentRole(role);
     if (isLanding) {
-      setIsLanding(false);
+      if (role === "student") {
+        setLandingPortal("student");
+      } else if (role === "teacher" || role === "admin") {
+        setLandingPortal("staff");
+      }
     }
   };
 
@@ -48,9 +54,43 @@ export function PrototypeBar() {
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#051c18] border border-[#14473e] text-emerald-300 hover:text-white hover:bg-emerald-950/60 transition-all cursor-pointer shadow-2xs"
             title="Toggle between Startup Landing page and Application Dashboard"
           >
-            <Globe className="h-3 w-3 text-[#f3b738]" />
+            <Globe className="h-3.5 w-3.5 text-[#f3b738]" />
             <span>{isLanding ? "Enter App ➔" : "Startup Page"}</span>
           </button>
+
+          {/* Landing Portal Switcher (Student Portal vs Admin & Teacher Portal) */}
+          {isLanding && (
+            <div className="flex items-center bg-[#051c18] border border-[#14473e] rounded-xl p-0.5 shrink-0 shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-slate-400 px-2 hidden sm:inline">Landing:</span>
+              <button
+                type="button"
+                onClick={() => setLandingPortal("student")}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  landingPortal === "student"
+                    ? "bg-[#0d5c4d] text-white shadow-xs font-black"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+                title="Switch Startup Page to Student Portal"
+              >
+                <GraduationCap className={`h-3.5 w-3.5 ${landingPortal === "student" ? "text-white" : "text-emerald-300"}`} />
+                <span>Student</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLandingPortal("staff")}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  landingPortal === "staff"
+                    ? "bg-[#f3b738] text-slate-950 shadow-xs font-black"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+                title="Switch Startup Page to Admin & Teacher Portal"
+              >
+                <School className={`h-3.5 w-3.5 ${landingPortal === "staff" ? "text-slate-950" : "text-slate-300"}`} />
+                <span>Admin & Teacher</span>
+              </button>
+            </div>
+          )}
 
           {/* Client Tenant Selector */}
           <div className="flex items-center gap-1.5 bg-[#051c18] border border-[#14473e] rounded-xl px-2 py-1 shrink-0">
