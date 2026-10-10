@@ -38,8 +38,8 @@ export function PrototypeBar() {
     <div className="bg-[#082a24] text-slate-200 border-b border-[#0f443b] px-3 sm:px-4 py-1.5 text-xs sticky top-0 z-50 overflow-x-auto">
       <div className="flex items-center justify-between gap-2.5 max-w-7xl mx-auto min-w-max sm:min-w-0">
         {/* Left: Brand & Interactive Indicator + Client Workspace Switcher */}
-        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
-          <div className="flex items-center gap-2 font-bold text-white tracking-wide">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2 font-bold text-white tracking-wide shrink-0">
             <span className="flex h-2.5 w-2.5 rounded-full bg-[#f3b738] shadow-[0_0_8px_#f3b738]" />
             <span className="font-extrabold tracking-tight text-white text-xs sm:text-sm">
               LimaT Smart Book
@@ -140,7 +140,7 @@ export function PrototypeBar() {
         </div>
 
         {/* Right: Role Switcher, Language & Theme Controls */}
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Role Switcher with clean, non-colliding labels */}
           <div className="flex items-center bg-[#051c18] border border-[#14473e] rounded-xl p-0.5 shrink-0 isolate">
             {/* Student */}
@@ -191,8 +191,8 @@ export function PrototypeBar() {
               onClick={() => handleRoleChange("parent")}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 currentRole === "parent"
-                  ? "bg-indigo-600 text-white shadow-xs font-black"
-                  : "text-indigo-200 hover:text-white hover:bg-white/5"
+                  ? "bg-[#1e3a5f] text-white shadow-xs font-black"
+                  : "text-slate-300 hover:text-white hover:bg-white/5"
               }`}
               title="Parent Academic & Attendance Monitoring Portal"
             >

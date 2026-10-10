@@ -215,11 +215,11 @@ export function ParentDashboardView() {
           </div>
 
           {/* Child Switcher Selector Pills */}
-          <div className="bg-black/30 backdrop-blur-md p-2 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-200/80 px-2 sm:px-3 text-center sm:text-left">
+          <div className="bg-black/30 backdrop-blur-md p-2 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-full">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-200/80 px-2 sm:px-3 text-center sm:text-left shrink-0">
               Select Child:
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-x-auto min-w-0 py-0.5">
               {childrenList.map((child) => {
                 const isSelected = child.id === activeChild.id;
                 return (

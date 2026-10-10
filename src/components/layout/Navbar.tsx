@@ -46,12 +46,12 @@ export function Navbar({ onToggleMobileSidebar }: { onToggleMobileSidebar: () =>
   const { activeTenant } = useApp();
 
   return (
-    <header className="h-16 sm:h-20 border-b border-[#e6ece8] bg-white px-4 sm:px-8 flex items-center justify-between shrink-0 z-50 select-none relative">
-      <div className="flex items-center gap-4">
+    <header className="h-16 sm:h-20 border-b border-[#e6ece8] bg-white px-3 sm:px-8 flex items-center justify-between shrink-0 z-50 select-none relative">
+      <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
         {/* Mobile menu trigger */}
         <button
           onClick={onToggleMobileSidebar}
-          className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+          className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -59,23 +59,23 @@ export function Navbar({ onToggleMobileSidebar }: { onToggleMobileSidebar: () =>
         {/* LimaT Smart Book Brand & Active Tenant Badge */}
         <div
           onClick={() => setCurrentView("dashboard")}
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group min-w-0"
         >
           {/* Honey Gold Logo with Bold letter 'L' */}
-          <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-sm group-hover:scale-105 transition-transform font-sans">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-lg sm:text-xl shadow-sm group-hover:scale-105 transition-transform font-sans shrink-0">
             L
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight text-[#0d2b26]">
+              <span className="font-extrabold text-base sm:text-xl tracking-tight text-[#0d2b26] truncate">
                 LimaT Smart Book
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-bold">
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-bold shrink-0">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#0d5c4d]" />
                 {activeTenant?.name || "Sri Lanka Education"}
               </span>
             </div>
-            <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d]/80 font-bold hidden sm:block">
+            <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d]/80 font-bold hidden sm:block truncate">
               {activeTenant?.type === "school"
                 ? "K-12 School Edition"
                 : activeTenant?.type === "tuition_center"
@@ -133,7 +133,7 @@ export function Navbar({ onToggleMobileSidebar }: { onToggleMobileSidebar: () =>
               />
 
               {/* Notification Popover Panel */}
-              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl z-50 animate-in fade-in zoom-in-95">
+              <div className="absolute right-0 top-full mt-2 w-72 sm:w-96 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl z-50 animate-in fade-in zoom-in-95">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2">
                     <p className="font-extrabold text-sm text-[#0d2b26]">

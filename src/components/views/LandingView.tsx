@@ -2221,20 +2221,20 @@ export function LandingView({
                 <span>School Faculty & Administration Hub • Sri Lanka</span>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.12]">
-                Empowering teachers & <br />
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.15]">
+                Empowering teachers & <br className="hidden sm:inline" />
                 <span className="text-[#0d5c4d]">modern school leadership.</span>
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+              <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-xl leading-relaxed">
                 Build digital curricula, mark assignments with rubrics, manage classroom timetables, coordinate faculty staff, and publish official school circulars.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 w-full">
                 <button
                   type="button"
                   onClick={() => openAuth("login", "teacher", "drawer")}
-                  className="bg-[#f3b738] hover:bg-[#e0a424] text-slate-950 font-black text-sm px-7 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  className="bg-[#f3b738] hover:bg-[#e0a424] text-slate-950 font-black text-sm px-6 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
                 >
                   <LogIn className="h-4 w-4" />
                   <span>Teacher Login</span>
@@ -2243,7 +2243,7 @@ export function LandingView({
                 <button
                   type="button"
                   onClick={() => openAuth("login", "admin", "drawer")}
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
                 >
                   <Shield className="h-4 w-4" />
                   <span>Administrator Access</span>
@@ -2251,13 +2251,13 @@ export function LandingView({
               </div>
 
               {/* Staff Security Badges */}
-              <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600 pt-2">
+              <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-4 text-xs font-bold text-slate-600 pt-2">
                 <div className="flex items-center gap-1.5">
-                  <Lock className="h-4 w-4 text-amber-600" />
+                  <Lock className="h-4 w-4 text-amber-600 shrink-0" />
                   <span>Faculty Passcode Protected Registration</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Shield className="h-4 w-4 text-slate-800" />
+                  <Shield className="h-4 w-4 text-slate-800 shrink-0" />
                   <span>Restricted Admin Master Authorization</span>
                 </div>
               </div>
