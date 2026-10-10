@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useApp } from "@/context/AppContext";
-import { Sun, Moon, Globe, Shield, GraduationCap, School } from "lucide-react";
+import { Sun, Moon, Globe, Shield, GraduationCap, School, Users, Sparkles } from "lucide-react";
 
 export function PrototypeBar() {
   const {
@@ -28,6 +28,8 @@ export function PrototypeBar() {
         setLandingPortal("student");
       } else if (role === "teacher" || role === "admin") {
         setLandingPortal("staff");
+      } else if (role === "parent") {
+        setLandingPortal("parent");
       }
     }
   };
@@ -58,19 +60,33 @@ export function PrototypeBar() {
             <span>{isLanding ? "Enter App ➔" : "Startup Page"}</span>
           </button>
 
-          {/* Landing Portal Switcher (Student Portal vs Admin & Teacher Portal) */}
+          {/* Landing Portal Switcher (Gateway vs Student vs Parent vs Staff) */}
           {isLanding && (
             <div className="flex items-center bg-[#051c18] border border-[#14473e] rounded-xl p-0.5 shrink-0 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-slate-400 px-2 hidden sm:inline">Landing:</span>
               <button
                 type="button"
+                onClick={() => setLandingPortal("gateway")}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  landingPortal === "gateway"
+                    ? "bg-[#0d5c4d] text-white shadow-xs font-black"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+                title="Switch to Gateway Splitter (GetEpic style)"
+              >
+                <Sparkles className={`h-3.5 w-3.5 ${landingPortal === "gateway" ? "text-[#f3b738]" : "text-slate-400"}`} />
+                <span>Gateway</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setLandingPortal("student")}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   landingPortal === "student"
                     ? "bg-[#0d5c4d] text-white shadow-xs font-black"
                     : "text-slate-300 hover:text-white hover:bg-white/5"
                 }`}
-                title="Switch Startup Page to Student Portal"
+                title="Switch to Student Landing Page"
               >
                 <GraduationCap className={`h-3.5 w-3.5 ${landingPortal === "student" ? "text-white" : "text-emerald-300"}`} />
                 <span>Student</span>
@@ -78,16 +94,30 @@ export function PrototypeBar() {
 
               <button
                 type="button"
+                onClick={() => setLandingPortal("parent")}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  landingPortal === "parent"
+                    ? "bg-[#0d5c4d] text-white shadow-xs font-black"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+                title="Switch to Parent Landing Page"
+              >
+                <Users className={`h-3.5 w-3.5 ${landingPortal === "parent" ? "text-[#f3b738]" : "text-emerald-300"}`} />
+                <span>Parent</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setLandingPortal("staff")}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   landingPortal === "staff"
                     ? "bg-[#f3b738] text-slate-950 shadow-xs font-black"
                     : "text-slate-300 hover:text-white hover:bg-white/5"
                 }`}
-                title="Switch Startup Page to Admin & Teacher Portal"
+                title="Switch to Staff Landing Page"
               >
                 <School className={`h-3.5 w-3.5 ${landingPortal === "staff" ? "text-slate-950" : "text-slate-300"}`} />
-                <span>Admin & Teacher</span>
+                <span>Staff</span>
               </button>
             </div>
           )}
@@ -153,6 +183,21 @@ export function PrototypeBar() {
             >
               <Shield className={`h-3.5 w-3.5 ${currentRole === "admin" ? "text-[#0d5c4d]" : "text-slate-300"}`} />
               <span>Admin</span>
+            </button>
+
+            {/* Parent Portal */}
+            <button
+              type="button"
+              onClick={() => handleRoleChange("parent")}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                currentRole === "parent"
+                  ? "bg-indigo-600 text-white shadow-xs font-black"
+                  : "text-indigo-200 hover:text-white hover:bg-white/5"
+              }`}
+              title="Parent Academic & Attendance Monitoring Portal"
+            >
+              <span className="text-xs">👨‍👩‍👧</span>
+              <span>Parent</span>
             </button>
 
             {/* Super Admin */}

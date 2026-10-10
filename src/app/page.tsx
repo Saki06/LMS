@@ -26,6 +26,7 @@ import { ProfileView } from "@/components/views/ProfileView";
 import { SyllabusBuilderView } from "@/components/views/SyllabusBuilderView";
 import { LiveScheduleView } from "@/components/views/LiveScheduleView";
 import { SuperAdminPortalView } from "@/components/views/SuperAdminPortalView";
+import { ParentDashboardView } from "@/components/views/ParentDashboardView";
 
 export default function HomePage() {
   const { currentRole, currentView, theme, isLanding, setIsLanding } = useApp();
@@ -117,6 +118,8 @@ export default function HomePage() {
         default:
           return <TeacherViews initialTab="grading" />;
       }
+    } else if (currentRole === "parent") {
+      return <ParentDashboardView />;
     } else if (currentRole === "super_admin") {
       // Platform Owner Super Admin Master Portal
       switch (currentView) {

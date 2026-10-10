@@ -128,6 +128,51 @@ export function ProfileView() {
       };
     }
 
+    if (currentRole === "parent") {
+      return {
+        name: currentUser.name || "Mrs. Priyadarshani Kulatunga",
+        fullName: "Priyadarshani Kulatunga",
+        preferredName: "Priya",
+        studentId: "PAR-2026-012",
+        indexNumber: "PAR/NIC-786542190V",
+        email: currentUser.email || "priya.k@gmail.com",
+        phone: "+94 77 345 6789",
+        altPhone: "+94 11 289 1234",
+        dob: "1982-11-24",
+        gender: "Female",
+        bloodGroup: "A+",
+        medium: "English & Sinhala",
+        address: "No. 42, Temple Road, Wellawatte",
+        city: "Colombo 06",
+        district: "Colombo",
+        province: "Western Province",
+        postalCode: "00600",
+        bio: "Parent & Guardian of Sathurjan K. (Grade 12 - Physical Science) and Ananya K. (Grade 8-A). Active executive member of the Parent-Teacher Association (PTA).",
+        schoolName: currentUser.schoolName || "St. Michael High School",
+        schoolCode: "SMH-042",
+        grade: "Registered PTA Member",
+        classRoom: "Guardian of 2 Enrolled Students",
+        stream: "Parent-Teacher Council",
+        academicYear: "2021 - Present",
+        house: "Vijaya House Supporter",
+        classTeacher: "Mr. Samantha Perera & Mrs. Nilmini Silva",
+        admittedDate: "January 2021",
+        attendanceRate: "100% PTM Attendance",
+        gpa: "Verified Guardian Status",
+        guardianName: "Mrs. Priyadarshani Kulatunga",
+        guardianRelationship: "Mother",
+        guardianPhone: "+94 77 345 6789",
+        guardianEmail: "priya.k@gmail.com",
+        guardianOccupation: "Chartered Accountant & Finance Director",
+        motherName: "P. Kulatunga",
+        motherPhone: "+94 77 345 6789",
+        emergencyContact: "Mr. K. Kulatunga (+94 71 888 4321)",
+        transportMode: "Private Vehicle Pickup",
+        healthNotes: "Verified emergency contacts on file.",
+        extracurricular: "School Development Fund Committee, Annual Sports Meet Organizer"
+      };
+    }
+
     return {
       name: currentUser.name || "Sathurjan K.",
       fullName: "Sathurjan Kandasamy",

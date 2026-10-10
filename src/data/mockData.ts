@@ -54,6 +54,14 @@ export const mockUsers: Record<string, User> = {
     role: 'super_admin',
     schoolId: 'global_platform',
     schoolName: 'LimaT Smart Book Multi-Tenant Platform'
+  },
+  parent: {
+    id: 'usr_parent_01',
+    name: 'Mrs. Priyadarshani Kulatunga',
+    email: 'priya.k@gmail.com',
+    role: 'parent',
+    schoolId: 'sch_01',
+    schoolName: 'St. Michael High School'
   }
 };
 

@@ -71,8 +71,8 @@ interface AppContextType {
   setCurrentView: (view: string) => void;
   isLanding: boolean;
   setIsLanding: (isLanding: boolean) => void;
-  landingPortal: 'student' | 'staff';
-  setLandingPortal: (portal: 'student' | 'staff') => void;
+  landingPortal: 'gateway' | 'student' | 'parent' | 'staff';
+  setLandingPortal: (portal: 'gateway' | 'student' | 'parent' | 'staff') => void;
   t: ReturnType<typeof getTranslation>;
 
   // Data Collections
@@ -183,7 +183,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [deviceMode, setDeviceMode] = useState<DeviceViewMode>('responsive');
   const [currentView, setCurrentView] = useState<string>('dashboard');
   const [isLanding, setIsLanding] = useState<boolean>(true);
-  const [landingPortal, setLandingPortal] = useState<'student' | 'staff'>('student');
+  const [landingPortal, setLandingPortal] = useState<'gateway' | 'student' | 'parent' | 'staff'>('gateway');
 
   const [schools, setSchools] = useState<School[]>(initialSchools);
   const [grades, setGrades] = useState<GradeLevel[]>(initialGrades);

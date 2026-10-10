@@ -31,12 +31,16 @@ import {
   ArrowLeft,
   Users,
   Layers,
-  Settings
+  Settings,
+  Award,
+  Phone,
+  Heart,
+  ChevronRight
 } from "lucide-react";
 
-type SupportedRole = "student" | "teacher" | "admin";
+type SupportedRole = "student" | "parent" | "teacher" | "admin";
 type AuthDisplayMode = "closed" | "drawer" | "fullpage";
-export type PortalType = "student" | "staff";
+export type PortalType = "gateway" | "student" | "parent" | "staff";
 
 const BANNER_SLIDES = [
   {
@@ -92,6 +96,7 @@ export function LandingView({
   const [authMode, setAuthMode] = useState<AuthDisplayMode>("closed");
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const [selectedRole, setSelectedRole] = useState<SupportedRole>("student");
+  const [gatewayTab, setGatewayTab] = useState<"student" | "parent" | "staff">("student");
 
   // Sign In Form State (Empty by default for a clean, generic portal)
   const [loginEmail, setLoginEmail] = useState("");
@@ -113,13 +118,33 @@ export function LandingView({
   const [adminSecurityKey, setAdminSecurityKey] = useState("");
   const [studentIndexNumber, setStudentIndexNumber] = useState("");
 
-  // Pre-fill credentials based on role (STRICTLY 3 ROLES - NO SUPER ADMIN)
+  // Sri Lankan Parent-Specific Sign In & Registration States
+  const [parentLoginMethod, setParentLoginMethod] = useState<"password" | "otp">("password");
+  const [parentOtpSent, setParentOtpSent] = useState(false);
+  const [parentOtpCode, setParentOtpCode] = useState("");
+
+  const [parentTitle, setParentTitle] = useState("Mrs.");
+  const [parentRelation, setParentRelation] = useState("Mother");
+  const [parentPhone, setParentPhone] = useState("");
+  const [parentNic, setParentNic] = useState("");
+  const [childName, setChildName] = useState("");
+  const [childAdmissionNo, setChildAdmissionNo] = useState("");
+  const [childGrade, setChildGrade] = useState("Grade 10-B");
+  const [parentConsent, setParentConsent] = useState(true);
+
+  // Pre-fill credentials based on role
   const rolePresetCredentials = {
     student: {
       name: "Student",
       email: "student@school.lk",
       detail: "Student Learning Desk",
       school: "St. Michael High School"
+    },
+    parent: {
+      name: "Mrs. Priyadarshani Kulatunga",
+      email: "parent@school.lk",
+      detail: "Guardian of Sathurjan K. (Grade 12-A)",
+      school: "Trinity College Kandy"
     },
     teacher: {
       name: "Faculty Member",
@@ -139,6 +164,8 @@ export function LandingView({
     setSelectedRole(role);
     if (role === "student") {
       setSignupGradeOrDept("Grade 11-A");
+    } else if (role === "parent") {
+      setSignupGradeOrDept("Parent of Grade 12 & Grade 8");
     } else if (role === "teacher") {
       setSignupGradeOrDept("Science & Math Faculty");
     } else {
@@ -156,7 +183,9 @@ export function LandingView({
     setLandingPortal(type);
     if (type === "student") {
       handleRoleSelect("student");
-    } else {
+    } else if (type === "parent") {
+      handleRoleSelect("parent");
+    } else if (type === "staff") {
       handleRoleSelect("teacher");
     }
   };
@@ -166,7 +195,7 @@ export function LandingView({
     setAuthMode("closed");
     addToast({
       type: "success",
-      title: `Signed in as ${role === "student" ? "Student" : role === "teacher" ? "Teacher" : "Administrator"}`,
+      title: `Signed in as ${role === "student" ? "Student" : role === "parent" ? "Parent" : role === "teacher" ? "Teacher" : "Administrator"}`,
       message: `Welcome back, ${rolePresetCredentials[role].name}!`
     });
     onEnterApp();
@@ -174,12 +203,33 @@ export function LandingView({
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (selectedRole === "parent" && parentLoginMethod === "otp" && !parentOtpSent) {
+      if (!loginEmail.trim()) {
+        addToast({
+          type: "error",
+          title: "Mobile Number Required",
+          message: "Please enter your registered mobile number to receive your SMS OTP."
+        });
+        return;
+      }
+      setParentOtpSent(true);
+      addToast({
+        type: "success",
+        title: "SMS OTP Dispatched",
+        message: `A 6-digit verification code has been sent via SMS to ${loginEmail}.`
+      });
+      return;
+    }
+
     setCurrentRole(selectedRole);
     setAuthMode("closed");
     addToast({
       type: "success",
       title: "Login Successful",
-      message: `Welcome back to LimaT Smart Book (${selectedRole === "student" ? "Student" : selectedRole === "teacher" ? "Teacher" : "Admin"} Portal)`
+      message: selectedRole === "parent"
+        ? "Welcome to Parent Guardian Desk! Live attendance and report cards loaded."
+        : `Welcome back to LimaT Smart Book (${selectedRole === "student" ? "Student" : selectedRole === "teacher" ? "Teacher" : "Admin"} Portal)`
     });
     onEnterApp();
   };
@@ -196,13 +246,41 @@ export function LandingView({
     }
 
     // Role-based Security Enforcement
+    if (selectedRole === "parent") {
+      if (!signupName.trim() || !parentPhone.trim() || !childName.trim() || !childAdmissionNo.trim()) {
+        addToast({
+          type: "error",
+          title: "Missing Required Details",
+          message: "Please fill in Guardian Name, Mobile Number, Student's Full Name, and Student Admission Number."
+        });
+        return;
+      }
+      if (!parentConsent) {
+        addToast({
+          type: "error",
+          title: "Guardian Verification Required",
+          message: "Please confirm that you are the legal parent or guardian of this student."
+        });
+        return;
+      }
+      setCurrentRole("parent");
+      setAuthMode("closed");
+      addToast({
+        type: "success",
+        title: "Guardian Account Registered!",
+        message: `Welcome, ${parentTitle} ${signupName}! Account successfully linked with ${childName} (${childGrade}).`
+      });
+      onEnterApp();
+      return;
+    }
+
     if (selectedRole === "teacher") {
       const code = teacherPasscode.trim().toUpperCase();
       if (!code || (code !== "TEACH-2026" && code !== "FACULTY" && code !== "TEACHER")) {
         addToast({
           type: "error",
           title: "Teacher Passcode Required",
-          message: "Access Denied: Only verified school faculty can register. Enter your School Teacher Passcode (Demo Key: TEACH-2026)."
+          message: "Access Denied: Only verified school faculty can register. Enter your School Teacher Passcode (Key: TEACH-2026)."
         });
         return;
       }
@@ -214,7 +292,7 @@ export function LandingView({
         addToast({
           type: "error",
           title: "Administrator Key Required",
-          message: "Access Denied: School Administrator accounts are restricted. Enter the Master Authorization Key (Demo Key: ADMIN-MASTER)."
+          message: "Access Denied: School Administrator accounts are restricted. Enter the Master Authorization Key (Key: ADMIN-MASTER)."
         });
         return;
       }
@@ -312,7 +390,37 @@ export function LandingView({
       {/* -------------------- SIGN IN TAB CONTENT -------------------- */}
       {authTab === "login" && (
         <div className="space-y-4 pt-1">
-          {/* Manual Login Form */}
+          {/* Parent Login Method Switcher */}
+          {selectedRole === "parent" && (
+            <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-100 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => {
+                  setParentLoginMethod("password");
+                  setParentOtpSent(false);
+                }}
+                className={`py-1.5 rounded-lg transition-all cursor-pointer ${
+                  parentLoginMethod === "password"
+                    ? "bg-white text-[#1e3a5f] shadow-2xs font-black"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Password Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => setParentLoginMethod("otp")}
+                className={`py-1.5 rounded-lg transition-all cursor-pointer ${
+                  parentLoginMethod === "otp"
+                    ? "bg-white text-[#1e3a5f] shadow-2xs font-black"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                SMS OTP Login
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleLoginSubmit} className="space-y-3">
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
@@ -320,290 +428,662 @@ export function LandingView({
               </label>
               <div className="relative">
                 <Building2 className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  defaultValue="St. Michael High School"
-                  readOnly
-                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-semibold focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                {portalType === "student" ? "Student Email or Index No" : "Staff Email or Faculty ID"}
-              </label>
-              <div className="relative">
-                <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  required
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder={portalType === "student" ? "e.g. student@school.lk or Index No" : "e.g. staff@school.lk or Faculty ID"}
-                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700">
-                  Password
-                </label>
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    addToast({
-                      type: "info",
-                      title: "Password Reset",
-                      message: "Please contact your school office or administration to reset your password."
-                    });
-                  }}
-                  className="text-[11px] font-bold text-[#0d5c4d] hover:underline"
+                <select
+                  value={signupSchool}
+                  onChange={(e) => setSignupSchool(e.target.value)}
+                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-semibold focus:outline-none focus:border-[#0d5c4d] cursor-pointer"
                 >
-                  Forgot password?
-                </a>
+                  {schools.map((s) => (
+                    <option key={s.id} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                  <option value="Royal Academy Colombo">Royal Academy Colombo</option>
+                  <option value="Jaffna Central High">Jaffna Central High</option>
+                </select>
               </div>
-              <div className="relative">
-                <Lock className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="Enter password"
-                  className="w-full h-10 pl-9 pr-10 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
-                />
+            </div>
+
+            {/* If Parent chose SMS OTP Login */}
+            {selectedRole === "parent" && parentLoginMethod === "otp" ? (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Registered Mobile Number (Sri Lanka) *
+                  </label>
+                  <div className="relative">
+                    <Phone className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="tel"
+                      required
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="e.g. 077 123 4567 or 071 987 6543"
+                      className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all font-medium"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Enter the mobile phone registered with your child&apos;s school office.
+                  </p>
+                </div>
+
+                {parentOtpSent ? (
+                  <div className="space-y-2 pt-1 animate-in fade-in duration-200">
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Enter 6-Digit SMS Verification Code *
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      required
+                      value={parentOtpCode}
+                      onChange={(e) => setParentOtpCode(e.target.value)}
+                      placeholder="e.g. 849201"
+                      className="w-full h-11 text-center font-mono text-base tracking-widest font-black rounded-xl bg-white border border-[#cfdeea] text-slate-900 focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/15"
+                    />
+                    <div className="flex justify-between items-center text-[11px] pt-1">
+                      <span className="text-slate-500">Didn&apos;t receive code?</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          addToast({
+                            type: "info",
+                            title: "SMS Re-dispatched",
+                            message: `New OTP sent to ${loginEmail}.`
+                          });
+                        }}
+                        className="font-bold text-[#1e3a5f] hover:underline cursor-pointer"
+                      >
+                        Resend SMS OTP
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="p-1 rounded-md text-slate-400 hover:text-slate-600 absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer"
+                  type="submit"
+                  className="w-full bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer mt-2"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <LogIn className="h-4 w-4" />
+                  <span>
+                    {parentOtpSent ? "Verify Code & Sign In" : "Send SMS Verification OTP"}
+                  </span>
                 </button>
               </div>
-            </div>
+            ) : (
+              /* Standard Password Login (for Parent, Student, Staff) */
+              <>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    {selectedRole === "student"
+                      ? "Student Email or Index No"
+                      : selectedRole === "parent"
+                      ? "Parent Mobile No or Email Address"
+                      : "Staff Email or Faculty ID"}
+                  </label>
+                  <div className="relative">
+                    {selectedRole === "parent" ? (
+                      <Phone className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    ) : (
+                      <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    )}
+                    <input
+                      type="text"
+                      required
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder={
+                        selectedRole === "student"
+                          ? "e.g. student@school.lk or Index No"
+                          : selectedRole === "parent"
+                          ? "e.g. 077 123 4567 or parent@gmail.com"
+                          : "e.g. staff@school.lk or Faculty ID"
+                      }
+                      className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
+                    />
+                  </div>
+                </div>
 
-            <div className="flex items-center justify-between pt-0.5 text-xs">
-              <label className="flex items-center gap-2 cursor-pointer text-slate-600 font-medium select-none">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded text-[#0d5c4d] focus:ring-0"
-                />
-                <span>Remember me on this browser</span>
-              </label>
-            </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-700">
+                      Password
+                    </label>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        addToast({
+                          type: "info",
+                          title: "Password Reset",
+                          message: selectedRole === "parent"
+                            ? "Please contact your school office or use SMS OTP Login to access your portal."
+                            : "Please contact your school office or administration to reset your password."
+                        });
+                      }}
+                      className="text-[11px] font-bold text-[#0d5c4d] hover:underline"
+                    >
+                      Forgot password?
+                    </a>
+                  </div>
+                  <div className="relative">
+                    <Lock className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="Enter password"
+                      className="w-full h-10 pl-9 pr-10 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="p-1 rounded-md text-slate-400 hover:text-slate-600 absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
 
-            <button
-              type="submit"
-              className="w-full bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer mt-1"
-            >
-              <LogIn className="h-4 w-4" />
-              <span>
-                Sign In to {selectedRole === "student" ? "Student" : selectedRole === "teacher" ? "Teacher" : "Admin"} Portal
-              </span>
-            </button>
+                <div className="flex items-center justify-between pt-0.5 text-xs">
+                  <label className="flex items-center gap-2 cursor-pointer text-slate-600 font-medium select-none">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="rounded text-[#0d5c4d] focus:ring-0"
+                    />
+                    <span>Remember me on this device</span>
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  className={`w-full text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer mt-1 ${
+                    selectedRole === "parent"
+                      ? "bg-[#1e3a5f] hover:bg-[#152a45]"
+                      : "bg-[#0d5c4d] hover:bg-[#083e34]"
+                  }`}
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>
+                    Sign In to {selectedRole === "student" ? "Student" : selectedRole === "parent" ? "Parent" : selectedRole === "teacher" ? "Teacher" : "Admin"} Portal
+                  </span>
+                </button>
+              </>
+            )}
           </form>
         </div>
       )}
 
       {/* -------------------- SIGN UP TAB CONTENT -------------------- */}
       {authTab === "signup" && (
-        <form onSubmit={handleSignupSubmit} className="space-y-3 pt-1">
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
-              Full Name
-            </label>
-            <div className="relative">
-              <UserIcon className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                required
-                value={signupName}
-                onChange={(e) => setSignupName(e.target.value)}
-                placeholder="e.g. Enter your full name"
-                className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
-              />
-            </div>
-          </div>
+        <form onSubmit={handleSignupSubmit} className="space-y-4 pt-1">
+          {/* SPECIALIZED SRI LANKAN PARENT REGISTRATION FORM */}
+          {selectedRole === "parent" ? (
+            <div className="space-y-4">
+              <div className="p-3.5 rounded-xl bg-[#f0f5fa] border border-[#cbdfe8] text-xs text-[#1e3a5f] flex items-start gap-2.5">
+                <Shield className="h-4 w-4 text-[#1e3a5f] shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-black">Official Guardian Link • Sri Lanka</p>
+                  <p className="text-[11px] text-[#2d4a6f] leading-relaxed mt-0.5">
+                    Your parent profile will be linked with your child&apos;s school admission record for live attendance and report cards.
+                  </p>
+                </div>
+              </div>
 
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="email"
-                required
-                value={signupEmail}
-                onChange={(e) => setSignupEmail(e.target.value)}
-                placeholder="e.g. name@school.lk"
-                className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
-              />
-            </div>
-          </div>
+              {/* SECTION 1: GUARDIAN PERSONAL DETAILS */}
+              <div className="space-y-3 pt-1">
+                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5 text-[#1e3a5f]" />
+                  <span>1. Guardian Information</span>
+                </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                School Name
-              </label>
-              <select
-                value={signupSchool}
-                onChange={(e) => setSignupSchool(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#0d5c4d] transition-all font-medium cursor-pointer"
+                {/* Title + Full Name */}
+                <div className="flex gap-2">
+                  <div className="w-24 shrink-0">
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Title
+                    </label>
+                    <select
+                      value={parentTitle}
+                      onChange={(e) => setParentTitle(e.target.value)}
+                      className="w-full h-10 px-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-bold focus:outline-none focus:border-[#1e3a5f] cursor-pointer"
+                    >
+                      <option value="Mrs.">Mrs.</option>
+                      <option value="Mr.">Mr.</option>
+                      <option value="Dr.">Dr.</option>
+                      <option value="Rev.">Rev.</option>
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Guardian Full Name *
+                    </label>
+                    <div className="relative">
+                      <UserIcon className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        required
+                        value={signupName}
+                        onChange={(e) => setSignupName(e.target.value)}
+                        placeholder="e.g. Priyadarshani Kulatunga"
+                        className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Relationship & NIC */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Relationship to Student *
+                    </label>
+                    <select
+                      value={parentRelation}
+                      onChange={(e) => setParentRelation(e.target.value)}
+                      className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-[#1e3a5f] cursor-pointer"
+                    >
+                      <option value="Mother">Mother</option>
+                      <option value="Father">Father</option>
+                      <option value="Legal Guardian">Legal Guardian</option>
+                      <option value="Grandparent">Grandparent</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      National ID (NIC) No (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={parentNic}
+                      onChange={(e) => setParentNic(e.target.value)}
+                      placeholder="e.g. 198574102934 / 857410293V"
+                      className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-mono placeholder-slate-400 focus:outline-none focus:border-[#1e3a5f] transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Mobile Phone & Email */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Mobile Number (For School SMS) *
+                    </label>
+                    <div className="relative">
+                      <Phone className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="tel"
+                        required
+                        value={parentPhone}
+                        onChange={(e) => setParentPhone(e.target.value)}
+                        placeholder="e.g. 077 123 4567"
+                        className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Email Address (Optional)
+                    </label>
+                    <div className="relative">
+                      <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        placeholder="e.g. parent@gmail.com"
+                        className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/10 transition-all font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: STUDENT / CHILD SCHOOL RECORD LINKING */}
+              <div className="space-y-3 pt-3 border-t border-slate-100">
+                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <GraduationCap className="h-3.5 w-3.5 text-[#1e3a5f]" />
+                  <span>2. Student Linking & Verification</span>
+                </p>
+
+                {/* School Name */}
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Student&apos;s School *
+                  </label>
+                  <select
+                    value={signupSchool}
+                    onChange={(e) => setSignupSchool(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#1e3a5f] font-medium cursor-pointer"
+                  >
+                    {schools.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
+                    <option value="Royal Academy Colombo">Royal Academy Colombo</option>
+                    <option value="Jaffna Central High">Jaffna Central High</option>
+                  </select>
+                </div>
+
+                {/* Student Full Name & Admission No */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Child&apos;s Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={childName}
+                      onChange={(e) => setChildName(e.target.value)}
+                      placeholder="e.g. Kaveen Kulatunga"
+                      className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#1e3a5f] font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Admission / Index No *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={childAdmissionNo}
+                      onChange={(e) => setChildAdmissionNo(e.target.value)}
+                      placeholder="e.g. ADM-2024-1042"
+                      className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-mono placeholder-slate-400 focus:outline-none focus:border-[#1e3a5f] font-medium"
+                    />
+                  </div>
+                </div>
+
+                {/* Student Grade & Class */}
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Child&apos;s Current Grade & Class *
+                  </label>
+                  <select
+                    value={childGrade}
+                    onChange={(e) => setChildGrade(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#1e3a5f] font-medium cursor-pointer"
+                  >
+                    <option value="Grade 1-A">Grade 1-A</option>
+                    <option value="Grade 2-A">Grade 2-A</option>
+                    <option value="Grade 3-A">Grade 3-A</option>
+                    <option value="Grade 4-A">Grade 4-A</option>
+                    <option value="Grade 5-A">Grade 5-A (Scholarship)</option>
+                    <option value="Grade 6-A">Grade 6-A</option>
+                    <option value="Grade 7-A">Grade 7-A</option>
+                    <option value="Grade 8-B">Grade 8-B</option>
+                    <option value="Grade 9-A">Grade 9-A</option>
+                    <option value="Grade 10-B">Grade 10-B (O/L)</option>
+                    <option value="Grade 11-A">Grade 11-A (O/L)</option>
+                    <option value="Grade 12-A">Grade 12-A (A/L Science)</option>
+                    <option value="Grade 13-A">Grade 13-A (A/L Maths)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* SECTION 3: ACCOUNT SECURITY */}
+              <div className="space-y-3 pt-3 border-t border-slate-100">
+                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-[#1e3a5f]" />
+                  <span>3. Account Security</span>
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Create Password *
+                    </label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      placeholder="Min 6 characters"
+                      className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#1e3a5f] font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Confirm Password *
+                    </label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={signupConfirmPassword}
+                      onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                      placeholder="Repeat password"
+                      className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#1e3a5f] font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-1 text-xs">
+                  <label className="flex items-start gap-2 cursor-pointer text-slate-600 font-medium select-none">
+                    <input
+                      type="checkbox"
+                      checked={parentConsent}
+                      onChange={(e) => setParentConsent(e.target.checked)}
+                      className="rounded text-[#1e3a5f] focus:ring-0 mt-0.5"
+                    />
+                    <span className="text-[11px] leading-relaxed">
+                      I verify that I am the legal parent or guardian of this student and authorize school record access.
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-2"
               >
-                {schools.map((s) => (
-                  <option key={s.id} value={s.name}>
-                    {s.name}
-                  </option>
-                ))}
-                <option value="Royal Academy Colombo">Royal Academy Colombo</option>
-                <option value="Jaffna Central High">Jaffna Central High</option>
-              </select>
+                <UserPlus className="h-4 w-4" />
+                <span>Complete Parent Registration & Link Student</span>
+              </button>
             </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                {selectedRole === "student" ? "Grade & Class" : "Department / Subject"}
-              </label>
-              <input
-                type="text"
-                required
-                value={signupGradeOrDept}
-                onChange={(e) => setSignupGradeOrDept(e.target.value)}
-                placeholder={selectedRole === "student" ? "e.g. Grade 11-A" : "e.g. Science Faculty"}
-                className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] transition-all font-medium"
-              />
-            </div>
-          </div>
-
-          {/* Role-Specific Security Verification Inputs */}
-          {selectedRole === "teacher" && (
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  <Lock className="h-3.5 w-3.5 text-slate-400" />
-                  <span>Teacher Verification Passcode *</span>
+          ) : (
+            /* STANDARD STUDENT & STAFF REGISTRATION FORM */
+            <>
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Full Name
                 </label>
-                <span className="text-[10px] text-slate-400 font-medium">
-                  (Demo: TEACH-2026)
-                </span>
+                <div className="relative">
+                  <UserIcon className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    value={signupName}
+                    onChange={(e) => setSignupName(e.target.value)}
+                    placeholder="e.g. Enter your full name"
+                    className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Lock className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  required
-                  value={teacherPasscode}
-                  onChange={(e) => setTeacherPasscode(e.target.value)}
-                  placeholder="Enter teacher passcode"
-                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
-                />
-              </div>
-            </div>
-          )}
 
-          {selectedRole === "admin" && (
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  <Shield className="h-3.5 w-3.5 text-slate-400" />
-                  <span>Admin Security Key *</span>
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Email Address
                 </label>
-                <span className="text-[10px] text-slate-400 font-medium">
-                  (Demo: ADMIN-MASTER)
-                </span>
+                <div className="relative">
+                  <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    placeholder="e.g. name@school.lk"
+                    className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Shield className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  required
-                  value={adminSecurityKey}
-                  onChange={(e) => setAdminSecurityKey(e.target.value)}
-                  placeholder="Enter admin authorization key"
-                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
-                />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    School Name
+                  </label>
+                  <select
+                    value={signupSchool}
+                    onChange={(e) => setSignupSchool(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#0d5c4d] transition-all font-medium cursor-pointer"
+                  >
+                    {schools.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
+                    <option value="Royal Academy Colombo">Royal Academy Colombo</option>
+                    <option value="Jaffna Central High">Jaffna Central High</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    {selectedRole === "student" ? "Grade & Class" : "Department / Subject"}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={signupGradeOrDept}
+                    onChange={(e) => setSignupGradeOrDept(e.target.value)}
+                    placeholder={selectedRole === "student" ? "e.g. Grade 11-A" : "e.g. Science Faculty"}
+                    className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] transition-all font-medium"
+                  />
+                </div>
               </div>
-            </div>
+
+              {/* Role-Specific Security Verification Inputs */}
+              {selectedRole === "teacher" && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <Lock className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Teacher Verification Passcode *</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      (Passcode: TEACH-2026)
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <Lock className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      required
+                      value={teacherPasscode}
+                      onChange={(e) => setTeacherPasscode(e.target.value)}
+                      placeholder="Enter teacher passcode"
+                      className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRole === "admin" && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <Shield className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Admin Security Key *</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      (Key: ADMIN-MASTER)
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <Shield className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      required
+                      value={adminSecurityKey}
+                      onChange={(e) => setAdminSecurityKey(e.target.value)}
+                      placeholder="Enter admin authorization key"
+                      className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] focus:ring-2 focus:ring-[#0d5c4d]/10 transition-all font-medium"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRole === "student" && (
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Student Admission / Index Number (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={studentIndexNumber}
+                    onChange={(e) => setStudentIndexNumber(e.target.value)}
+                    placeholder="e.g. STU-2026-081"
+                    className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-mono font-semibold placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] transition-all"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Create Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      placeholder="Min 6 chars"
+                      className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] transition-all font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={signupConfirmPassword}
+                      onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                      placeholder="Repeat password"
+                      className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] transition-all font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-0.5 text-xs">
+                <label className="flex items-center gap-2 cursor-pointer text-slate-600 font-medium select-none">
+                  <input
+                    type="checkbox"
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                    className="rounded text-[#0d5c4d] focus:ring-0"
+                  />
+                  <span>I agree to the LimaT Terms & Privacy Policy</span>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer mt-1"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>Create Account & Join as {selectedRole === "student" ? "Student" : selectedRole === "teacher" ? "Teacher" : "Administrator"}</span>
+              </button>
+            </>
           )}
-
-          {selectedRole === "student" && (
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Student Admission / Index Number (Optional)
-              </label>
-              <input
-                type="text"
-                value={studentIndexNumber}
-                onChange={(e) => setStudentIndexNumber(e.target.value)}
-                placeholder="e.g. STU-2026-081"
-                className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-mono font-semibold placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] transition-all"
-              />
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Create Password
-              </label>
-              <div className="relative">
-                <Lock className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
-                  placeholder="Min 6 chars"
-                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] transition-all font-medium"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={signupConfirmPassword}
-                  onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                  placeholder="Repeat password"
-                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0d5c4d] transition-all font-medium"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-0.5 text-xs">
-            <label className="flex items-center gap-2 cursor-pointer text-slate-600 font-medium select-none">
-              <input
-                type="checkbox"
-                checked={agreeTerms}
-                onChange={(e) => setAgreeTerms(e.target.checked)}
-                className="rounded text-[#0d5c4d] focus:ring-0"
-              />
-              <span>I agree to the LimaT Terms & Privacy Policy</span>
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer mt-1"
-          >
-            <UserPlus className="h-4 w-4" />
-            <span>Create Account & Join as {selectedRole === "student" ? "Student" : selectedRole === "teacher" ? "Teacher" : "Administrator"}</span>
-          </button>
         </form>
       )}
     </div>
@@ -739,6 +1219,47 @@ export function LandingView({
   // =========================================================================
   return (
     <div className="min-h-screen bg-[#fbfcfb] text-[#0d2b26] flex flex-col justify-between selection:bg-[#0d5c4d] selection:text-white">
+      {/* ----------------- 0. GATEWAY PORTAL NAVIGATION ----------------- */}
+      {portalType === "gateway" && (
+        <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs font-sans">
+              L
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
+                  LimaT Smart Book
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-extrabold">
+                  <Sparkles className="h-3 w-3 text-[#f3b738]" />
+                  Portal Selection
+                </span>
+              </div>
+              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
+                LEARN · GROW · LEAD • SRI LANKA
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-[11px] font-bold text-slate-600">
+              <Globe className="h-3.5 w-3.5 text-[#0d5c4d]" />
+              Trilingual: EN • SI • TA
+            </span>
+
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("staff")}
+              className="text-xs font-bold text-slate-600 hover:text-slate-950 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <School className="h-3.5 w-3.5 text-[#b47a16]" />
+              <span>Staff Login</span>
+            </button>
+          </div>
+        </nav>
+      )}
+
       {/* ----------------- 1. STUDENT PORTAL NAVIGATION ----------------- */}
       {portalType === "student" && (
         <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
@@ -762,9 +1283,17 @@ export function LandingView({
             </div>
           </div>
 
-
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("gateway")}
+              className="text-xs font-bold text-slate-600 hover:text-[#0d5c4d] px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer mr-1"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>All Portals</span>
+            </button>
+
             <button
               type="button"
               onClick={() => openAuth("login", "student", "drawer")}
@@ -786,7 +1315,61 @@ export function LandingView({
         </nav>
       )}
 
-      {/* ----------------- 2. FACULTY & ADMIN PORTAL NAVIGATION ----------------- */}
+      {/* ----------------- 2. PARENT PORTAL NAVIGATION ----------------- */}
+      {portalType === "parent" && (
+        <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-[#082a24] flex items-center justify-center text-[#f3b738] font-black text-xl shadow-xs font-sans">
+              L
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
+                  LimaT Smart Book
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold">
+                  <Users className="h-3 w-3 text-emerald-700" />
+                  Parent Portal
+                </span>
+              </div>
+              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
+                ACADEMIC TRACKING · REPORT CARDS · GUIDANCE
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("gateway")}
+              className="text-xs font-bold text-slate-600 hover:text-[#0d5c4d] px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer mr-1"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>All Portals</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuth("login", "parent", "drawer")}
+              className="text-xs font-bold text-slate-700 hover:text-[#0d5c4d] px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <LogIn className="h-3.5 w-3.5 text-[#0d5c4d]" />
+              <span>Guardian Sign In</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuth("signup", "parent", "drawer")}
+              className="text-xs font-black bg-[#0d5c4d] hover:bg-[#083e34] text-white rounded-xl px-4 sm:px-5 py-2.5 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              <span>Register Guardian</span>
+            </button>
+          </div>
+        </nav>
+      )}
+
+      {/* ----------------- 3. FACULTY & ADMIN PORTAL NAVIGATION ----------------- */}
       {portalType === "staff" && (
         <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-3">
@@ -809,9 +1392,17 @@ export function LandingView({
             </div>
           </div>
 
-
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("gateway")}
+              className="text-xs font-bold text-slate-600 hover:text-slate-950 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer mr-1"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>All Portals</span>
+            </button>
+
             <button
               type="button"
               onClick={() => openAuth("login", "teacher", "drawer")}
@@ -834,9 +1425,184 @@ export function LandingView({
       )}
 
       {/* ========================================================================= */}
+      {/* 0. MINIMALIST FULL-SCREEN GATEWAY (Clean 2 Large Portal Cards, No Clutter) */}
+      {/* Active when portalType === "gateway"                                       */}
+      {/* ========================================================================= */}
+      {portalType === "gateway" && (
+        <main className="min-h-[calc(100vh-80px)] flex flex-col justify-between px-4 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-6xl mx-auto w-full animate-in fade-in duration-300">
+          {/* Header */}
+          <div className="text-center space-y-3 pt-2 sm:pt-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 text-[#0d5c4d] border border-emerald-200/80 text-[11px] font-black shadow-2xs">
+              <Sparkles className="h-3 w-3 text-amber-500 animate-pulse" />
+              <span>Sri Lanka&apos;s Unified Digital School Ecosystem • Grades 1–13</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-[#0d2b26]">
+              Welcome to LimaT Smart Book
+            </h1>
+
+            <p className="text-sm sm:text-base text-slate-600 max-w-lg mx-auto">
+              Please choose your learning portal to continue.
+            </p>
+          </div>
+
+          {/* Exactly 2 Large, Visually Rich Portal Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 my-6 sm:my-8 items-stretch">
+            {/* CARD 1: STUDENT PORTAL */}
+            <div className="group rounded-3xl bg-white border-2 border-emerald-100 hover:border-emerald-600 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between">
+              <div>
+                {/* Visual Image */}
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-emerald-50">
+                  <img
+                    src="/images/student_card_hero.jpg"
+                    alt="Sri Lankan Students Collaborating in Classroom"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute top-4 left-4">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-700/90 text-white backdrop-blur-md text-[11px] font-black uppercase tracking-wider shadow-sm">
+                      <GraduationCap className="h-3.5 w-3.5" />
+                      For Students • Grades 1–13
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card Content */}
+                <div className="p-6 sm:p-7 space-y-2">
+                  <h2 className="text-2xl font-black text-[#0d2b26] group-hover:text-emerald-700 transition-colors">
+                    Student Portal
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    Access G.C.E. O/L & A/L past papers with marking schemes, video lessons, timed online tests, and homework submissions.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="p-6 sm:p-7 pt-0 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => handlePortalSwitch("student")}
+                  className="w-full bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-sm py-3.5 px-6 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Enter Student Portal</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("student");
+                      openAuth("login", "student", "drawer");
+                    }}
+                    className="font-bold text-[#0d5c4d] hover:underline cursor-pointer"
+                  >
+                    Student Sign In →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("student");
+                      openAuth("signup", "student", "drawer");
+                    }}
+                    className="font-semibold text-slate-500 hover:text-slate-900 cursor-pointer"
+                  >
+                    Register Account
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 2: PARENT PORTAL */}
+            <div className="group rounded-3xl bg-white border-2 border-slate-200 hover:border-[#1e3a5f] shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between">
+              <div>
+                {/* Visual Image */}
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#f0f5fa]">
+                  <img
+                    src="/images/parent_card_hero.jpg"
+                    alt="Sri Lankan Mother and Son Reviewing School Report"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute top-4 left-4">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e3a5f]/95 text-white backdrop-blur-md text-[11px] font-black uppercase tracking-wider shadow-sm">
+                      <Users className="h-3.5 w-3.5" />
+                      For Parents & Guardians
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card Content */}
+                <div className="p-6 sm:p-7 space-y-2">
+                  <h2 className="text-2xl font-black text-[#0d2b26] group-hover:text-[#1e3a5f] transition-colors">
+                    Parent Portal
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    Track daily morning gate attendance alerts, inspect official term report cards, message subject teachers, and manage fee slips.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="p-6 sm:p-7 pt-0 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => handlePortalSwitch("parent")}
+                  className="w-full bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-sm py-3.5 px-6 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Enter Parent Portal</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("parent");
+                      openAuth("login", "parent", "drawer");
+                    }}
+                    className="font-bold text-[#1e3a5f] hover:underline cursor-pointer"
+                  >
+                    Guardian Sign In →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("parent");
+                      openAuth("signup", "parent", "drawer");
+                    }}
+                    className="font-semibold text-slate-500 hover:text-slate-900 cursor-pointer"
+                  >
+                    Register Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Discreet Footer Link for Faculty */}
+          <div className="pb-4 pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("staff")}
+              className="font-bold text-slate-600 hover:text-slate-900 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <School className="h-3.5 w-3.5 text-amber-600" />
+              <span>Are you a Teacher or Principal? Faculty & Admin Hub →</span>
+            </button>
+
+            <span className="text-[11px] text-slate-400">
+              Trilingual Medium: English • සිංහල • தமிழ்
+            </span>
+          </div>
+        </main>
+      )}
+
+      {/* ========================================================================= */}
       {/* 1. STUDENT LANDING PAGE (Active when portalType === "student")           */}
       {/* ========================================================================= */}
-      {portalType === "student" ? (
+      {portalType === "student" && (
         <main className="px-4 sm:px-8 lg:px-12 py-10 sm:py-16 max-w-7xl mx-auto w-full space-y-16">
           {/* Student Hero Section */}
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
@@ -1248,10 +2014,199 @@ export function LandingView({
           </section>
 
         </main>
-      ) : (
-        /* ========================================================================= */
-        /* 2. FACULTY & ADMIN LANDING PAGE (Active when portalType === "staff")     */
-        /* ========================================================================= */
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. PARENT LANDING PAGE (Active when portalType === "parent")              */}
+      {/* ========================================================================= */}
+      {portalType === "parent" && (
+        <main className="px-4 sm:px-8 lg:px-12 py-10 sm:py-16 max-w-7xl mx-auto w-full space-y-16 animate-in fade-in duration-300">
+          {/* Parent Hero Section */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f0f5fa] text-[#1e3a5f] border border-[#cbdfe8] text-xs font-black shadow-2xs">
+                <span className="h-2 w-2 rounded-full bg-[#1e3a5f] animate-pulse" />
+                <span>Parent & Guardian Desk • Sri Lankan Schools</span>
+              </div>
+
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.12]">
+                Stay connected with your <br />
+                <span className="text-[#1e3a5f]">child&apos;s daily learning.</span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+                Track morning attendance, examine term test rankings, chat with class teachers, review homework completion, and upload official school payment slips.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => openAuth("login", "parent", "drawer")}
+                  className="bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-sm px-7 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Guardian Sign In</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => openAuth("signup", "parent", "drawer")}
+                  className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <UserPlus className="h-4 w-4 text-[#1e3a5f]" />
+                  <span>Register Parent Account</span>
+                </button>
+              </div>
+
+              {/* Trust badges */}
+              <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600 pt-2">
+                <div className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-[#1e3a5f]" />
+                  <span>Daily SMS Attendance Alerts</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-[#1e3a5f]" />
+                  <span>Verified Term Report Cards</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-[#1e3a5f]" />
+                  <span>Direct Teacher Consultations</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Interactive Live Parent Card Preview */}
+            <div className="lg:col-span-5">
+              <div className="relative rounded-3xl bg-gradient-to-b from-[#0f243a] via-[#0c1c2e] to-[#071320] p-6 sm:p-7 text-white shadow-2xl border border-[#1e3a5f]/40 space-y-6">
+                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-2xl bg-[#1e3a5f]/40 border border-[#335d8a]/40 text-[#a5c4e4] flex items-center justify-center font-black text-sm">
+                      PK
+                    </div>
+                    <div>
+                      <h3 className="font-black text-sm text-white">Mrs. Priyadarshani Kulatunga</h3>
+                      <p className="text-[11px] text-[#9bbddf]">Parent of Kaveen • Grade 10-B</p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase">
+                    Active Portal
+                  </span>
+                </div>
+
+                {/* Quick Metric Cards */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Term Attendance</p>
+                    <p className="text-xl font-black text-emerald-400">96.4%</p>
+                    <p className="text-[10px] text-slate-400">Present today at 7:22 AM</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Term 2 Average</p>
+                    <p className="text-xl font-black text-[#7ba9d6]">84.6%</p>
+                    <p className="text-[10px] text-slate-400">Rank: 4th in Class (42)</p>
+                  </div>
+                </div>
+
+                {/* Teacher Remark Snippet */}
+                <div className="p-4 rounded-2xl bg-[#0b1c2d]/80 border border-[#244b72]/40 space-y-2">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-bold text-[#9bbddf] flex items-center gap-1.5">
+                      <Mail className="h-3.5 w-3.5 text-[#7ba9d6]" />
+                      Teacher Remark • Mathematics
+                    </span>
+                    <span className="text-[10px] text-slate-400">Today</span>
+                  </div>
+                  <p className="text-xs text-slate-200 leading-relaxed italic">
+                    &quot;Kaveen completed his quadratic equation assignment with full marks. Keep encouraging his regular revision.&quot;
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-bold">— Mr. Bandara (Class Teacher)</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => openAuth("login", "parent", "drawer")}
+                  className="w-full bg-[#1e3a5f] hover:bg-[#284a73] text-white font-black text-xs py-3.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Guardian Sign In</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* 4 Feature Pillars for Parents */}
+          <section className="space-y-6">
+            <div className="text-center max-w-xl mx-auto">
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#1e3a5f] bg-[#f0f5fa] px-3 py-1 rounded-full border border-[#cbdfe8]">
+                Guardian Features
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#0d2b26] mt-2">
+                Designed for Sri Lankan Parents & Guardians
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-[#1e3a5f] transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-[#f0f5fa] text-[#1e3a5f] flex items-center justify-center">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Attendance & Leave</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Real-time morning check-in status, official leave request submissions, and term attendance reports.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-[#1e3a5f] transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Term Report Cards</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Download certified term examination report cards with subject rankings, teacher remarks, and grade trends.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-[#1e3a5f] transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Teacher Communications</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Secure two-way messaging with subject teachers and schedule parent-teacher conference meetings.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-white border border-[#e6ece8] hover:border-[#1e3a5f] transition-all space-y-3 shadow-2xs">
+                <div className="h-10 w-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                  <Shield className="h-5 w-5" />
+                </div>
+                <h3 className="font-black text-sm text-[#0d2b26]">Fee Receipts & Slips</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Upload bank deposit slips or pay school facility fees online with verified digital receipt tracking.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Quick Return to Splitter */}
+          <div className="text-center pt-4">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("gateway")}
+              className="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back to All School Portals</span>
+            </button>
+          </div>
+        </main>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. FACULTY & ADMIN LANDING PAGE (Active when portalType === "staff")      */}
+      {/* ========================================================================= */}
+      {portalType === "staff" && (
         <main className="px-4 sm:px-8 lg:px-12 py-10 sm:py-16 max-w-7xl mx-auto w-full space-y-16">
           {/* Staff Hero Section */}
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
@@ -1448,21 +2403,37 @@ export function LandingView({
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-semibold text-slate-600">
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("gateway")}
+              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "gateway" ? "text-[#0d5c4d] font-black underline" : ""}`}
+            >
+              All Portals
+            </button>
+            <span>•</span>
             <button
               type="button"
               onClick={() => handlePortalSwitch("student")}
-              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "student" ? "text-[#0d5c4d] font-bold underline" : ""}`}
+              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "student" ? "text-[#0d5c4d] font-black underline" : ""}`}
             >
               Student Portal
             </button>
             <span>•</span>
             <button
               type="button"
-              onClick={() => handlePortalSwitch("staff")}
-              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "staff" ? "text-[#0d5c4d] font-bold underline" : ""}`}
+              onClick={() => handlePortalSwitch("parent")}
+              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "parent" ? "text-[#0d5c4d] font-black underline" : ""}`}
             >
-              Faculty & Admin Portal
+              Parent Portal
+            </button>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => handlePortalSwitch("staff")}
+              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "staff" ? "text-[#0d5c4d] font-black underline" : ""}`}
+            >
+              Faculty & Admin Hub
             </button>
           </div>
 
@@ -1494,7 +2465,11 @@ export function LandingView({
                 <div>
                   <h3 className="font-black text-base text-[#0d2b26]">LimaT Smart Book</h3>
                   <p className="text-[10px] uppercase font-bold text-[#0d5c4d]">
-                    {portalType === "student" ? "Student Access" : "Staff Governance"}
+                    {selectedRole === "parent"
+                      ? "Parent & Guardian Desk"
+                      : selectedRole === "student"
+                      ? "Student Access"
+                      : "Staff Governance"}
                   </p>
                 </div>
               </div>

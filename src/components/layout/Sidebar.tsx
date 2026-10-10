@@ -285,11 +285,19 @@ export function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
     }
   ];
 
+  const parentNav: NavItem[] = [
+    { id: "dashboard", label: "Parent Overview", icon: Home, group: "Parent Portal" },
+    { id: "report_card", label: "Term Report Cards", icon: Award, group: "Academic Tracking" },
+    { id: "exams", label: "Exam Schedules & Timetables", icon: FileText, badge: "Upcoming", badgeVariant: "warning", group: "Academic Tracking" },
+    { id: "circulars", label: "School Circulars", icon: Bell, badge: "3 New", badgeVariant: "default", group: "Communication" }
+  ];
+
   const currentNavItems: NavItem[] = {
     student: rawStudentNav,
     teacher: rawTeacherNav,
     admin: adminNav,
-    super_admin: superAdminNav
+    super_admin: superAdminNav,
+    parent: parentNav
   }[currentRole] || rawStudentNav;
 
   // Group items by their section
