@@ -1221,28 +1221,28 @@ export function LandingView({
     <div className="min-h-screen bg-[#fbfcfb] text-[#0d2b26] flex flex-col justify-between selection:bg-[#0d5c4d] selection:text-white">
       {/* ----------------- 0. GATEWAY PORTAL NAVIGATION ----------------- */}
       {portalType === "gateway" && (
-        <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs font-sans">
+        <nav className="h-16 sm:h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-3 sm:px-8 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-base sm:text-xl shadow-xs font-sans shrink-0">
               L
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
+                <span className="font-black text-base sm:text-2xl tracking-tight text-[#0d2b26] truncate">
                   LimaT Smart Book
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-extrabold">
+                <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-extrabold shrink-0">
                   <Sparkles className="h-3 w-3 text-[#f3b738]" />
                   Portal Selection
                 </span>
               </div>
-              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
+              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black hidden sm:block truncate">
                 LEARN · GROW · LEAD • SRI LANKA
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-[11px] font-bold text-slate-600">
               <Globe className="h-3.5 w-3.5 text-[#0d5c4d]" />
               Trilingual: EN • SI • TA
@@ -1251,7 +1251,7 @@ export function LandingView({
             <button
               type="button"
               onClick={() => handlePortalSwitch("staff")}
-              className="text-xs font-bold text-slate-600 hover:text-slate-950 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-bold text-slate-600 hover:text-slate-950 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <School className="h-3.5 w-3.5 text-[#b47a16]" />
               <span>Staff Login</span>
@@ -1262,42 +1262,43 @@ export function LandingView({
 
       {/* ----------------- 1. STUDENT PORTAL NAVIGATION ----------------- */}
       {portalType === "student" && (
-        <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs font-sans">
+        <nav className="h-16 sm:h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-3 sm:px-8 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-base sm:text-xl shadow-xs font-sans shrink-0">
               L
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
+                <span className="font-black text-base sm:text-2xl tracking-tight text-[#0d2b26] truncate">
                   LimaT Smart Book
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-extrabold">
+                <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ecf8f5] text-[#0d5c4d] border border-[#c4e9e0] text-[10px] font-extrabold shrink-0">
                   <GraduationCap className="h-3 w-3" />
                   Student Portal
                 </span>
               </div>
-              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
+              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black hidden sm:block truncate">
                 LEARN · GROW · LEAD
               </p>
             </div>
           </div>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => handlePortalSwitch("gateway")}
-              className="text-xs font-bold text-slate-600 hover:text-[#0d5c4d] px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer mr-1"
+              className="text-xs font-bold text-slate-600 hover:text-[#0d5c4d] px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1 cursor-pointer"
+              title="All Portals"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>All Portals</span>
+              <span className="hidden sm:inline">All Portals</span>
             </button>
 
             <button
               type="button"
               onClick={() => openAuth("login", "student", "drawer")}
-              className="text-xs font-bold text-slate-700 hover:text-[#0d5c4d] px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-bold text-slate-700 hover:text-[#0d5c4d] px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1 cursor-pointer"
             >
               <LogIn className="h-3.5 w-3.5 text-[#0d5c4d]" />
               <span>Sign In</span>
@@ -1306,10 +1307,10 @@ export function LandingView({
             <button
               type="button"
               onClick={() => openAuth("signup", "student", "drawer")}
-              className="text-xs font-black bg-[#0d5c4d] hover:bg-[#083e34] text-white rounded-xl px-4 sm:px-5 py-2.5 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-black bg-[#0d5c4d] hover:bg-[#083e34] text-white rounded-xl px-2.5 sm:px-4 py-1.5 sm:py-2.5 transition-all shadow-xs flex items-center gap-1 cursor-pointer"
             >
               <UserPlus className="h-3.5 w-3.5" />
-              <span>Join as Student</span>
+              <span><span className="hidden sm:inline">Join as </span>Student</span>
             </button>
           </div>
         </nav>
@@ -1317,53 +1318,54 @@ export function LandingView({
 
       {/* ----------------- 2. PARENT PORTAL NAVIGATION ----------------- */}
       {portalType === "parent" && (
-        <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-[#082a24] flex items-center justify-center text-[#f3b738] font-black text-xl shadow-xs font-sans">
+        <nav className="h-16 sm:h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-3 sm:px-8 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-[#082a24] flex items-center justify-center text-[#f3b738] font-black text-base sm:text-xl shadow-xs font-sans shrink-0">
               L
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
+                <span className="font-black text-base sm:text-2xl tracking-tight text-[#0d2b26] truncate">
                   LimaT Smart Book
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold">
-                  <Users className="h-3 w-3 text-emerald-700" />
+                <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#f0f5fa] text-[#1e3a5f] border border-[#cbdfe8] text-[10px] font-extrabold shrink-0">
+                  <Users className="h-3 w-3 text-[#1e3a5f]" />
                   Parent Portal
                 </span>
               </div>
-              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
+              <p className="text-[9px] uppercase tracking-widest text-[#1e3a5f] font-black hidden sm:block truncate">
                 ACADEMIC TRACKING · REPORT CARDS · GUIDANCE
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => handlePortalSwitch("gateway")}
-              className="text-xs font-bold text-slate-600 hover:text-[#0d5c4d] px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer mr-1"
+              className="text-xs font-bold text-slate-600 hover:text-[#1e3a5f] px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1 cursor-pointer"
+              title="All Portals"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>All Portals</span>
+              <span className="hidden sm:inline">All Portals</span>
             </button>
 
             <button
               type="button"
               onClick={() => openAuth("login", "parent", "drawer")}
-              className="text-xs font-bold text-slate-700 hover:text-[#0d5c4d] px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-bold text-slate-700 hover:text-[#1e3a5f] px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1 cursor-pointer"
             >
-              <LogIn className="h-3.5 w-3.5 text-[#0d5c4d]" />
-              <span>Guardian Sign In</span>
+              <LogIn className="h-3.5 w-3.5 text-[#1e3a5f]" />
+              <span><span className="hidden sm:inline">Guardian </span>Sign In</span>
             </button>
 
             <button
               type="button"
               onClick={() => openAuth("signup", "parent", "drawer")}
-              className="text-xs font-black bg-[#0d5c4d] hover:bg-[#083e34] text-white rounded-xl px-4 sm:px-5 py-2.5 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-black bg-[#1e3a5f] hover:bg-[#152a45] text-white rounded-xl px-2.5 sm:px-4 py-1.5 sm:py-2.5 transition-all shadow-xs flex items-center gap-1 cursor-pointer"
             >
               <UserPlus className="h-3.5 w-3.5" />
-              <span>Register Guardian</span>
+              <span><span className="hidden sm:inline">Register </span>Guardian</span>
             </button>
           </div>
         </nav>
@@ -1371,54 +1373,55 @@ export function LandingView({
 
       {/* ----------------- 3. FACULTY & ADMIN PORTAL NAVIGATION ----------------- */}
       {portalType === "staff" && (
-        <nav className="h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-xl shadow-xs font-sans">
+        <nav className="h-16 sm:h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-3 sm:px-8 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-base sm:text-xl shadow-xs font-sans shrink-0">
               L
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-black text-xl sm:text-2xl tracking-tight text-[#0d2b26]">
+                <span className="font-black text-base sm:text-2xl tracking-tight text-[#0d2b26] truncate">
                   LimaT Smart Book
                 </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-900 text-amber-300 border border-slate-700 text-[10px] font-extrabold">
+                <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-900 text-amber-300 border border-slate-700 text-[10px] font-extrabold shrink-0">
                   <School className="h-3 w-3 text-[#f3b738]" />
                   Faculty & Admin Hub
                 </span>
               </div>
-              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black">
+              <p className="text-[9px] uppercase tracking-widest text-[#0d5c4d] font-black hidden sm:block truncate">
                 LEARN · GROW · LEAD
               </p>
             </div>
           </div>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => handlePortalSwitch("gateway")}
-              className="text-xs font-bold text-slate-600 hover:text-slate-950 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer mr-1"
+              className="text-xs font-bold text-slate-600 hover:text-slate-950 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1 cursor-pointer"
+              title="All Portals"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>All Portals</span>
+              <span className="hidden sm:inline">All Portals</span>
             </button>
 
             <button
               type="button"
               onClick={() => openAuth("login", "teacher", "drawer")}
-              className="text-xs font-bold text-slate-700 hover:text-slate-950 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-bold text-slate-700 hover:text-slate-950 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1 cursor-pointer"
             >
               <LogIn className="h-3.5 w-3.5 text-[#b47a16]" />
-              <span>Staff Sign In</span>
+              <span><span className="hidden sm:inline">Staff </span>Sign In</span>
             </button>
 
             <button
               type="button"
               onClick={() => openAuth("signup", "teacher", "drawer")}
-              className="text-xs font-black bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-4 sm:px-5 py-2.5 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-black bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-2.5 sm:px-4 py-1.5 sm:py-2.5 transition-all shadow-xs flex items-center gap-1 cursor-pointer"
             >
               <UserPlus className="h-3.5 w-3.5 text-[#f3b738]" />
-              <span>Register Staff</span>
+              <span><span className="hidden sm:inline">Register </span>Staff</span>
             </button>
           </div>
         </nav>
@@ -1613,45 +1616,46 @@ export function LandingView({
                 <span>Student & Parent Portal • Sri Lankan Schools</span>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.12]">
-                Learn, practice & excel <br />
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.15]">
+                Learn, practice & excel <br className="hidden sm:inline" />
                 <span className="text-[#0d5c4d]">in every term test.</span>
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+              <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-xl leading-relaxed">
                 Study curriculum units, download past papers with marking schemes, submit assignments, take timed exams, and track your house sports team.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 w-full">
                 <button
                   type="button"
                   onClick={() => openAuth("signup", "student", "drawer")}
-                  className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-sm px-7 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  className="bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-sm px-6 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
                 >
-                  Join as Student <ArrowRight className="h-4 w-4" />
+                  <span>Join as Student</span>
+                  <ArrowRight className="h-4 w-4" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => openAuth("login", "student", "drawer")}
-                  className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
+                  className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
                 >
-                  Sign in to student account
+                  <span>Sign in to student account</span>
                 </button>
               </div>
 
               {/* Student Features Bar */}
-              <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600 pt-2">
+              <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-4 text-xs font-bold text-slate-600 pt-2">
                 <div className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-[#0d5c4d]" />
+                  <Check className="h-4 w-4 text-[#0d5c4d] shrink-0" />
                   <span>G.C.E. O/L & A/L Past Papers</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-[#0d5c4d]" />
+                  <Check className="h-4 w-4 text-[#0d5c4d] shrink-0" />
                   <span>Timed Online Exams</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-[#0d5c4d]" />
+                  <Check className="h-4 w-4 text-[#0d5c4d] shrink-0" />
                   <span>House Athletic Standings</span>
                 </div>
               </div>
@@ -2030,20 +2034,20 @@ export function LandingView({
                 <span>Parent & Guardian Desk • Sri Lankan Schools</span>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.12]">
-                Stay connected with your <br />
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#0d2b26] leading-[1.15]">
+                Stay connected with your <br className="hidden sm:inline" />
                 <span className="text-[#1e3a5f]">child&apos;s daily learning.</span>
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+              <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-xl leading-relaxed">
                 Track morning attendance, examine term test rankings, chat with class teachers, review homework completion, and upload official school payment slips.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 w-full">
                 <button
                   type="button"
                   onClick={() => openAuth("login", "parent", "drawer")}
-                  className="bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-sm px-7 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  className="bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-sm px-6 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
                 >
                   <LogIn className="h-4 w-4" />
                   <span>Guardian Sign In</span>
@@ -2052,7 +2056,7 @@ export function LandingView({
                 <button
                   type="button"
                   onClick={() => openAuth("signup", "parent", "drawer")}
-                  className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
+                  className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
                 >
                   <UserPlus className="h-4 w-4 text-[#1e3a5f]" />
                   <span>Register Parent Account</span>
@@ -2060,17 +2064,17 @@ export function LandingView({
               </div>
 
               {/* Trust badges */}
-              <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600 pt-2">
+              <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-4 text-xs font-bold text-slate-600 pt-2">
                 <div className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-[#1e3a5f]" />
+                  <Check className="h-4 w-4 text-[#1e3a5f] shrink-0" />
                   <span>Daily SMS Attendance Alerts</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-[#1e3a5f]" />
+                  <Check className="h-4 w-4 text-[#1e3a5f] shrink-0" />
                   <span>Verified Term Report Cards</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-[#1e3a5f]" />
+                  <Check className="h-4 w-4 text-[#1e3a5f] shrink-0" />
                   <span>Direct Teacher Consultations</span>
                 </div>
               </div>
@@ -2457,7 +2461,7 @@ export function LandingView({
           {/* Right Slide Panel */}
           <div className="relative w-full sm:w-[460px] md:w-[490px] h-full bg-white shadow-2xl z-50 flex flex-col border-l border-[#d6ede6] animate-in slide-in-from-right duration-300 ease-out">
             {/* Drawer Header */}
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-b from-[#f8fbf9] to-white shrink-0">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-b from-[#f8fbf9] to-white shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="h-9 w-9 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-lg shadow-2xs font-sans">
                   L
@@ -2498,12 +2502,12 @@ export function LandingView({
             </div>
 
             {/* Drawer Scrollable Body */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               {renderAuthContent()}
             </div>
 
             {/* Drawer Footer */}
-            <div className="px-6 py-3 bg-[#f8faf9] border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
+            <div className="px-4 sm:px-6 py-3 bg-[#f8faf9] border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
               <span className="flex items-center gap-1">
                 <Shield className="h-3.5 w-3.5 text-[#0d5c4d]" />
                 <span>Protected School Directory</span>

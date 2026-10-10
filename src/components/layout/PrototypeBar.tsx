@@ -35,8 +35,8 @@ export function PrototypeBar() {
   };
 
   return (
-    <div className="bg-[#082a24] text-slate-200 border-b border-[#0f443b] px-3 sm:px-4 py-1.5 text-xs sticky top-0 z-50">
-      <div className="flex flex-wrap items-center justify-between gap-2.5 max-w-7xl mx-auto">
+    <div className="bg-[#082a24] text-slate-200 border-b border-[#0f443b] px-3 sm:px-4 py-1.5 text-xs sticky top-0 z-50 overflow-x-auto">
+      <div className="flex items-center justify-between gap-2.5 max-w-7xl mx-auto min-w-max sm:min-w-0">
         {/* Left: Brand & Interactive Indicator + Client Workspace Switcher */}
         <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
           <div className="flex items-center gap-2 font-bold text-white tracking-wide">
