@@ -207,10 +207,10 @@ export function ParentDashboardView() {
               <span>LimaT Smart Book • Official Parent Portal</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Mrs. Priyadarshani Kulatunga
+              Parent &amp; Guardian Portal
             </h1>
             <p className="text-sm text-emerald-100/90 max-w-xl font-medium">
-              Guardian of <strong className="text-white font-bold">{activeChild.name}</strong> • {activeChild.schoolName} ({activeChild.classSection})
+              Academic &amp; Attendance Monitoring • <strong className="text-white font-bold">{activeChild.name}</strong> • {activeChild.schoolName} ({activeChild.classSection})
             </p>
           </div>
 

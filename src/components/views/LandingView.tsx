@@ -2085,12 +2085,12 @@ export function LandingView({
               <div className="relative rounded-3xl bg-gradient-to-b from-[#0f243a] via-[#0c1c2e] to-[#071320] p-6 sm:p-7 text-white shadow-2xl border border-[#1e3a5f]/40 space-y-6">
                 <div className="flex items-center justify-between border-b border-white/10 pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-2xl bg-[#1e3a5f]/40 border border-[#335d8a]/40 text-[#a5c4e4] flex items-center justify-center font-black text-sm">
-                      PK
+                    <div className="h-11 w-11 rounded-2xl bg-[#1e3a5f]/40 border border-[#335d8a]/40 text-[#f3b738] flex items-center justify-center font-black text-sm">
+                      <Users className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-black text-sm text-white">Mrs. Priyadarshani Kulatunga</h3>
-                      <p className="text-[11px] text-[#9bbddf]">Parent of Kaveen • Grade 10-B</p>
+                      <h3 className="font-black text-sm text-white">Parent &amp; Guardian Portal</h3>
+                      <p className="text-[11px] text-[#9bbddf]">Connected Student Profile • Grades 1–13</p>
                     </div>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase">
@@ -2102,13 +2102,13 @@ export function LandingView({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
                     <p className="text-[10px] uppercase font-bold text-slate-400">Term Attendance</p>
-                    <p className="text-xl font-black text-emerald-400">96.4%</p>
-                    <p className="text-[10px] text-slate-400">Present today at 7:22 AM</p>
+                    <p className="text-xl font-black text-emerald-400">98.4%</p>
+                    <p className="text-[10px] text-slate-400">Daily morning gate check-in</p>
                   </div>
                   <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-                    <p className="text-[10px] uppercase font-bold text-slate-400">Term 2 Average</p>
-                    <p className="text-xl font-black text-[#7ba9d6]">84.6%</p>
-                    <p className="text-[10px] text-slate-400">Rank: 4th in Class (42)</p>
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Academic Standing</p>
+                    <p className="text-xl font-black text-[#7ba9d6]">Honor Roll</p>
+                    <p className="text-[10px] text-slate-400">Continuous term assessment</p>
                   </div>
                 </div>
 
@@ -2117,14 +2117,14 @@ export function LandingView({
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="font-bold text-[#9bbddf] flex items-center gap-1.5">
                       <Mail className="h-3.5 w-3.5 text-[#7ba9d6]" />
-                      Teacher Remark • Mathematics
+                      Direct Teacher Feedback &amp; Reports
                     </span>
-                    <span className="text-[10px] text-slate-400">Today</span>
+                    <span className="text-[10px] text-slate-400">Official Desk</span>
                   </div>
                   <p className="text-xs text-slate-200 leading-relaxed italic">
-                    &quot;Kaveen completed his quadratic equation assignment with full marks. Keep encouraging his regular revision.&quot;
+                    &quot;Review continuous homework submissions, verified term test grades, and real-time remarks directly from subject teachers.&quot;
                   </p>
-                  <p className="text-[10px] text-slate-400 font-bold">— Mr. Bandara (Class Teacher)</p>
+                  <p className="text-[10px] text-slate-400 font-bold">— Class Teachers &amp; School Administration</p>
                 </div>
 
                 <button
