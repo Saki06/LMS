@@ -1448,29 +1448,20 @@ export function LandingView({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 my-6 sm:my-8 max-w-3xl mx-auto w-full items-stretch">
             {/* CARD 1: STUDENT */}
             <div className="group rounded-3xl bg-white border-2 border-emerald-100 hover:border-[#0d5c4d] shadow-sm hover:shadow-2xl transition-all duration-300 p-6 sm:p-8 flex flex-col items-center justify-between text-center relative overflow-hidden">
-              {/* Top Decorative Doodle Icon */}
-              <div className="relative mb-2">
-                <div className="absolute -top-3 right-3 z-10 h-8 w-8 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center shadow-xs">
-                  <Lightbulb className="h-4 w-4 text-amber-600" />
-                </div>
-
-                {/* Circular Portrait with Emerald Aura Ring */}
-                <div className="relative p-2 rounded-full bg-gradient-to-tr from-[#0d5c4d]/20 via-[#ecf8f5] to-[#f3b738]/20 shadow-inner group-hover:scale-102 transition-transform duration-300">
-                  <div className="h-44 w-44 sm:h-52 sm:w-52 rounded-full overflow-hidden border-4 border-white shadow-md">
-                    <img
-                      src="/images/student_card_hero.jpg"
-                      alt="Student learning with LimaT Book"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                </div>
+              {/* Brush-Splash Character Illustration with Lightbulb Doodle */}
+              <div className="relative w-52 h-52 sm:w-60 sm:h-60 flex items-center justify-center mb-1">
+                <img
+                  src="/images/student_brush_portrait.jpg"
+                  alt="Student learning with LimaT Book"
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                />
               </div>
 
               {/* Pill Button in our Emerald Theme (#0d5c4d) */}
               <button
                 type="button"
                 onClick={() => handlePortalSwitch("student")}
-                className="w-full max-w-xs bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-4 group"
+                className="w-full max-w-xs bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 group"
               >
                 <GraduationCap className="h-5 w-5" />
                 <span>Student</span>
@@ -1510,29 +1501,20 @@ export function LandingView({
 
             {/* CARD 2: PARENT */}
             <div className="group rounded-3xl bg-white border-2 border-slate-200 hover:border-[#1e3a5f] shadow-sm hover:shadow-2xl transition-all duration-300 p-6 sm:p-8 flex flex-col items-center justify-between text-center relative overflow-hidden">
-              {/* Top Decorative Doodle Icon */}
-              <div className="relative mb-2">
-                <div className="absolute -top-3 right-3 z-10 h-8 w-8 rounded-full bg-rose-100 border border-rose-300 flex items-center justify-center shadow-xs">
-                  <Heart className="h-4 w-4 text-rose-500 fill-rose-500" />
-                </div>
-
-                {/* Circular Portrait with Slate Navy Aura Ring */}
-                <div className="relative p-2 rounded-full bg-gradient-to-tr from-[#1e3a5f]/20 via-[#f0f5fa] to-amber-100/50 shadow-inner group-hover:scale-102 transition-transform duration-300">
-                  <div className="h-44 w-44 sm:h-52 sm:w-52 rounded-full overflow-hidden border-4 border-white shadow-md">
-                    <img
-                      src="/images/parent_card_hero.jpg"
-                      alt="Parent reviewing student progress on tablet"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                </div>
+              {/* Brush-Splash Character Illustration with Heart Doodle */}
+              <div className="relative w-52 h-52 sm:w-60 sm:h-60 flex items-center justify-center mb-1">
+                <img
+                  src="/images/parent_brush_portrait.jpg"
+                  alt="Parent reviewing student progress on tablet"
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                />
               </div>
 
               {/* Pill Button in our Slate Navy Theme (#1e3a5f) */}
               <button
                 type="button"
                 onClick={() => handlePortalSwitch("parent")}
-                className="w-full max-w-xs bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-4 group"
+                className="w-full max-w-xs bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 group"
               >
                 <Users className="h-5 w-5" />
                 <span>Parent</span>
