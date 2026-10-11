@@ -35,6 +35,7 @@ import {
   Award,
   Phone,
   Heart,
+  Lightbulb,
   ChevronRight
 } from "lucide-react";
 
@@ -1428,159 +1429,156 @@ export function LandingView({
       )}
 
       {/* ========================================================================= */}
-      {/* 0. MINIMALIST FULL-SCREEN GATEWAY (Clean 2 Large Portal Cards, No Clutter) */}
+      {/* 0. MINIMALIST GATEWAY (Clean 2 Role Cards: Student & Parent)               */}
       {/* Active when portalType === "gateway"                                       */}
       {/* ========================================================================= */}
       {portalType === "gateway" && (
-        <main className="min-h-[calc(100vh-80px)] flex flex-col justify-between px-4 sm:px-8 lg:px-12 py-8 sm:py-12 max-w-6xl mx-auto w-full animate-in fade-in duration-300">
+        <main className="min-h-[calc(100vh-80px)] flex flex-col justify-between px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto w-full animate-in fade-in duration-300">
           {/* Header */}
-          <div className="text-center space-y-3 pt-2 sm:pt-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 text-[#0d5c4d] border border-emerald-200/80 text-[11px] font-black shadow-2xs">
-              <Sparkles className="h-3 w-3 text-amber-500 animate-pulse" />
-              <span>Sri Lanka&apos;s Unified Digital School Ecosystem • Grades 1–13</span>
-            </div>
-
+          <div className="text-center space-y-2 pt-2 sm:pt-4">
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-[#0d2b26]">
-              Welcome to LimaT Smart Book
+              Welcome to <span className="text-[#0d5c4d]">LimaT Book!</span>
             </h1>
-
-            <p className="text-sm sm:text-base text-slate-600 max-w-lg mx-auto">
-              Please choose your learning portal to continue.
+            <p className="text-sm sm:text-base text-slate-600 font-semibold">
+              Choose your role to get started
             </p>
           </div>
 
-          {/* Exactly 2 Large, Visually Rich Portal Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 my-6 sm:my-8 items-stretch">
-            {/* CARD 1: STUDENT PORTAL */}
-            <div className="group rounded-3xl bg-white border-2 border-emerald-100 hover:border-emerald-600 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between">
-              <div>
-                {/* Visual Image */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-emerald-50">
-                  <img
-                    src="/images/student_card_hero.jpg"
-                    alt="Sri Lankan Students Collaborating in Classroom"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute top-4 left-4">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-700/90 text-white backdrop-blur-md text-[11px] font-black uppercase tracking-wider shadow-sm">
-                      <GraduationCap className="h-3.5 w-3.5" />
-                      For Students • Grades 1–13
-                    </span>
-                  </div>
+          {/* 2 Clean Role Cards (Student & Parent) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 my-6 sm:my-8 max-w-3xl mx-auto w-full items-stretch">
+            {/* CARD 1: STUDENT */}
+            <div className="group rounded-3xl bg-white border-2 border-emerald-100 hover:border-[#0d5c4d] shadow-sm hover:shadow-2xl transition-all duration-300 p-6 sm:p-8 flex flex-col items-center justify-between text-center relative overflow-hidden">
+              {/* Top Decorative Doodle Icon */}
+              <div className="relative mb-2">
+                <div className="absolute -top-3 right-3 z-10 h-8 w-8 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center shadow-xs">
+                  <Lightbulb className="h-4 w-4 text-amber-600" />
                 </div>
 
-                {/* Card Content */}
-                <div className="p-6 sm:p-7 space-y-2">
-                  <h2 className="text-2xl font-black text-[#0d2b26] group-hover:text-emerald-700 transition-colors">
-                    Student Portal
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Access G.C.E. O/L & A/L past papers with marking schemes, video lessons, timed online tests, and homework submissions.
-                  </p>
+                {/* Circular Portrait with Emerald Aura Ring */}
+                <div className="relative p-2 rounded-full bg-gradient-to-tr from-[#0d5c4d]/20 via-[#ecf8f5] to-[#f3b738]/20 shadow-inner group-hover:scale-102 transition-transform duration-300">
+                  <div className="h-44 w-44 sm:h-52 sm:w-52 rounded-full overflow-hidden border-4 border-white shadow-md">
+                    <img
+                      src="/images/student_card_hero.jpg"
+                      alt="Student learning with LimaT Book"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="p-6 sm:p-7 pt-0 space-y-3">
+              {/* Pill Button in our Emerald Theme (#0d5c4d) */}
+              <button
+                type="button"
+                onClick={() => handlePortalSwitch("student")}
+                className="w-full max-w-xs bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-4 group"
+              >
+                <GraduationCap className="h-5 w-5" />
+                <span>Student</span>
+                <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </button>
+
+              {/* Subtitle Caption */}
+              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-3 max-w-xs">
+                Learn anytime, anywhere, grow your future.
+              </p>
+
+              {/* Quick Direct Sign In / Register Links */}
+              <div className="flex items-center gap-4 text-xs pt-4 font-semibold text-slate-500">
                 <button
                   type="button"
-                  onClick={() => handlePortalSwitch("student")}
-                  className="w-full bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-sm py-3.5 px-6 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={() => {
+                    handlePortalSwitch("student");
+                    openAuth("login", "student", "drawer");
+                  }}
+                  className="font-bold text-[#0d5c4d] hover:underline cursor-pointer"
                 >
-                  <span>Enter Student Portal</span>
-                  <ArrowRight className="h-4 w-4" />
+                  Student Sign In →
                 </button>
-
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handlePortalSwitch("student");
-                      openAuth("login", "student", "drawer");
-                    }}
-                    className="font-bold text-[#0d5c4d] hover:underline cursor-pointer"
-                  >
-                    Student Sign In →
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handlePortalSwitch("student");
-                      openAuth("signup", "student", "drawer");
-                    }}
-                    className="font-semibold text-slate-500 hover:text-slate-900 cursor-pointer"
-                  >
-                    Register Account
-                  </button>
-                </div>
+                <span>•</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePortalSwitch("student");
+                    openAuth("signup", "student", "drawer");
+                  }}
+                  className="hover:text-slate-900 cursor-pointer"
+                >
+                  Register
+                </button>
               </div>
             </div>
 
-            {/* CARD 2: PARENT PORTAL */}
-            <div className="group rounded-3xl bg-white border-2 border-slate-200 hover:border-[#1e3a5f] shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between">
-              <div>
-                {/* Visual Image */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#f0f5fa]">
-                  <img
-                    src="/images/parent_card_hero.jpg"
-                    alt="Sri Lankan Mother and Son Reviewing School Report"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute top-4 left-4">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1e3a5f]/95 text-white backdrop-blur-md text-[11px] font-black uppercase tracking-wider shadow-sm">
-                      <Users className="h-3.5 w-3.5" />
-                      For Parents & Guardians
-                    </span>
+            {/* CARD 2: PARENT */}
+            <div className="group rounded-3xl bg-white border-2 border-slate-200 hover:border-[#1e3a5f] shadow-sm hover:shadow-2xl transition-all duration-300 p-6 sm:p-8 flex flex-col items-center justify-between text-center relative overflow-hidden">
+              {/* Top Decorative Doodle Icon */}
+              <div className="relative mb-2">
+                <div className="absolute -top-3 right-3 z-10 h-8 w-8 rounded-full bg-rose-100 border border-rose-300 flex items-center justify-center shadow-xs">
+                  <Heart className="h-4 w-4 text-rose-500 fill-rose-500" />
+                </div>
+
+                {/* Circular Portrait with Slate Navy Aura Ring */}
+                <div className="relative p-2 rounded-full bg-gradient-to-tr from-[#1e3a5f]/20 via-[#f0f5fa] to-amber-100/50 shadow-inner group-hover:scale-102 transition-transform duration-300">
+                  <div className="h-44 w-44 sm:h-52 sm:w-52 rounded-full overflow-hidden border-4 border-white shadow-md">
+                    <img
+                      src="/images/parent_card_hero.jpg"
+                      alt="Parent reviewing student progress on tablet"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
                 </div>
-
-                {/* Card Content */}
-                <div className="p-6 sm:p-7 space-y-2">
-                  <h2 className="text-2xl font-black text-[#0d2b26] group-hover:text-[#1e3a5f] transition-colors">
-                    Parent Portal
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Track daily morning gate attendance alerts, inspect official term report cards, message subject teachers, and manage fee slips.
-                  </p>
-                </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="p-6 sm:p-7 pt-0 space-y-3">
+              {/* Pill Button in our Slate Navy Theme (#1e3a5f) */}
+              <button
+                type="button"
+                onClick={() => handlePortalSwitch("parent")}
+                className="w-full max-w-xs bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-4 group"
+              >
+                <Users className="h-5 w-5" />
+                <span>Parent</span>
+                <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </button>
+
+              {/* Subtitle Caption */}
+              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-3 max-w-xs">
+                Support, monitor, be part of their journey.
+              </p>
+
+              {/* Quick Direct Sign In / Register Links */}
+              <div className="flex items-center gap-4 text-xs pt-4 font-semibold text-slate-500">
                 <button
                   type="button"
-                  onClick={() => handlePortalSwitch("parent")}
-                  className="w-full bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-sm py-3.5 px-6 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={() => {
+                    handlePortalSwitch("parent");
+                    openAuth("login", "parent", "drawer");
+                  }}
+                  className="font-bold text-[#1e3a5f] hover:underline cursor-pointer"
                 >
-                  <span>Enter Parent Portal</span>
-                  <ArrowRight className="h-4 w-4" />
+                  Guardian Sign In →
                 </button>
-
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handlePortalSwitch("parent");
-                      openAuth("login", "parent", "drawer");
-                    }}
-                    className="font-bold text-[#1e3a5f] hover:underline cursor-pointer"
-                  >
-                    Guardian Sign In →
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handlePortalSwitch("parent");
-                      openAuth("signup", "parent", "drawer");
-                    }}
-                    className="font-semibold text-slate-500 hover:text-slate-900 cursor-pointer"
-                  >
-                    Register Account
-                  </button>
-                </div>
+                <span>•</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePortalSwitch("parent");
+                    openAuth("signup", "parent", "drawer");
+                  }}
+                  className="hover:text-slate-900 cursor-pointer"
+                >
+                  Register
+                </button>
               </div>
+            </div>
+          </div>
+
+          {/* Bottom Playful Tagline */}
+          <div className="flex flex-col items-center justify-center gap-1.5 pt-2 pb-4">
+            <div className="flex items-center gap-2.5 text-amber-500 font-black text-sm tracking-widest">
+              <span>˗ˏˋ</span>
+              <p className="font-extrabold text-xs sm:text-sm text-slate-700 tracking-wide">
+                Together for a Smarter Tomorrow
+              </p>
+              <span>ˎˊ˗</span>
             </div>
           </div>
 
@@ -1592,7 +1590,7 @@ export function LandingView({
               className="font-bold text-slate-600 hover:text-slate-900 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
             >
               <School className="h-3.5 w-3.5 text-amber-600" />
-              <span>Are you a Teacher or Principal? Faculty & Admin Hub →</span>
+              <span>Are you a Teacher or Principal? Faculty &amp; Admin Hub →</span>
             </button>
 
             <span className="text-[11px] text-slate-400">

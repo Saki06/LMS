@@ -97,7 +97,7 @@ export function PrototypeBar() {
                 onClick={() => setLandingPortal("parent")}
                 className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   landingPortal === "parent"
-                    ? "bg-[#0d5c4d] text-white shadow-xs font-black"
+                    ? "bg-[#1e3a5f] text-white shadow-xs font-black"
                     : "text-slate-300 hover:text-white hover:bg-white/5"
                 }`}
                 title="Switch to Parent Landing Page"
