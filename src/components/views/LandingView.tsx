@@ -1219,10 +1219,10 @@ export function LandingView({
   // VIEW MODE: STANDARD LANDING PAGE (Student View OR Faculty/Admin View)
   // =========================================================================
   return (
-    <div className="min-h-screen bg-[#fbfcfb] text-[#0d2b26] flex flex-col justify-between selection:bg-[#0d5c4d] selection:text-white">
+    <div className={`${portalType === "gateway" ? "h-screen overflow-hidden" : "min-h-screen"} bg-[#fbfcfb] text-[#0d2b26] flex flex-col justify-between selection:bg-[#0d5c4d] selection:text-white`}>
       {/* ----------------- 0. GATEWAY PORTAL NAVIGATION ----------------- */}
       {portalType === "gateway" && (
-        <nav className="h-16 sm:h-20 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-3 sm:px-8 flex items-center justify-between sticky top-0 z-40">
+        <nav className="h-14 sm:h-16 border-b border-[#e6ece8] bg-white/95 backdrop-blur-md px-3 sm:px-8 flex items-center justify-between sticky top-0 z-40 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-base sm:text-xl shadow-xs font-sans shrink-0">
               L
@@ -1433,53 +1433,46 @@ export function LandingView({
       {/* Active when portalType === "gateway"                                       */}
       {/* ========================================================================= */}
       {portalType === "gateway" && (
-        <div className="relative min-h-[calc(100vh-80px)] flex flex-col justify-between bg-gradient-to-b from-[#ebf8f4] via-[#ffffff] to-[#fef8eb] overflow-hidden">
-          {/* Luminous Ambient Lighting Orbs (Bright, Sunny & Radiant) */}
-          <div className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full bg-emerald-300/50 blur-3xl pointer-events-none" />
-          <div className="absolute -top-16 -right-16 w-[500px] h-[500px] rounded-full bg-[#38bdf8]/35 blur-3xl pointer-events-none" />
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[650px] h-[350px] rounded-full bg-amber-200/40 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-10 right-10 w-[450px] h-[450px] rounded-full bg-[#fde047]/45 blur-3xl pointer-events-none" />
+        <div className="relative flex-1 flex flex-col justify-between bg-gradient-to-b from-[#ebf8f4] via-[#ffffff] to-[#fef8eb] overflow-hidden">
+          {/* Luminous Ambient Lighting Orbs */}
+          <div className="absolute -top-20 -left-20 w-[450px] h-[450px] rounded-full bg-emerald-300/40 blur-3xl pointer-events-none" />
+          <div className="absolute -top-16 -right-16 w-[450px] h-[450px] rounded-full bg-[#38bdf8]/30 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-10 right-10 w-[400px] h-[400px] rounded-full bg-[#fde047]/40 blur-3xl pointer-events-none" />
 
           {/* Cheerful Background Doodles & Motifs */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
-            <div className="absolute top-10 left-10 text-amber-400 font-black text-2xl animate-pulse">✦</div>
-            <div className="absolute top-28 left-28 text-emerald-500/50 font-black text-base">★</div>
-            <div className="absolute top-14 right-16 text-amber-400 font-black text-2xl">✦</div>
-            <div className="absolute top-32 right-32 text-sky-400/50 font-black text-sm">●</div>
-            <div className="absolute bottom-36 left-16 text-emerald-400/40 font-black text-xl">✦</div>
-            <div className="absolute bottom-40 right-20 text-amber-400/50 font-black text-xl">★</div>
-            <div className="absolute top-1/2 left-6 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-dashed border-emerald-400/30" />
-            <div className="absolute top-1/2 right-6 -translate-y-1/2 w-20 h-20 rounded-full border-2 border-dashed border-amber-400/35" />
+            <div className="absolute top-6 left-8 text-amber-400 font-black text-xl animate-pulse">✦</div>
+            <div className="absolute top-20 left-20 text-emerald-500/50 font-black text-sm">★</div>
+            <div className="absolute top-8 right-12 text-amber-400 font-black text-xl">✦</div>
+            <div className="absolute top-24 right-24 text-sky-400/50 font-black text-xs">●</div>
+            <div className="absolute top-1/2 left-4 -translate-y-1/2 w-12 h-12 rounded-full border-2 border-dashed border-emerald-400/25" />
+            <div className="absolute top-1/2 right-4 -translate-y-1/2 w-14 h-14 rounded-full border-2 border-dashed border-amber-400/25" />
           </div>
 
-          {/* Bottom Dual-Tone Wave Curves (Vibrant Sky/Emerald & Sunny Gold) */}
+          {/* Bottom Dual-Tone Wave Curves */}
           <div className="absolute bottom-0 left-0 right-0 pointer-events-none overflow-hidden leading-none z-0">
             <svg
               viewBox="0 0 1440 220"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-32 sm:h-44 lg:h-52"
+              className="w-full h-24 sm:h-32 lg:h-36"
               preserveAspectRatio="none"
             >
-              {/* Layer 1: Bright Sky Blue / Cyan Flow */}
               <path
                 d="M0,60 C320,150 480,20 820,100 C1100,170 1300,70 1440,110 L1440,220 L0,220 Z"
                 fill="#38bdf8"
                 fillOpacity="0.4"
               />
-              {/* Layer 2: Vivid Emerald Tint Wave */}
               <path
                 d="M0,100 C260,180 540,60 880,130 C1160,190 1340,90 1440,130 L1440,220 L0,220 Z"
                 fill="#6ee7b7"
                 fillOpacity="0.45"
               />
-              {/* Layer 3: Vibrant Warm Sunny Gold / Honey Wave */}
               <path
                 d="M0,135 C300,70 640,190 980,100 C1220,40 1380,150 1440,120 L1440,220 L0,220 Z"
                 fill="#fde047"
                 fillOpacity="0.6"
               />
-              {/* Layer 4: Soft Luminous Bottom Daylight Arc */}
               <path
                 d="M0,180 C360,140 720,210 1080,165 C1260,145 1380,195 1440,180 L1440,220 L0,220 Z"
                 fill="#ffffff"
@@ -1488,155 +1481,155 @@ export function LandingView({
             </svg>
           </div>
 
-          <main className="relative z-10 flex-1 flex flex-col justify-between px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto w-full animate-in fade-in duration-300">
+          <main className="relative z-10 flex-1 flex flex-col justify-between px-3 sm:px-6 lg:px-8 py-2 sm:py-3 max-w-4xl mx-auto w-full">
             {/* Header */}
-            <div className="text-center space-y-2 pt-2 sm:pt-4">
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-[#0d2b26]">
-              Welcome to <span className="text-[#0d5c4d]">LimaT Book!</span>
-            </h1>
-            <p className="text-sm sm:text-base text-slate-600 font-semibold">
-              Choose your role to get started
-            </p>
-          </div>
+            <div className="text-center space-y-1 pt-0.5 sm:pt-1">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#0d2b26]">
+                Welcome to <span className="text-[#0d5c4d]">LimaT Book!</span>
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 font-semibold">
+                Choose your role to get started
+              </p>
+            </div>
 
-          {/* 2 Clean Role Cards (Student & Parent) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 my-6 sm:my-8 max-w-3xl mx-auto w-full items-stretch">
-            {/* CARD 1: STUDENT */}
-            <div className="group rounded-3xl bg-white border-2 border-emerald-100 hover:border-[#0d5c4d] shadow-sm hover:shadow-2xl transition-all duration-300 p-6 sm:p-8 flex flex-col items-center justify-between text-center relative overflow-hidden">
-              {/* Brush-Splash Character Illustration with Lightbulb Doodle */}
-              <div className="relative w-52 h-52 sm:w-60 sm:h-60 flex items-center justify-center mb-1">
-                <img
-                  src="/images/student_brush_portrait.jpg"
-                  alt="Student learning with LimaT Book"
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                />
+            {/* 2 Clean Role Cards (Student & Parent) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 my-1.5 sm:my-3 max-w-2xl sm:max-w-3xl mx-auto w-full items-stretch">
+              {/* CARD 1: STUDENT */}
+              <div className="group rounded-2xl sm:rounded-3xl bg-white/95 backdrop-blur-xs border-2 border-emerald-100 hover:border-[#0d5c4d] shadow-sm hover:shadow-xl transition-all duration-300 p-3.5 sm:p-5 lg:p-6 flex flex-col items-center justify-between text-center relative overflow-hidden">
+                {/* Brush-Splash Character Illustration */}
+                <div className="relative w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center">
+                  <img
+                    src="/images/student_brush_portrait.jpg"
+                    alt="Student learning with LimaT Book"
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+
+                {/* Pill Button in our Emerald Theme (#0d5c4d) */}
+                <button
+                  type="button"
+                  onClick={() => handlePortalSwitch("student")}
+                  className="w-full max-w-xs bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-sm sm:text-base py-2.5 sm:py-3 px-5 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-1.5 group"
+                >
+                  <GraduationCap className="h-4 sm:h-5 w-4 sm:w-5" />
+                  <span>Student</span>
+                  <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                {/* Subtitle Caption */}
+                <p className="text-[11px] sm:text-xs text-slate-600 font-medium mt-1 max-w-xs">
+                  Learn anytime, anywhere, grow your future.
+                </p>
+
+                {/* Quick Direct Sign In / Register Links */}
+                <div className="flex items-center gap-3 text-xs pt-1.5 font-semibold text-slate-500">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("student");
+                      openAuth("login", "student", "drawer");
+                    }}
+                    className="font-bold text-[#0d5c4d] hover:underline cursor-pointer"
+                  >
+                    Student Sign In →
+                  </button>
+                  <span>•</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("student");
+                      openAuth("signup", "student", "drawer");
+                    }}
+                    className="hover:text-slate-900 cursor-pointer"
+                  >
+                    Register
+                  </button>
+                </div>
               </div>
 
-              {/* Pill Button in our Emerald Theme (#0d5c4d) */}
+              {/* CARD 2: PARENT */}
+              <div className="group rounded-2xl sm:rounded-3xl bg-white/95 backdrop-blur-xs border-2 border-slate-200 hover:border-[#1e3a5f] shadow-sm hover:shadow-xl transition-all duration-300 p-3.5 sm:p-5 lg:p-6 flex flex-col items-center justify-between text-center relative overflow-hidden">
+                {/* Brush-Splash Character Illustration */}
+                <div className="relative w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 flex items-center justify-center">
+                  <img
+                    src="/images/parent_brush_portrait.jpg"
+                    alt="Parent reviewing student progress on tablet"
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+
+                {/* Pill Button in our Slate Navy Theme (#1e3a5f) */}
+                <button
+                  type="button"
+                  onClick={() => handlePortalSwitch("parent")}
+                  className="w-full max-w-xs bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-sm sm:text-base py-2.5 sm:py-3 px-5 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-1.5 group"
+                >
+                  <Users className="h-4 sm:h-5 w-4 sm:w-5" />
+                  <span>Parent</span>
+                  <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                {/* Subtitle Caption */}
+                <p className="text-[11px] sm:text-xs text-slate-600 font-medium mt-1 max-w-xs">
+                  Support, monitor, be part of their journey.
+                </p>
+
+                {/* Quick Direct Sign In / Register Links */}
+                <div className="flex items-center gap-3 text-xs pt-1.5 font-semibold text-slate-500">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("parent");
+                      openAuth("login", "parent", "drawer");
+                    }}
+                    className="font-bold text-[#1e3a5f] hover:underline cursor-pointer"
+                  >
+                    Guardian Sign In →
+                  </button>
+                  <span>•</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handlePortalSwitch("parent");
+                      openAuth("signup", "parent", "drawer");
+                    }}
+                    className="hover:text-slate-900 cursor-pointer"
+                  >
+                    Register
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Playful Tagline */}
+            <div className="flex flex-col items-center justify-center gap-0.5 pt-1 pb-1">
+              <div className="flex items-center gap-2.5 text-amber-500 font-black text-xs sm:text-sm tracking-widest">
+                <span>˗ˏˋ</span>
+                <p className="font-extrabold text-xs text-slate-700 tracking-wide">
+                  Together for a Smarter Tomorrow
+                </p>
+                <span>ˎˊ˗</span>
+              </div>
+            </div>
+
+            {/* Discreet Footer Link for Faculty */}
+            <div className="pb-1.5 pt-1 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-[11px] text-slate-500 border-t border-slate-200/60">
               <button
                 type="button"
-                onClick={() => handlePortalSwitch("student")}
-                className="w-full max-w-xs bg-[#0d5c4d] hover:bg-[#083e34] text-white font-black text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 group"
+                onClick={() => handlePortalSwitch("staff")}
+                className="font-bold text-slate-600 hover:text-slate-900 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
               >
-                <GraduationCap className="h-5 w-5" />
-                <span>Student</span>
-                <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                <School className="h-3.5 w-3.5 text-amber-600" />
+                <span>Are you a Teacher or Principal? Faculty &amp; Admin Hub →</span>
               </button>
 
-              {/* Subtitle Caption */}
-              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-3 max-w-xs">
-                Learn anytime, anywhere, grow your future.
-              </p>
-
-              {/* Quick Direct Sign In / Register Links */}
-              <div className="flex items-center gap-4 text-xs pt-4 font-semibold text-slate-500">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handlePortalSwitch("student");
-                    openAuth("login", "student", "drawer");
-                  }}
-                  className="font-bold text-[#0d5c4d] hover:underline cursor-pointer"
-                >
-                  Student Sign In →
-                </button>
-                <span>•</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handlePortalSwitch("student");
-                    openAuth("signup", "student", "drawer");
-                  }}
-                  className="hover:text-slate-900 cursor-pointer"
-                >
-                  Register
-                </button>
-              </div>
+              <span className="text-[10px] text-slate-400">
+                Trilingual Medium: English • සිංහල • தமிழ்
+              </span>
             </div>
-
-            {/* CARD 2: PARENT */}
-            <div className="group rounded-3xl bg-white border-2 border-slate-200 hover:border-[#1e3a5f] shadow-sm hover:shadow-2xl transition-all duration-300 p-6 sm:p-8 flex flex-col items-center justify-between text-center relative overflow-hidden">
-              {/* Brush-Splash Character Illustration with Heart Doodle */}
-              <div className="relative w-52 h-52 sm:w-60 sm:h-60 flex items-center justify-center mb-1">
-                <img
-                  src="/images/parent_brush_portrait.jpg"
-                  alt="Parent reviewing student progress on tablet"
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-
-              {/* Pill Button in our Slate Navy Theme (#1e3a5f) */}
-              <button
-                type="button"
-                onClick={() => handlePortalSwitch("parent")}
-                className="w-full max-w-xs bg-[#1e3a5f] hover:bg-[#152a45] text-white font-black text-base py-3.5 px-6 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 group"
-              >
-                <Users className="h-5 w-5" />
-                <span>Parent</span>
-                <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </button>
-
-              {/* Subtitle Caption */}
-              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-3 max-w-xs">
-                Support, monitor, be part of their journey.
-              </p>
-
-              {/* Quick Direct Sign In / Register Links */}
-              <div className="flex items-center gap-4 text-xs pt-4 font-semibold text-slate-500">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handlePortalSwitch("parent");
-                    openAuth("login", "parent", "drawer");
-                  }}
-                  className="font-bold text-[#1e3a5f] hover:underline cursor-pointer"
-                >
-                  Guardian Sign In →
-                </button>
-                <span>•</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handlePortalSwitch("parent");
-                    openAuth("signup", "parent", "drawer");
-                  }}
-                  className="hover:text-slate-900 cursor-pointer"
-                >
-                  Register
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Playful Tagline */}
-          <div className="flex flex-col items-center justify-center gap-1.5 pt-2 pb-4">
-            <div className="flex items-center gap-2.5 text-amber-500 font-black text-sm tracking-widest">
-              <span>˗ˏˋ</span>
-              <p className="font-extrabold text-xs sm:text-sm text-slate-700 tracking-wide">
-                Together for a Smarter Tomorrow
-              </p>
-              <span>ˎˊ˗</span>
-            </div>
-          </div>
-
-          {/* Discreet Footer Link for Faculty */}
-          <div className="pb-4 pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => handlePortalSwitch("staff")}
-              className="font-bold text-slate-600 hover:text-slate-900 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-            >
-              <School className="h-3.5 w-3.5 text-amber-600" />
-              <span>Are you a Teacher or Principal? Faculty &amp; Admin Hub →</span>
-            </button>
-
-            <span className="text-[11px] text-slate-400">
-              Trilingual Medium: English • සිංහල • தமிழ்
-            </span>
-          </div>
-        </main>
-      </div>
-    )}
+          </main>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 1. STUDENT LANDING PAGE (Active when portalType === "student")           */}
@@ -2430,58 +2423,60 @@ export function LandingView({
         </main>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-[#e6ece8] bg-white py-10 px-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-base">
-              L
+      {/* Footer - only shown on Portal landing pages, Gateway has its own compact footer */}
+      {portalType !== "gateway" && (
+        <footer className="border-t border-[#e6ece8] bg-white py-10 px-6 text-center text-xs text-slate-500">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-[#f3b738] flex items-center justify-center text-slate-950 font-black text-base">
+                L
+              </div>
+              <div className="text-left">
+                <p className="font-black text-[#0d2b26]">LimaT Smart Book</p>
+                <p className="text-[10px] text-[#0d5c4d] font-bold">LEARN · GROW · LEAD</p>
+              </div>
             </div>
-            <div className="text-left">
-              <p className="font-black text-[#0d2b26]">LimaT Smart Book</p>
-              <p className="text-[10px] text-[#0d5c4d] font-bold">LEARN · GROW · LEAD</p>
+
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-semibold text-slate-600">
+              <button
+                type="button"
+                onClick={() => handlePortalSwitch("gateway")}
+                className="hover:text-[#0d5c4d] cursor-pointer"
+              >
+                All Portals
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => handlePortalSwitch("student")}
+                className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "student" ? "text-[#0d5c4d] font-black underline" : ""}`}
+              >
+                Student Portal
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => handlePortalSwitch("parent")}
+                className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "parent" ? "text-[#0d5c4d] font-black underline" : ""}`}
+              >
+                Parent Portal
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => handlePortalSwitch("staff")}
+                className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "staff" ? "text-[#0d5c4d] font-black underline" : ""}`}
+              >
+                Faculty & Admin Hub
+              </button>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-semibold text-slate-600">
-            <button
-              type="button"
-              onClick={() => handlePortalSwitch("gateway")}
-              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "gateway" ? "text-[#0d5c4d] font-black underline" : ""}`}
-            >
-              All Portals
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => handlePortalSwitch("student")}
-              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "student" ? "text-[#0d5c4d] font-black underline" : ""}`}
-            >
-              Student Portal
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => handlePortalSwitch("parent")}
-              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "parent" ? "text-[#0d5c4d] font-black underline" : ""}`}
-            >
-              Parent Portal
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => handlePortalSwitch("staff")}
-              className={`hover:text-[#0d5c4d] cursor-pointer ${portalType === "staff" ? "text-[#0d5c4d] font-black underline" : ""}`}
-            >
-              Faculty & Admin Hub
-            </button>
+            <p className="text-center sm:text-right text-[11px] text-slate-400">
+              Sri Lanka Digital School Platform • Built for English, Sinhala, and Tamil.
+            </p>
           </div>
-
-          <p className="text-center sm:text-right text-[11px] text-slate-400">
-            Sri Lanka Digital School Platform • Built for English, Sinhala, and Tamil.
-          </p>
-        </div>
-      </footer>
+        </footer>
+      )}
 
       {/* ========================================================================= */}
       {/* RIGHT-SIDE SLIDE DRAWER ("site ala varanum")                             */}
