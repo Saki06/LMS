@@ -1433,9 +1433,55 @@ export function LandingView({
       {/* Active when portalType === "gateway"                                       */}
       {/* ========================================================================= */}
       {portalType === "gateway" && (
-        <main className="min-h-[calc(100vh-80px)] flex flex-col justify-between px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto w-full animate-in fade-in duration-300">
-          {/* Header */}
-          <div className="text-center space-y-2 pt-2 sm:pt-4">
+        <div className="relative min-h-[calc(100vh-80px)] flex flex-col justify-between bg-gradient-to-b from-[#f2f8f5] via-[#ffffff] to-[#eef6f2] overflow-hidden">
+          {/* Ambient Lighting Orbs */}
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-emerald-200/40 blur-3xl pointer-events-none" />
+          <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-[#1e3a5f]/15 blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full bg-gradient-to-r from-emerald-100/30 via-amber-100/25 to-blue-100/30 blur-3xl pointer-events-none" />
+
+          {/* Subtle Decorative Background Motifs */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+            <div className="absolute top-8 left-12 text-[#f3b738]/30 font-black text-xl animate-pulse">✦</div>
+            <div className="absolute top-24 left-28 text-[#0d5c4d]/20 font-black text-sm">★</div>
+            <div className="absolute top-12 right-20 text-[#f3b738]/35 font-black text-lg">✦</div>
+            <div className="absolute top-28 right-36 text-[#1e3a5f]/20 font-black text-xs">●</div>
+            <div className="absolute top-1/2 left-8 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-dashed border-[#0d5c4d]/15" />
+            <div className="absolute top-1/2 right-8 -translate-y-1/2 w-20 h-20 rounded-full border-2 border-dashed border-[#1e3a5f]/15" />
+          </div>
+
+          {/* Bottom Dual-Tone Wave Curve Background (Matching Client Mockup) */}
+          <div className="absolute bottom-0 left-0 right-0 pointer-events-none overflow-hidden leading-none z-0">
+            <svg
+              viewBox="0 0 1440 220"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-full h-28 sm:h-36 lg:h-44"
+              preserveAspectRatio="none"
+            >
+              {/* Layer 1: Soft Sky / Emerald Flow */}
+              <path
+                d="M0,80 C320,160 520,30 840,110 C1120,180 1320,80 1440,120 L1440,220 L0,220 Z"
+                fill="#d1fae5"
+                fillOpacity="0.5"
+              />
+              {/* Layer 2: Warm Golden / Honey Wave */}
+              <path
+                d="M0,130 C280,60 620,180 960,90 C1200,30 1360,140 1440,110 L1440,220 L0,220 Z"
+                fill="#fef3c7"
+                fillOpacity="0.65"
+              />
+              {/* Layer 3: Crisp Foreground Soft Base Wave */}
+              <path
+                d="M0,175 C360,130 720,205 1080,160 C1260,135 1380,185 1440,175 L1440,220 L0,220 Z"
+                fill="#ffffff"
+                fillOpacity="0.8"
+              />
+            </svg>
+          </div>
+
+          <main className="relative z-10 flex-1 flex flex-col justify-between px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto w-full animate-in fade-in duration-300">
+            {/* Header */}
+            <div className="text-center space-y-2 pt-2 sm:pt-4">
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-[#0d2b26]">
               Welcome to <span className="text-[#0d5c4d]">LimaT Book!</span>
             </h1>
@@ -1580,7 +1626,8 @@ export function LandingView({
             </span>
           </div>
         </main>
-      )}
+      </div>
+    )}
 
       {/* ========================================================================= */}
       {/* 1. STUDENT LANDING PAGE (Active when portalType === "student")           */}
