@@ -1433,48 +1433,57 @@ export function LandingView({
       {/* Active when portalType === "gateway"                                       */}
       {/* ========================================================================= */}
       {portalType === "gateway" && (
-        <div className="relative min-h-[calc(100vh-80px)] flex flex-col justify-between bg-gradient-to-b from-[#f2f8f5] via-[#ffffff] to-[#eef6f2] overflow-hidden">
-          {/* Ambient Lighting Orbs */}
-          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-emerald-200/40 blur-3xl pointer-events-none" />
-          <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-[#1e3a5f]/15 blur-3xl pointer-events-none" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full bg-gradient-to-r from-emerald-100/30 via-amber-100/25 to-blue-100/30 blur-3xl pointer-events-none" />
+        <div className="relative min-h-[calc(100vh-80px)] flex flex-col justify-between bg-gradient-to-b from-[#ebf8f4] via-[#ffffff] to-[#fef8eb] overflow-hidden">
+          {/* Luminous Ambient Lighting Orbs (Bright, Sunny & Radiant) */}
+          <div className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full bg-emerald-300/50 blur-3xl pointer-events-none" />
+          <div className="absolute -top-16 -right-16 w-[500px] h-[500px] rounded-full bg-[#38bdf8]/35 blur-3xl pointer-events-none" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[650px] h-[350px] rounded-full bg-amber-200/40 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-10 right-10 w-[450px] h-[450px] rounded-full bg-[#fde047]/45 blur-3xl pointer-events-none" />
 
-          {/* Subtle Decorative Background Motifs */}
+          {/* Cheerful Background Doodles & Motifs */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
-            <div className="absolute top-8 left-12 text-[#f3b738]/30 font-black text-xl animate-pulse">✦</div>
-            <div className="absolute top-24 left-28 text-[#0d5c4d]/20 font-black text-sm">★</div>
-            <div className="absolute top-12 right-20 text-[#f3b738]/35 font-black text-lg">✦</div>
-            <div className="absolute top-28 right-36 text-[#1e3a5f]/20 font-black text-xs">●</div>
-            <div className="absolute top-1/2 left-8 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-dashed border-[#0d5c4d]/15" />
-            <div className="absolute top-1/2 right-8 -translate-y-1/2 w-20 h-20 rounded-full border-2 border-dashed border-[#1e3a5f]/15" />
+            <div className="absolute top-10 left-10 text-amber-400 font-black text-2xl animate-pulse">✦</div>
+            <div className="absolute top-28 left-28 text-emerald-500/50 font-black text-base">★</div>
+            <div className="absolute top-14 right-16 text-amber-400 font-black text-2xl">✦</div>
+            <div className="absolute top-32 right-32 text-sky-400/50 font-black text-sm">●</div>
+            <div className="absolute bottom-36 left-16 text-emerald-400/40 font-black text-xl">✦</div>
+            <div className="absolute bottom-40 right-20 text-amber-400/50 font-black text-xl">★</div>
+            <div className="absolute top-1/2 left-6 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-dashed border-emerald-400/30" />
+            <div className="absolute top-1/2 right-6 -translate-y-1/2 w-20 h-20 rounded-full border-2 border-dashed border-amber-400/35" />
           </div>
 
-          {/* Bottom Dual-Tone Wave Curve Background (Matching Client Mockup) */}
+          {/* Bottom Dual-Tone Wave Curves (Vibrant Sky/Emerald & Sunny Gold) */}
           <div className="absolute bottom-0 left-0 right-0 pointer-events-none overflow-hidden leading-none z-0">
             <svg
               viewBox="0 0 1440 220"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-28 sm:h-36 lg:h-44"
+              className="w-full h-32 sm:h-44 lg:h-52"
               preserveAspectRatio="none"
             >
-              {/* Layer 1: Soft Sky / Emerald Flow */}
+              {/* Layer 1: Bright Sky Blue / Cyan Flow */}
               <path
-                d="M0,80 C320,160 520,30 840,110 C1120,180 1320,80 1440,120 L1440,220 L0,220 Z"
-                fill="#d1fae5"
-                fillOpacity="0.5"
+                d="M0,60 C320,150 480,20 820,100 C1100,170 1300,70 1440,110 L1440,220 L0,220 Z"
+                fill="#38bdf8"
+                fillOpacity="0.4"
               />
-              {/* Layer 2: Warm Golden / Honey Wave */}
+              {/* Layer 2: Vivid Emerald Tint Wave */}
               <path
-                d="M0,130 C280,60 620,180 960,90 C1200,30 1360,140 1440,110 L1440,220 L0,220 Z"
-                fill="#fef3c7"
-                fillOpacity="0.65"
+                d="M0,100 C260,180 540,60 880,130 C1160,190 1340,90 1440,130 L1440,220 L0,220 Z"
+                fill="#6ee7b7"
+                fillOpacity="0.45"
               />
-              {/* Layer 3: Crisp Foreground Soft Base Wave */}
+              {/* Layer 3: Vibrant Warm Sunny Gold / Honey Wave */}
               <path
-                d="M0,175 C360,130 720,205 1080,160 C1260,135 1380,185 1440,175 L1440,220 L0,220 Z"
+                d="M0,135 C300,70 640,190 980,100 C1220,40 1380,150 1440,120 L1440,220 L0,220 Z"
+                fill="#fde047"
+                fillOpacity="0.6"
+              />
+              {/* Layer 4: Soft Luminous Bottom Daylight Arc */}
+              <path
+                d="M0,180 C360,140 720,210 1080,165 C1260,145 1380,195 1440,180 L1440,220 L0,220 Z"
                 fill="#ffffff"
-                fillOpacity="0.8"
+                fillOpacity="0.85"
               />
             </svg>
           </div>
